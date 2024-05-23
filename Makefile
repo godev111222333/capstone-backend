@@ -15,8 +15,5 @@ migrate-up:
 migrate-down:
 	@migrate -path migration -database "postgres://root:password@localhost:5432/rental_car?sslmode=disable" -verbose down
 
-dev-run-core:
-	@go run src/cmd/core/main.go
-
-dev-run-api:
+dev-run:
 	@go run src/cmd/api/main.go

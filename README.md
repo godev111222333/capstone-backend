@@ -1,6 +1,6 @@
 # Capstone's backend
 
-## Requisite: 
+## Prerequisite installation: 
 1. Go version >= 1.21.5
 2. Docker
 3. Make

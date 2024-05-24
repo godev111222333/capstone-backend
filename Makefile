@@ -1,5 +1,7 @@
 gen:
 	go generate ./...
+test:
+	@go test -v ./...
 
 dev-up:
 	@docker compose \

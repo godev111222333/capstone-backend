@@ -5,8 +5,9 @@ import "time"
 type AccountStatus string
 
 const (
-	AccountStatusEnable  AccountStatus = "enable"
-	AccountStatusDisable AccountStatus = "disable"
+	AccountStatusWaitingConfirmEmail AccountStatus = "waiting_confirm_email"
+	AccountStatusEnable              AccountStatus = "enable"
+	AccountStatusDisable             AccountStatus = "disable"
 )
 
 type Account struct {

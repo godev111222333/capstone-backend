@@ -17,9 +17,7 @@ func NewCustomerStore(db *gorm.DB) *CustomerStore {
 }
 
 func (s *CustomerStore) Create(cus *model.Customer) error {
-	if err := s.db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(cus).Error
-	}); err != nil {
+	if err := s.db.Create(cus).Error; err != nil {
 		fmt.Printf("CustomerStore: %v\n", err)
 		return err
 	}

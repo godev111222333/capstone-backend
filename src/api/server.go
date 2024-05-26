@@ -17,6 +17,7 @@ type Server struct {
 	cfg          *misc.ApiServerConfig
 	route        *gin.Engine
 	store        *store.DbStore
+	s3store      *store.S3Store
 	tokenMaker   token.Maker
 	hashVerifier *misc.HashVerifier
 }
@@ -24,6 +25,7 @@ type Server struct {
 func NewServer(
 	cfg *misc.ApiServerConfig,
 	store *store.DbStore,
+	s3Store *store.S3Store,
 ) *Server {
 	route := gin.New()
 	tokenMaker, err := token.NewJWTMaker("12345678901234567890123456789012")
@@ -31,7 +33,7 @@ func NewServer(
 		panic(err)
 	}
 
-	server := &Server{cfg, route, store, tokenMaker, misc.NewHashVerifier()}
+	server := &Server{cfg, route, store, s3Store, tokenMaker, misc.NewHashVerifier()}
 	server.setUp()
 	return server
 }

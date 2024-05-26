@@ -16,12 +16,15 @@ const (
 
 var TestDb *DbStore
 
+var TestS3Store *S3Store
+
 func TestMain(m *testing.M) {
 	cfg, err := misc.LoadConfig("../../config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
+	TestS3Store = NewS3Store(cfg.AWS)
 	dbConfig := cfg.Database
 	initTestDb(dbConfig)
 	code := m.Run()

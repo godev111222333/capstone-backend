@@ -18,12 +18,15 @@ const (
 var TestDb *store.DbStore
 var TestServer *Server
 
+var TestS3Store *store.S3Store
+
 func TestMain(m *testing.M) {
 	cfg, err := misc.LoadConfig("../../config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
+	TestS3Store = store.NewS3Store(cfg.AWS.AccessKey, cfg.AWS.SecretAccessKey, cfg.AWS.Region)
 	dbConfig := cfg.Database
 	initTestDb(dbConfig)
 	initTestServer(cfg)
@@ -46,7 +49,7 @@ func initTestDb(cfg *misc.DatabaseConfig) {
 }
 
 func initTestServer(cfg *misc.GlobalConfig) {
-	TestServer = NewServer(cfg.ApiServer, TestDb)
+	TestServer = NewServer(cfg.ApiServer, TestDb, TestS3Store)
 }
 
 func ResetDb(cfg *misc.DatabaseConfig) error {

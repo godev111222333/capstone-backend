@@ -18,9 +18,13 @@ type DatabaseConfig struct {
 }
 
 type AWSConfig struct {
+	Bucket          string `yaml:"bucket"`
 	AccessKey       string `yaml:"access_key"`
 	SecretAccessKey string `yaml:"secret_access_key"`
+	Region          string `yaml:"region"`
+	BaseURL         string `yaml:"base_url"`
 }
+
 type GlobalConfig struct {
 	Database  *DatabaseConfig  `yaml:"database"`
 	ApiServer *ApiServerConfig `yaml:"api_server"`

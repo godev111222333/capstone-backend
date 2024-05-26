@@ -33,3 +33,12 @@ func (s *PartnerStore) GetByID(partnerID int) (*model.Partner, error) {
 
 	return res, nil
 }
+
+func (s *PartnerStore) Update(accountID int, values map[string]interface{}) error {
+	if err := s.db.Model(&model.Account{ID: accountID}).Updates(values).Error; err != nil {
+		fmt.Printf("PartnerStore: %v\n", err)
+		return err
+	}
+
+	return nil
+}

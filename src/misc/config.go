@@ -5,6 +5,10 @@ import (
 	"os"
 )
 
+type ApiServerConfig struct {
+	ApiPort string `yaml:"api_port"`
+}
+
 type DatabaseConfig struct {
 	DbHost     string `yaml:"db_host"`
 	DbPort     string `yaml:"db_port"`
@@ -13,8 +17,14 @@ type DatabaseConfig struct {
 	DbPassword string `yaml:"db_password"`
 }
 
+type AWSConfig struct {
+	AccessKey       string `yaml:"access_key"`
+	SecretAccessKey string `yaml:"secret_access_key"`
+}
 type GlobalConfig struct {
-	Database *DatabaseConfig
+	Database  *DatabaseConfig  `yaml:"database"`
+	ApiServer *ApiServerConfig `yaml:"api_server"`
+	AWS       *AWSConfig       `yaml:"aws"`
 }
 
 func LoadConfig(path string) (*GlobalConfig, error) {

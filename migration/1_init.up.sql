@@ -21,7 +21,6 @@ create table accounts
     "phone_number"               varchar(255) not null default '' unique,
     "email"                      varchar(255) not null default '' unique,
     "identification_card_number" varchar(255) not null default '' unique,
-    "date_of_birth"              TIMESTAMP             default CURRENT_TIMESTAMP,
     "password"                   varchar(255) not null default '',
     "avatar_url"                 varchar(255) not null default '',
     "status"                     varchar(255) not null default '',

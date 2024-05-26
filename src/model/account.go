@@ -18,7 +18,6 @@ type Account struct {
 	PhoneNumber              string        `json:"phone_number,omitempty"`
 	Email                    string        `json:"email,omitempty"`
 	IdentificationCardNumber string        `json:"identification_card_number,omitempty"`
-	DateOfBirth              time.Time     `json:"date_of_birth"`
 	Password                 string        `json:"password,omitempty"`
 	AvatarURL                string        `json:"avatar_url,omitempty"`
 	Status                   AccountStatus `json:"status,omitempty"`

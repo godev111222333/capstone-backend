@@ -22,7 +22,6 @@ func TestPartnerStore(t *testing.T) {
 				PhoneNumber:              "1111111",
 				Email:                    "thien@gmail.com",
 				IdentificationCardNumber: "2222",
-				DateOfBirth:              time.Now(),
 				Password:                 "easy_password",
 				AvatarURL:                "https://facebook.com",
 				Status:                   model.AccountStatusEnable,

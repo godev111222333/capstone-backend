@@ -22,7 +22,6 @@ func TestCustomerStore(t *testing.T) {
 				PhoneNumber:              "0987654321",
 				Email:                    "son@gmail.com",
 				IdentificationCardNumber: "12345",
-				DateOfBirth:              time.Now(),
 				Password:                 "hard_password",
 				AvatarURL:                "https://google.com",
 				Status:                   model.AccountStatusEnable,

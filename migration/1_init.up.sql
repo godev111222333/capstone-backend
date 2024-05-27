@@ -101,6 +101,7 @@ create table "notifications"
     "content"    varchar(1023) not null default '',
     "url"        varchar(1023) not null default '',
     "title"      varchar(255)  not null default '',
+    "status"     varchar(255)  not null default '',
     "created_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
 );

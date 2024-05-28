@@ -25,10 +25,16 @@ type AWSConfig struct {
 	BaseURL         string `yaml:"base_url"`
 }
 
+type OTPConfig struct {
+	Email    string `yaml:"email"`
+	Password string `yaml:"password"`
+}
+
 type GlobalConfig struct {
 	Database  *DatabaseConfig  `yaml:"database"`
 	ApiServer *ApiServerConfig `yaml:"api_server"`
 	AWS       *AWSConfig       `yaml:"aws"`
+	OTP       *OTPConfig       `yaml:"otp"`
 }
 
 func LoadConfig(path string) (*GlobalConfig, error) {

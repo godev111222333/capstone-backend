@@ -13,6 +13,7 @@ type DbStore struct {
 	DB            *gorm.DB
 	CustomerStore *CustomerStore
 	PartnerStore  *PartnerStore
+	OTPStore      *OTPStore
 }
 
 func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
@@ -30,5 +31,6 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 		DB:            db,
 		CustomerStore: NewCustomerStore(db),
 		PartnerStore:  NewPartnerStore(db),
+		OTPStore:      NewOTPStore(db),
 	}, nil
 }

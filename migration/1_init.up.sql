@@ -155,11 +155,12 @@ create table "trips"
     "id"          serial primary key,
     "customer_id" bigint references customers (id),
     "car_id"      bigint references cars (id),
-    "start_date"  TIMESTAMP             default CURRENT_TIMESTAMP,
-    "end_date"    TIMESTAMP             default CURRENT_TIMESTAMP,
-    "status"      varchar(255) not null default '',
-    "created_at"  TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"  TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "start_date"  TIMESTAMP              default CURRENT_TIMESTAMP,
+    "end_date"    TIMESTAMP              default CURRENT_TIMESTAMP,
+    "status"      varchar(255)  not null default '',
+    "reason"      varchar(1023) not null default '',
+    "created_at"  TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
+    "updated_at"  TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
 );
 
 create table "trip_payments"

@@ -3,6 +3,9 @@ gen:
 test:
 	@go test -v ./...
 
+dev-build:
+	@docker compose build
+
 dev-up:
 	@docker compose \
 		-f docker-compose.yml up -d

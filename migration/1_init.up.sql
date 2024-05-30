@@ -89,7 +89,7 @@ create table otps
     "otp"           varchar(20)  not null default '',
     "status"        varchar(255) not null default '',
     "otp_type"      varchar(255) not null default '',
-    "expired_at"    TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    "expires_at"    TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
     "created_at"    TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
     "updated_at"    TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
 );

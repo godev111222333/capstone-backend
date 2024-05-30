@@ -54,7 +54,7 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 	}
 
 	url := s.s3store.Config.BaseURL + key
-	if err := s.store.PartnerStore.Update(req.AccountID, map[string]interface{}{
+	if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{
 		"avatar_url": url,
 	}); err != nil {
 		responseError(c, err)

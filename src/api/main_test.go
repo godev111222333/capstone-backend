@@ -12,13 +12,15 @@ import (
 )
 
 const (
-	ShouldResetDatabase = false
+	ShouldResetDatabase = true
 )
 
-var TestDb *store.DbStore
-var TestServer *Server
-
-var TestS3Store *store.S3Store
+var (
+	TestDb      *store.DbStore
+	TestServer  *Server
+	TestS3Store *store.S3Store
+	TestConfig  *misc.GlobalConfig
+)
 
 func TestMain(m *testing.M) {
 	cfg, err := misc.LoadConfig("../../config.yaml")
@@ -26,7 +28,8 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	TestS3Store = store.NewS3Store(cfg.AWS.AccessKey, cfg.AWS.SecretAccessKey, cfg.AWS.Region)
+	TestConfig = cfg
+	TestS3Store = store.NewS3Store(cfg.AWS)
 	dbConfig := cfg.Database
 	initTestDb(dbConfig)
 	initTestServer(cfg)
@@ -49,7 +52,12 @@ func initTestDb(cfg *misc.DatabaseConfig) {
 }
 
 func initTestServer(cfg *misc.GlobalConfig) {
-	TestServer = NewServer(cfg.ApiServer, TestDb, TestS3Store)
+	TestServer = NewServer(
+		cfg.ApiServer,
+		TestDb,
+		TestS3Store,
+		NewOTPService(TestDb, TestConfig.OTP.Email, TestConfig.OTP.Password),
+	)
 }
 
 func ResetDb(cfg *misc.DatabaseConfig) error {

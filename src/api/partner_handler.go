@@ -46,7 +46,12 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 		return
 	}
 
+	if err := s.otpService.SendOTP(model.OTPTypeRegister, req.Email); err != nil {
+		responseError(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
+		"status": "register partner successfully. please confirm OTP sent to your email",
 	})
 }

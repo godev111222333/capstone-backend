@@ -1,0 +1,34 @@
+package store
+
+import (
+	"fmt"
+	"github.com/godev111222333/capstone-backend/src/model"
+	"gorm.io/gorm"
+)
+
+type AccountStore struct {
+	db *gorm.DB
+}
+
+func NewAccountStore(db *gorm.DB) *AccountStore {
+	return &AccountStore{db: db}
+}
+
+func (s *AccountStore) Update(accountID int, values map[string]interface{}) error {
+	if err := s.db.Model(&model.Account{ID: accountID}).Updates(values).Error; err != nil {
+		fmt.Printf("AccountStore: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *AccountStore) GetByEmail(email string) (*model.Account, error) {
+	res := &model.Account{}
+	if err := s.db.Where("email = ?", email).First(res).Error; err != nil {
+		fmt.Printf("AccountStore: %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

@@ -21,8 +21,9 @@ func main() {
 		panic(err)
 	}
 
+	otpService := api.NewOTPService(dbStore, cfg.OTP.Email, cfg.OTP.Password)
 	s3Store := store.NewS3Store(cfg.AWS)
-	server := api.NewServer(cfg.ApiServer, dbStore, s3Store)
+	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService)
 	go func() {
 		if err := server.Run(); err != nil {
 			panic(err)

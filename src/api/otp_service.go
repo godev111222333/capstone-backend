@@ -37,11 +37,14 @@ func (s *OTPService) SendOTP(otpType model.OTPType, email string) error {
 	m.SetHeader("From", s.sender)
 	m.SetHeader("To", email)
 
-	subject := "Verify registration"
+	subject := "MinhHungCar OTP"
+	if otpType == model.OTPTypeRegister {
+		subject = "MinhHungCar verify registration"
+	}
 	m.SetHeader("Subject", subject)
 
 	code := misc.RandomOTP(6)
-	m.SetBody("text/plain", fmt.Sprintf("Your %s OTP: %s", subject, code))
+	m.SetBody("text/plain", fmt.Sprintf("Your %s OTP: %s (expires in 30 minutes)", subject, code))
 
 	if err := s.dialer.DialAndSend(m); err != nil {
 		fmt.Printf("error when sending OTP, err=%v\n", err)
@@ -70,7 +73,7 @@ func (s *OTPService) VerifyOTP(otpType model.OTPType, email string, otp string) 
 		return false, err
 	}
 
-	if otp == sentOTP.OTP {
+	if otp == sentOTP.OTP && sentOTP.Status == model.OTPStatusSent && sentOTP.ExpiresAt.After(time.Now()) {
 		return true, nil
 	}
 

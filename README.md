@@ -1,11 +1,12 @@
 # Capstone's backend
 
 ## Prerequisite installation: 
-1. Go version >= 1.21.5
-2. Docker
-3. Make
+1. Docker
+2. Make
+3. Golang migration: https://github.com/golang-migrate/migrate
+4. Curl (For testing purpose only)
 
-## Migration steps
-1. ``make dev-up`` to run Postgresql database inside Docker
+## Run API on your local machine
+1. ``make dev-up`` to run Postgresql database + API server inside Docker
 2. ``make migrate-up`` to run migration scripts
-3. ``make dev-run`` to start the API server
+3. ``curl --request GET http://localhost:9876/ping`` to check if the server running

@@ -5,11 +5,11 @@ test:
 
 dev-up:
 	@docker compose \
-		-f docker/docker-compose.yml up -d
+		-f docker-compose.yml up -d
 
 dev-down:
 	@docker compose \
-		-f docker/docker-compose.yml down
+		-f docker-compose.yml down
 
 migrate-up:
 	@migrate -path migration -database "postgres://root:password@localhost:5432/rental_car?sslmode=disable" -verbose up

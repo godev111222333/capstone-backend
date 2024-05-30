@@ -55,6 +55,7 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 		require.Equal(t, "Cuong", resp.User.FirstName)
 		require.Equal(t, "Nguyen Van", resp.User.LastName)
 		require.Equal(t, "nguyenvancuong@gmail.com", resp.User.Email)
+		require.Equal(t, "partner", resp.User.Role)
 
 		// Testing with required authorization route
 		route = TestServer.AllRoutes()[RouteTestAuthorization]

@@ -1,7 +1,9 @@
 package store
 
 import (
+	"errors"
 	"fmt"
+
 	"github.com/godev111222333/capstone-backend/src/model"
 	"gorm.io/gorm"
 )
@@ -25,7 +27,11 @@ func (s *AccountStore) Update(accountID int, values map[string]interface{}) erro
 
 func (s *AccountStore) GetByEmail(email string) (*model.Account, error) {
 	res := &model.Account{}
-	if err := s.db.Where("email = ?", email).First(res).Error; err != nil {
+	if err := s.db.Where("email = ?", email).Preload("Role").First(res).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
 		fmt.Printf("AccountStore: %v\n", err)
 		return nil, err
 	}

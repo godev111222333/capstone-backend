@@ -2,8 +2,8 @@ create table roles
 (
     "id"         serial primary key,
     "role_name"  varchar(255) not null default '',
-    "created_at" TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz           DEFAULT (now()),
+    "updated_at" timestamptz           DEFAULT (now())
 );
 insert into roles(role_name)
 values ('admin');
@@ -24,16 +24,16 @@ create table accounts
     "password"                   varchar(255) not null default '',
     "avatar_url"                 varchar(255) not null default '',
     "status"                     varchar(255) not null default '',
-    "created_at"                 TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"                 TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "created_at"                 timestamptz           DEFAULT (now()),
+    "updated_at"                 timestamptz           DEFAULT (now())
 );
 
 create table partners
 (
     "id"         serial primary key,
     "account_id" bigint references accounts (id),
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz DEFAULT (now()),
+    "updated_at" timestamptz DEFAULT (now())
 );
 
 create table customers
@@ -41,8 +41,8 @@ create table customers
     "id"              serial primary key,
     "account_id"      bigint references accounts (id),
     "driving_license" varchar(255) not null default '',
-    "created_at"      TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"      TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "created_at"      timestamptz           DEFAULT (now()),
+    "updated_at"      timestamptz           DEFAULT (now())
 );
 
 create table car_models
@@ -51,8 +51,8 @@ create table car_models
     "brand"           varchar(255) not null default '',
     "model"           varchar(255) not null default '',
     "number_of_seats" bigint       not null default 0,
-    "created_at"      TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"      TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "created_at"      timestamptz           DEFAULT (now()),
+    "updated_at"      timestamptz           DEFAULT (now())
 );
 
 create table cars
@@ -66,8 +66,8 @@ create table cars
     "motion"        varchar(255)  not null default '',
     "price"         bigint        not null default 0,
     "status"        varchar(255)  not null default '',
-    "created_at"    TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"    TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
+    "created_at"    timestamptz            DEFAULT (now()),
+    "updated_at"    timestamptz            DEFAULT (now())
 );
 
 create table documents
@@ -78,8 +78,8 @@ create table documents
     "extension"  varchar(255)  not null default '',
     "category"   varchar(255)  not null default '',
     "status"     varchar(255)  not null default '',
-    "created_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz            DEFAULT (now()),
+    "updated_at" timestamptz            DEFAULT (now())
 );
 
 create table otps
@@ -89,9 +89,9 @@ create table otps
     "otp"           varchar(20)  not null default '',
     "status"        varchar(255) not null default '',
     "otp_type"      varchar(255) not null default '',
-    "expires_at"    TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "created_at"    TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"    TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "expires_at"    timestamptz           DEFAULT (now()),
+    "created_at"    timestamptz           DEFAULT (now()),
+    "updated_at"    timestamptz           DEFAULT (now())
 );
 
 create table "notifications"
@@ -102,8 +102,8 @@ create table "notifications"
     "url"        varchar(1023) not null default '',
     "title"      varchar(255)  not null default '',
     "status"     varchar(255)  not null default '',
-    "created_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz            DEFAULT (now()),
+    "updated_at" timestamptz            DEFAULT (now())
 );
 
 create table "payment_informations"
@@ -114,8 +114,8 @@ create table "payment_informations"
     "bank_owner"  varchar(255)  not null default '',
     "bank_name"   varchar(255)  not null default '',
     "qr_code_url" varchar(1023) not null default '',
-    "created_at"  TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"  TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
+    "created_at"  timestamptz            DEFAULT (now()),
+    "updated_at"  timestamptz            DEFAULT (now())
 );
 
 create table "car_documents"
@@ -123,8 +123,8 @@ create table "car_documents"
     "id"          serial primary key,
     "car_id"      bigint references cars (id),
     "document_id" bigint references documents (id),
-    "created_at"  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "created_at"  timestamptz DEFAULT (now()),
+    "updated_at"  timestamptz DEFAULT (now())
 );
 
 create table "partner_contracts"
@@ -132,22 +132,22 @@ create table "partner_contracts"
     "id"         serial primary key,
     "car_id"     bigint references cars (id),
     "partner_id" bigint references partners (id),
-    "start_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "end_date"   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "start_date" timestamptz DEFAULT (now()),
+    "end_date"   timestamptz DEFAULT (now()),
+    "created_at" timestamptz DEFAULT (now()),
+    "updated_at" timestamptz DEFAULT (now())
 );
 
 create table "partner_payment_histories"
 (
     "id"         serial primary key,
     "partner_id" bigint references partners (id),
-    "from"       TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "to"         TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    "from"       timestamptz           DEFAULT (now()),
+    "to"         timestamptz           DEFAULT (now()),
     "amount"     bigint       not null default 0,
     "status"     varchar(255) not null default '',
-    "created_at" TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz           DEFAULT (now()),
+    "updated_at" timestamptz           DEFAULT (now())
 );
 
 create table "trips"
@@ -155,12 +155,12 @@ create table "trips"
     "id"          serial primary key,
     "customer_id" bigint references customers (id),
     "car_id"      bigint references cars (id),
-    "start_date"  TIMESTAMP              default CURRENT_TIMESTAMP,
-    "end_date"    TIMESTAMP              default CURRENT_TIMESTAMP,
+    "start_date"  timestamptz            default (now()),
+    "end_date"    timestamptz            default (now()),
     "status"      varchar(255)  not null default '',
     "reason"      varchar(1023) not null default '',
-    "created_at"  TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"  TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
+    "created_at"  timestamptz            DEFAULT (now()),
+    "updated_at"  timestamptz            DEFAULT (now())
 );
 
 create table "trip_payments"
@@ -171,8 +171,8 @@ create table "trip_payments"
     "amount"       bigint        not null default 0,
     "note"         varchar(1023) not null default '',
     "status"       varchar(255)  not null default '',
-    "created_at"   TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"   TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
+    "created_at"   timestamptz            DEFAULT (now()),
+    "updated_at"   timestamptz            DEFAULT (now())
 );
 
 create table "trip_payment_documents"
@@ -180,8 +180,8 @@ create table "trip_payment_documents"
     "id"              serial primary key,
     "trip_payment_id" bigint references trip_payments (id),
     "document_id"     bigint references documents (id),
-    "created_at"      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "created_at"      timestamptz DEFAULT (now()),
+    "updated_at"      timestamptz DEFAULT (now())
 );
 
 create table "trip_contracts"
@@ -191,8 +191,8 @@ create table "trip_contracts"
     "collateral_type"            varchar(255) not null default '',
     "status"                     varchar(255) not null default '',
     "is_return_collateral_asset" boolean               default false,
-    "created_at"                 TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"                 TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
+    "created_at"                 timestamptz           DEFAULT (now()),
+    "updated_at"                 timestamptz           DEFAULT (now())
 );
 
 create table "trip_feedbacks"
@@ -202,8 +202,8 @@ create table "trip_feedbacks"
     "content"    varchar(1023) not null default '',
     "rating"     bigint        not null default 0,
     "status"     bigint        not null default 0,
-    "created_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP              DEFAULT CURRENT_TIMESTAMP
+    "created_at" timestamptz            DEFAULT (now()),
+    "updated_at" timestamptz            DEFAULT (now())
 );
 
 create table "trip_documents"
@@ -211,6 +211,18 @@ create table "trip_documents"
     "id"          serial primary key,
     "trip_id"     bigint references trips (id),
     "document_id" bigint references documents (id),
-    "created_at"  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at"  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "created_at"  timestamptz DEFAULT (now()),
+    "updated_at"  timestamptz DEFAULT (now())
+);
+
+create table "sessions"
+(
+    "id"            uuid primary key,
+    "email"         varchar(255) not null default '',
+    "refresh_token" varchar(1023) not null default '',
+    "user_agent"    varchar(255) not null default '',
+    "client_ip"     varchar(255) not null default '',
+    "expires_at"    timestamptz  not null,
+    "created_at"    timestamptz           DEFAULT (now()),
+    "updated_at"    timestamptz           DEFAULT (now())
 )

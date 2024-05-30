@@ -15,6 +15,7 @@ type DbStore struct {
 	PartnerStore  *PartnerStore
 	AccountStore  *AccountStore
 	OTPStore      *OTPStore
+	SessionStore  *SessionStore
 }
 
 func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
@@ -34,5 +35,6 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 		PartnerStore:  NewPartnerStore(db),
 		AccountStore:  NewAccountStore(db),
 		OTPStore:      NewOTPStore(db),
+		SessionStore:  NewSessionStore(db),
 	}, nil
 }

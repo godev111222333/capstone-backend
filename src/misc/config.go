@@ -1,12 +1,15 @@
 package misc
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
+	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 type ApiServerConfig struct {
-	ApiPort string `yaml:"api_port"`
+	ApiPort             string        `yaml:"api_port"`
+	AccessTokenDuration time.Duration `yaml:"access_token_duration"`
 }
 
 type DatabaseConfig struct {

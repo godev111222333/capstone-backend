@@ -6,13 +6,14 @@ type AccountStatus string
 
 const (
 	AccountStatusWaitingConfirmEmail AccountStatus = "waiting_confirm_email"
-	AccountStatusEnable              AccountStatus = "enable"
-	AccountStatusDisable             AccountStatus = "disable"
+	AccountStatusEnable              AccountStatus = "active"
+	AccountStatusDisable             AccountStatus = "inactive"
 )
 
 type Account struct {
 	ID                       int           `json:"id,omitempty"`
 	RoleID                   RoleID        `json:"role_id,omitempty"`
+	Role                     Role          `json:"role"`
 	FirstName                string        `json:"first_name,omitempty"`
 	LastName                 string        `json:"last_name,omitempty"`
 	PhoneNumber              string        `json:"phone_number,omitempty"`

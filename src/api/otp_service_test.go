@@ -15,13 +15,13 @@ func TestOTPService(t *testing.T) {
 	t.Run("send OTP", func(t *testing.T) {
 		t.Parallel()
 
-		require.NoError(t, TestDb.PartnerStore.Create(&model.Partner{
-			Account: model.Account{
+		require.NoError(t, TestDb.AccountStore.Create(
+			&model.Account{
 				RoleID: model.RoleIDPartner,
 				Email:  "godev111222333@gmail.com",
 				Status: model.AccountStatusWaitingConfirmEmail,
 			},
-		}))
+		))
 
 		otpService := NewOTPService(TestDb, TestConfig.OTP.Email, TestConfig.OTP.Password)
 		require.NoError(t, otpService.SendOTP(model.OTPTypeRegister, "godev111222333@gmail.com"))

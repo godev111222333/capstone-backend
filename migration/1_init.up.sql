@@ -23,26 +23,10 @@ create table accounts
     "identification_card_number" varchar(255) not null default '' unique,
     "password"                   varchar(255) not null default '',
     "avatar_url"                 varchar(255) not null default '',
+    "driving_license"            varchar(255) not null default '',
     "status"                     varchar(255) not null default '',
     "created_at"                 timestamptz           DEFAULT (now()),
     "updated_at"                 timestamptz           DEFAULT (now())
-);
-
-create table partners
-(
-    "id"         serial primary key,
-    "account_id" bigint references accounts (id),
-    "created_at" timestamptz DEFAULT (now()),
-    "updated_at" timestamptz DEFAULT (now())
-);
-
-create table customers
-(
-    "id"              serial primary key,
-    "account_id"      bigint references accounts (id),
-    "driving_license" varchar(255) not null default '',
-    "created_at"      timestamptz           DEFAULT (now()),
-    "updated_at"      timestamptz           DEFAULT (now())
 );
 
 create table car_models
@@ -58,7 +42,7 @@ create table car_models
 create table cars
 (
     "id"            serial primary key,
-    "partner_id"    bigint references partners (id),
+    "partner_id"    bigint references accounts (id),
     "car_model_id"  bigint references car_models (id),
     "license_plate" varchar(255)  not null default '',
     "description"   varchar(1023) not null default '',
@@ -131,7 +115,7 @@ create table "partner_contracts"
 (
     "id"         serial primary key,
     "car_id"     bigint references cars (id),
-    "partner_id" bigint references partners (id),
+    "partner_id" bigint references accounts (id),
     "start_date" timestamptz DEFAULT (now()),
     "end_date"   timestamptz DEFAULT (now()),
     "created_at" timestamptz DEFAULT (now()),
@@ -141,7 +125,7 @@ create table "partner_contracts"
 create table "partner_payment_histories"
 (
     "id"         serial primary key,
-    "partner_id" bigint references partners (id),
+    "partner_id" bigint references accounts (id),
     "from"       timestamptz           DEFAULT (now()),
     "to"         timestamptz           DEFAULT (now()),
     "amount"     bigint       not null default 0,
@@ -153,7 +137,7 @@ create table "partner_payment_histories"
 create table "trips"
 (
     "id"          serial primary key,
-    "customer_id" bigint references customers (id),
+    "customer_id" bigint references accounts (id),
     "car_id"      bigint references cars (id),
     "start_date"  timestamptz            default (now()),
     "end_date"    timestamptz            default (now()),
@@ -218,11 +202,11 @@ create table "trip_documents"
 create table "sessions"
 (
     "id"            uuid primary key,
-    "email"         varchar(255) not null default '',
+    "email"         varchar(255)  not null default '',
     "refresh_token" varchar(1023) not null default '',
-    "user_agent"    varchar(255) not null default '',
-    "client_ip"     varchar(255) not null default '',
-    "expires_at"    timestamptz  not null,
-    "created_at"    timestamptz           DEFAULT (now()),
-    "updated_at"    timestamptz           DEFAULT (now())
+    "user_agent"    varchar(255)  not null default '',
+    "client_ip"     varchar(255)  not null default '',
+    "expires_at"    timestamptz   not null,
+    "created_at"    timestamptz            DEFAULT (now()),
+    "updated_at"    timestamptz            DEFAULT (now())
 )

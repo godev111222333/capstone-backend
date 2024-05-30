@@ -28,20 +28,18 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 		return
 	}
 
-	partner := &model.Partner{
-		Account: model.Account{
-			RoleID:                   model.RoleIDPartner,
-			FirstName:                req.FirstName,
-			LastName:                 req.LastName,
-			PhoneNumber:              req.PhoneNumber,
-			Email:                    req.Email,
-			IdentificationCardNumber: req.IdentificationCardNumber,
-			Password:                 hashedPassword,
-			Status:                   model.AccountStatusWaitingConfirmEmail,
-		},
+	partner := &model.Account{
+		RoleID:                   model.RoleIDPartner,
+		FirstName:                req.FirstName,
+		LastName:                 req.LastName,
+		PhoneNumber:              req.PhoneNumber,
+		Email:                    req.Email,
+		IdentificationCardNumber: req.IdentificationCardNumber,
+		Password:                 hashedPassword,
+		Status:                   model.AccountStatusWaitingConfirmEmail,
 	}
 
-	if err := s.store.PartnerStore.Create(partner); err != nil {
+	if err := s.store.AccountStore.Create(partner); err != nil {
 		responseError(c, err)
 		return
 	}

@@ -16,6 +16,14 @@ func NewAccountStore(db *gorm.DB) *AccountStore {
 	return &AccountStore{db: db}
 }
 
+func (s *AccountStore) Create(acct *model.Account) error {
+	if err := s.db.Create(acct).Error; err != nil {
+		fmt.Printf("AccountStore: Create %v\n", err)
+		return err
+	}
+	return nil
+}
+
 func (s *AccountStore) Update(accountID int, values map[string]interface{}) error {
 	if err := s.db.Model(&model.Account{ID: accountID}).Updates(values).Error; err != nil {
 		fmt.Printf("AccountStore: %v\n", err)

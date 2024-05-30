@@ -19,18 +19,16 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 		hashedPassword, err := TestServer.hashVerifier.Hash("password")
 		require.NoError(t, err)
 
-		acct := &model.Partner{
-			Account: model.Account{
-				RoleID:    model.RoleIDPartner,
-				FirstName: "Cuong",
-				LastName:  "Nguyen Van",
-				Email:     "nguyenvancuong@gmail.com",
-				Password:  hashedPassword,
-				Status:    model.AccountStatusEnable,
-			},
+		acct := &model.Account{
+			RoleID:    model.RoleIDPartner,
+			FirstName: "Cuong",
+			LastName:  "Nguyen Van",
+			Email:     "nguyenvancuong@gmail.com",
+			Password:  hashedPassword,
+			Status:    model.AccountStatusEnable,
 		}
 
-		require.NoError(t, TestDb.PartnerStore.Create(acct))
+		require.NoError(t, TestDb.AccountStore.Create(acct))
 
 		route := TestServer.AllRoutes()[RouteRawLogin]
 		body := `{

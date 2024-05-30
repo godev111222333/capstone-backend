@@ -14,7 +14,5 @@ drop table if exists otps;
 drop table if exists documents;
 drop table if exists cars;
 drop table if exists car_models;
-drop table if exists partners;
-drop table if exists customers;
 drop table if exists accounts;
 drop table if exists roles;

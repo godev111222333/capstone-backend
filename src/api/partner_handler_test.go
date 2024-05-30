@@ -20,7 +20,7 @@ func TestPartnerHandler(t *testing.T) {
 			"first_name": "Cuong",
 			"last_name": "Nguyen Van",
 			"phone_number": "8888",
-			"email": "nguyenvancuongxyz@gmail.com",
+			"email": "nguyenvancuong11@gmail.com",
 			"identification_card_number": "6868",
 			"password": "abcXYZ123"
 		}`

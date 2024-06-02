@@ -12,6 +12,7 @@ const (
 	RouteRegisterPartner   = "register_partner"
 	RouteUploadAvatar      = "upload_avatar"
 	RouteRawLogin          = "login"
+	RouteRenewAccessToken  = "renew_access_token"
 )
 
 type RouteInfo = struct {
@@ -57,6 +58,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/login",
 			Method:      http.MethodPost,
 			Handler:     s.HandleRawLogin,
+			RequireAuth: false,
+		},
+		RouteRenewAccessToken: {
+			Path:        "/renew",
+			Method:      http.MethodPost,
+			Handler:     s.HandleRenewAccessToken,
 			RequireAuth: false,
 		},
 	}

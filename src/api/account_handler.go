@@ -129,7 +129,7 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 	}
 
 	if err := s.store.SessionStore.Create(&model.Session{
-		ID:           accessTokenPayload.ID,
+		ID:           refreshTokenPayload.ID,
 		Email:        req.Email,
 		RefreshToken: refreshToken,
 		UserAgent:    c.Request.UserAgent(),

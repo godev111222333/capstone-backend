@@ -28,7 +28,7 @@ func (s *SessionStore) Create(session *model.Session) error {
 
 func (s *SessionStore) GetSession(id uuid.UUID) (*model.Session, error) {
 	res := &model.Session{}
-	if err := s.db.Where("id = ?", id).First(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Find(res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

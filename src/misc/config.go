@@ -8,8 +8,9 @@ import (
 )
 
 type ApiServerConfig struct {
-	ApiPort             string        `yaml:"api_port"`
-	AccessTokenDuration time.Duration `yaml:"access_token_duration"`
+	ApiPort              string        `yaml:"api_port"`
+	AccessTokenDuration  time.Duration `yaml:"access_token_duration"`
+	RefreshTokenDuration time.Duration `yaml:"refresh_token_duration"`
 }
 
 type DatabaseConfig struct {

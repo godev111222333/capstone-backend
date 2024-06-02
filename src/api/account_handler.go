@@ -122,7 +122,7 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 		return
 	}
 
-	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(req.Email, acct.Role.RoleName, s.cfg.AccessTokenDuration)
+	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(req.Email, acct.Role.RoleName, s.cfg.RefreshTokenDuration)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return

@@ -1,3 +1,4 @@
+drop table if exists garage_config;
 drop table if exists sessions;
 drop table if exists trip_documents;
 drop table if exists trip_feedbacks;

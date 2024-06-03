@@ -215,4 +215,13 @@ create table "sessions"
     "expires_at"    timestamptz   not null,
     "created_at"    timestamptz            DEFAULT (now()),
     "updated_at"    timestamptz            DEFAULT (now())
+);
+
+create table garage_config
+(
+    "id"         serial primary key,
+    "type"       varchar(255) not null default '',
+    "maximum"    bigint       not null default 0,
+    "created_at" timestamptz           DEFAULT (now()),
+    "updated_at" timestamptz           DEFAULT (now())
 )

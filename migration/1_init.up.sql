@@ -227,4 +227,4 @@ create table garage_configs
     "maximum"    bigint       not null default 0,
     "created_at" timestamptz           DEFAULT (now()),
     "updated_at" timestamptz           DEFAULT (now())
-)
+);

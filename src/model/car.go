@@ -28,8 +28,8 @@ const (
 
 type Car struct {
 	ID           int        `json:"id"`
-	AccountID    int        `json:"account_id"`
-	Account      Account    `json:"account"`
+	PartnerID    int        `json:"partner_id"`
+	Account      Account    `json:"account" gorm:"foreignKey:PartnerID"`
 	CarModelID   int        `json:"car_model_id"`
 	CarModel     CarModel   `json:"car_model"`
 	LicensePlate string     `json:"license_plate"`

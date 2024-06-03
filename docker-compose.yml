@@ -7,23 +7,7 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=rental_car
+      - TZ=Asia/Ho_Chi_Minh
+      - PGTZ=Asia/Ho_Chi_Minh
     ports:
       - "5432:5432"
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "9876:9876"
-    environment:
-      - DB_SOURCE=postgres://root:password@db:5432/rental_car?sslmode=disable
-    depends_on:
-      - db
-    entrypoint:
-      [
-        "/app/wait-for.sh",
-        "db:5432",
-        "--",
-        "/app/start.sh"
-      ]
-    command: [ "/app/main" ]

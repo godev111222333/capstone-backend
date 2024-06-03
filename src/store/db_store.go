@@ -15,6 +15,7 @@ type DbStore struct {
 	OTPStore      *OTPStore
 	SessionStore  *SessionStore
 	CarModelStore *CarModelStore
+	CarStore      *CarStore
 }
 
 func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
@@ -34,5 +35,6 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 		OTPStore:      NewOTPStore(db),
 		SessionStore:  NewSessionStore(db),
 		CarModelStore: NewCarModelStore(db),
+		CarStore:      NewCarStore(db),
 	}, nil
 }

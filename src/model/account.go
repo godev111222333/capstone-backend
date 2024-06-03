@@ -23,6 +23,7 @@ type Account struct {
 	AvatarURL                string        `json:"avatar_url"`
 	DrivingLicense           string        `json:"driving_license"`
 	Status                   AccountStatus `json:"status"`
+	DateOfBirth              time.Time     `json:"date_of_birth"`
 	CreatedAt                time.Time     `json:"created_at"`
 	UpdatedAt                time.Time     `json:"updated_at"`
 }

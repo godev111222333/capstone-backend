@@ -1,10 +1,12 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/token"
 )
 
 func (s *Server) RegisterPartner(c *gin.Context) {
@@ -55,14 +57,57 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 }
 
 type registerCarRequest struct {
-	AccountID    int    `json:"account_id" binding:"required"`
-	LicensePlate string `json:"license_plate" binding:"required"`
-	CarModelID   int    `json:"car_model_id"`
-	Motion       string `json:"motion"`
-	Fuel         string `json:"fuel"`
-	ParkingLot   string `json:"parking_lot"`
+	LicensePlate string           `json:"license_plate" binding:"required"`
+	CarModelID   int              `json:"car_model_id"`
+	Motion       model.Motion     `json:"motion_code"`
+	Fuel         model.Fuel       `json:"fuel_code"`
+	ParkingLot   model.ParkingLot `json:"parking_lot"`
+	PeriodCode   string           `json:"period_code"`
+	Description  string           `json:"description"`
 }
 
-func (s *Server) RegisterCar(c *gin.Context) {
+func (s *Server) HandleRegisterCar(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Role != model.RoleNamePartner {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
+		return
+	}
 
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	if acct.Status != model.AccountStatusActive {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("account is not active")))
+		return
+	}
+
+	req := registerCarRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car := &model.Car{
+		PartnerID:    acct.ID,
+		CarModelID:   req.CarModelID,
+		LicensePlate: req.LicensePlate,
+		ParkingLot:   req.ParkingLot,
+		Description:  req.Description,
+		Fuel:         req.Fuel,
+		Motion:       req.Motion,
+		Price:        0,
+		Status:       model.CarStatusPendingApproval,
+	}
+
+	if err := s.store.CarStore.Create(car); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "register car successfully",
+	})
 }

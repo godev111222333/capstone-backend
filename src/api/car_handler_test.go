@@ -26,14 +26,18 @@ func TestCarHandler(t *testing.T) {
 			},
 		}))
 
-		route := TestServer.AllRoutes()[RouteGetAllCarModels]
+		route := TestServer.AllRoutes()[RouteGetRegisterCarMetadata]
 		recorder := httptest.NewRecorder()
 		req, _ := http.NewRequest(route.Method, route.Path, nil)
 		TestServer.route.ServeHTTP(recorder, req)
 
-		resp := make([]model.CarModel, 0)
+		resp := struct {
+			Models  []model.CarModel `json:"models"`
+			Periods []int            `json:"periods"`
+		}{}
 		bz, _ := io.ReadAll(recorder.Body)
 		require.NoError(t, json.Unmarshal(bz, &resp))
-		require.NotEmpty(t, resp)
+		require.NotEmpty(t, resp.Models)
+		require.Equal(t, resp.Periods, []int{1, 3, 6, 12})
 	})
 }

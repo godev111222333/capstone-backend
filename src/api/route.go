@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	RoutePing              = "ping"
-	RouteTestAuthorization = "test_authorization"
-	RouteRegisterPartner   = "register_partner"
-	RouteUploadAvatar      = "upload_avatar"
-	RouteRawLogin          = "login"
-	RouteRenewAccessToken  = "renew_access_token"
-	RouteUpdateProfile     = "update_profile"
-	RouteGetAllCarModels   = "all_car_models"
+	RoutePing                   = "ping"
+	RouteTestAuthorization      = "test_authorization"
+	RouteRegisterPartner        = "register_partner"
+	RouteUploadAvatar           = "upload_avatar"
+	RouteRawLogin               = "login"
+	RouteRenewAccessToken       = "renew_access_token"
+	RouteUpdateProfile          = "update_profile"
+	RouteGetRegisterCarMetadata = "register_car_metadata"
 )
 
 type RouteInfo = struct {
@@ -73,10 +73,10 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleUpdateProfile,
 			RequireAuth: true,
 		},
-		RouteGetAllCarModels: {
+		RouteGetRegisterCarMetadata: {
 			Path:        "/models",
 			Method:      http.MethodGet,
-			Handler:     s.HandleGetAllCarModels,
+			Handler:     s.HandleGetRegisterCarMetadata,
 			RequireAuth: false,
 		},
 	}

@@ -2,15 +2,16 @@ create table roles
 (
     "id"         serial primary key,
     "role_name"  varchar(255) not null default '',
+    "role_code"  varchar(255) not null default '',
     "created_at" timestamptz           DEFAULT (now()),
     "updated_at" timestamptz           DEFAULT (now())
 );
-insert into roles(role_name)
-values ('admin');
-insert into roles(role_name)
-values ('customer');
-insert into roles(role_name)
-values ('partner');
+insert into roles(role_name, role_code)
+values ('admin', 'AD');
+insert into roles(role_name, role_code)
+values ('customer', 'CS');
+insert into roles(role_name, role_code)
+values ('partner', 'PN');
 
 create table accounts
 (
@@ -30,8 +31,8 @@ create table accounts
     "updated_at"                 timestamptz           DEFAULT (now())
 );
 
-create unique index unique_phone_number on accounts(phone_number) where phone_number != '';
-create unique index unique_identification_card_number on accounts(identification_card_number) where identification_card_number != '';
+create unique index unique_phone_number on accounts (phone_number) where phone_number != '';
+create unique index unique_identification_card_number on accounts (identification_card_number) where identification_card_number != '';
 
 create table car_models
 (

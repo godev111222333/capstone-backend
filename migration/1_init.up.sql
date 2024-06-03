@@ -52,6 +52,7 @@ create table cars
     "partner_id"    bigint references accounts (id),
     "car_model_id"  bigint references car_models (id),
     "license_plate" varchar(255)  not null default '',
+    "parking_lot"   varchar(255)  not null default '',
     "description"   varchar(1023) not null default '',
     "fuel"          varchar(255)  not null default '',
     "motion"        varchar(255)  not null default '',

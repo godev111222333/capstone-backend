@@ -31,13 +31,24 @@ func TestCarHandler(t *testing.T) {
 		req, _ := http.NewRequest(route.Method, route.Path, nil)
 		TestServer.route.ServeHTTP(recorder, req)
 
-		resp := struct {
-			Models  []model.CarModel `json:"models"`
-			Periods []int            `json:"periods"`
-		}{}
+		resp := registerCarMetadataResponse{}
 		bz, _ := io.ReadAll(recorder.Body)
 		require.NoError(t, json.Unmarshal(bz, &resp))
 		require.NotEmpty(t, resp.Models)
-		require.Equal(t, resp.Periods, []int{1, 3, 6, 12})
+		require.Equal(t, []OptionResponse{
+			{Code: "1", Text: "1 tháng"},
+			{Code: "3", Text: "3 tháng"},
+			{Code: "6", Text: "6 tháng"},
+			{Code: "12", Text: "12 tháng"},
+		}, resp.Periods)
+		require.Equal(t, []OptionResponse{
+			{Code: "gas", Text: "Xăng"},
+			{Code: "oil", Text: "Dầu"},
+			{Code: "electricity", Text: "Điện"},
+		}, resp.Fuels)
+		require.Equal(t, []OptionResponse{
+			{Code: "automatic_transmission", Text: "Số tự động"},
+			{Code: "manual_transmission", Text: "Số sàn"},
+		}, resp.Motions)
 	})
 }

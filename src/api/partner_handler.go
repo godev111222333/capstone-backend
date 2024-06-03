@@ -53,3 +53,16 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 		"status": "register partner successfully. please confirm OTP sent to your email",
 	})
 }
+
+type registerCarRequest struct {
+	AccountID    int    `json:"account_id" binding:"required"`
+	LicensePlate string `json:"license_plate" binding:"required"`
+	CarModelID   int    `json:"car_model_id"`
+	Motion       string `json:"motion"`
+	Fuel         string `json:"fuel"`
+	ParkingLot   string `json:"parking_lot"`
+}
+
+func (s *Server) RegisterCar(c *gin.Context) {
+
+}

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/stretchr/testify/require"
@@ -20,12 +21,13 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 		require.NoError(t, err)
 
 		acct := &model.Account{
-			RoleID:    model.RoleIDPartner,
-			FirstName: "Cuong",
-			LastName:  "Nguyen Van",
-			Email:     "nguyenvancuong@gmail.com",
-			Password:  hashedPassword,
-			Status:    model.AccountStatusEnable,
+			RoleID:      model.RoleIDPartner,
+			FirstName:   "Cuong",
+			LastName:    "Nguyen Van",
+			Email:       "nguyenvancuong@gmail.com",
+			Password:    hashedPassword,
+			Status:      model.AccountStatusActive,
+			PhoneNumber: "4324",
 		}
 
 		require.NoError(t, TestDb.AccountStore.Create(acct))
@@ -76,12 +78,13 @@ func TestRenewAccessToken(t *testing.T) {
 		require.NoError(t, err)
 
 		acct := &model.Account{
-			RoleID:    model.RoleIDPartner,
-			FirstName: "ABCDE",
-			LastName:  "Nguyen Van",
-			Email:     "abcde@gmail.com",
-			Password:  hashedPassword,
-			Status:    model.AccountStatusEnable,
+			RoleID:                   model.RoleIDPartner,
+			FirstName:                "ABCDE",
+			LastName:                 "Nguyen Van",
+			Email:                    "abcde@gmail.com",
+			Password:                 hashedPassword,
+			Status:                   model.AccountStatusActive,
+			IdentificationCardNumber: "asdasd",
 		}
 
 		require.NoError(t, TestDb.AccountStore.Create(acct))
@@ -125,4 +128,73 @@ func TestRenewAccessToken(t *testing.T) {
 		require.NoError(t, json.Unmarshal(bz, &renewResp))
 		require.NotEmpty(t, renewResp.AccessToken)
 	})
+}
+
+func TestUpdateProfile(t *testing.T) {
+	t.Parallel()
+
+	t.Run("update profile successfully", func(t *testing.T) {
+		t.Parallel()
+
+		hashedPassword, err := TestServer.hashVerifier.Hash("3333")
+		require.NoError(t, err)
+		acct := &model.Account{
+			RoleID:                   model.RoleIDPartner,
+			FirstName:                "Tran Van",
+			LastName:                 "Tuan",
+			PhoneNumber:              "6754",
+			Email:                    "1234@gmail.com",
+			IdentificationCardNumber: "78910",
+			Password:                 hashedPassword,
+			DrivingLicense:           "8888",
+			Status:                   model.AccountStatusActive,
+		}
+		require.NoError(t, TestDb.AccountStore.Create(acct))
+
+		route := TestServer.AllRoutes()[RouteUpdateProfile]
+		dob, err := time.Parse(time.RFC3339, "1998-06-20T20:30:00Z")
+		require.NoError(t, err)
+		accessToken := login(acct.Email, "3333").AccessToken
+		body := updateProfileRequest{
+			ID:                       acct.ID,
+			FirstName:                "Son",
+			LastName:                 "Le Thanh",
+			PhoneNumber:              "0123456",
+			DateOfBirth:              dob,
+			IdentificationCardNumber: "1111",
+			DrivingLicense:           "2222",
+			Password:                 "new_password",
+		}
+		bz, _ := json.Marshal(body)
+		req, _ := http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))
+		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken)
+		recorder := httptest.NewRecorder()
+		TestServer.route.ServeHTTP(recorder, req)
+		require.Equal(t, http.StatusOK, recorder.Code)
+
+		updatedAcct, err := TestServer.store.AccountStore.GetByID(acct.ID)
+		require.NoError(t, err)
+		require.Equal(t, "Son", updatedAcct.FirstName)
+		require.Equal(t, "Le Thanh", updatedAcct.LastName)
+		require.Equal(t, "0123456", updatedAcct.PhoneNumber)
+		require.Equal(t, "1111", updatedAcct.IdentificationCardNumber)
+		require.Equal(t, "2222", updatedAcct.DrivingLicense)
+		require.NoError(t, TestServer.hashVerifier.Compare(updatedAcct.Password, "new_password"))
+	})
+}
+
+func login(email, password string) *rawLoginResponse {
+	route := TestServer.AllRoutes()[RouteRawLogin]
+	body := rawLoginRequest{
+		Email:    email,
+		Password: password,
+	}
+	bz, _ := json.Marshal(body)
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))
+	TestServer.route.ServeHTTP(recorder, req)
+	bz, _ = io.ReadAll(recorder.Body)
+	res := &rawLoginResponse{}
+	_ = json.Unmarshal(bz, res)
+	return res
 }

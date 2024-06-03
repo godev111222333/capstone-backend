@@ -40,7 +40,21 @@ func (s *AccountStore) GetByEmail(email string) (*model.Account, error) {
 			return nil, nil
 		}
 
-		fmt.Printf("AccountStore: %v\n", err)
+		fmt.Printf("AccountStore: GetByEmail %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (s *AccountStore) GetByID(id int) (*model.Account, error) {
+	res := &model.Account{}
+	if err := s.db.Where("id = ?", id).Preload("Role").First(res).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		fmt.Printf("AccountStore: GetByID %v\n", err)
 		return nil, err
 	}
 

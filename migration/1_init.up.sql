@@ -18,16 +18,20 @@ create table accounts
     "role_id"                    bigint references roles (id),
     "first_name"                 varchar(255) not null default '',
     "last_name"                  varchar(255) not null default '',
-    "phone_number"               varchar(255) not null default '' unique,
-    "email"                      varchar(255) not null default '' unique,
-    "identification_card_number" varchar(255) not null default '' unique,
+    "phone_number"               varchar(255) not null default '',
+    "email"                      varchar(255) not null unique,
+    "identification_card_number" varchar(255) not null default '',
     "password"                   varchar(255) not null default '',
     "avatar_url"                 varchar(255) not null default '',
     "driving_license"            varchar(255) not null default '',
     "status"                     varchar(255) not null default '',
+    "date_of_birth"              timestamptz,
     "created_at"                 timestamptz           DEFAULT (now()),
     "updated_at"                 timestamptz           DEFAULT (now())
 );
+
+create unique index unique_phone_number on accounts(phone_number) where phone_number != '';
+create unique index unique_identification_card_number on accounts(identification_card_number) where identification_card_number != '';
 
 create table car_models
 (
@@ -136,15 +140,16 @@ create table "partner_payment_histories"
 
 create table "trips"
 (
-    "id"          serial primary key,
-    "customer_id" bigint references accounts (id),
-    "car_id"      bigint references cars (id),
-    "start_date"  timestamptz            default (now()),
-    "end_date"    timestamptz            default (now()),
-    "status"      varchar(255)  not null default '',
-    "reason"      varchar(1023) not null default '',
-    "created_at"  timestamptz            DEFAULT (now()),
-    "updated_at"  timestamptz            DEFAULT (now())
+    "id"               serial primary key,
+    "customer_id"      bigint references accounts (id),
+    "car_id"           bigint references cars (id),
+    "start_date"       timestamptz            default (now()),
+    "end_date"         timestamptz            default (now()),
+    "status"           varchar(255)  not null default '',
+    "reason"           varchar(1023) not null default '',
+    "insurance_amount" bigint        not null default 0,
+    "created_at"       timestamptz            DEFAULT (now()),
+    "updated_at"       timestamptz            DEFAULT (now())
 );
 
 create table "trip_payments"

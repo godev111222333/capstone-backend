@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/token"
 )
 
 type verifyOTPRequest struct {
@@ -56,8 +57,8 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 }
 
 type rawLoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 type rawLoginResponse struct {
@@ -77,6 +78,7 @@ type accountResponse struct {
 	Email                    string `json:"email"`
 	IdentificationCardNumber string `json:"identification_card_number"`
 	AvatarUrl                string `json:"avatar_url"`
+	DrivingLicense           string `json:"driving_license"`
 }
 
 func newAccountResponse(acct *model.Account) *accountResponse {
@@ -89,6 +91,7 @@ func newAccountResponse(acct *model.Account) *accountResponse {
 		Email:                    acct.Email,
 		IdentificationCardNumber: acct.IdentificationCardNumber,
 		AvatarUrl:                acct.AvatarURL,
+		DrivingLicense:           acct.DrivingLicense,
 	}
 }
 
@@ -150,7 +153,7 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 }
 
 type renewAccessTokenRequest struct {
-	RefreshToken string `json:"refresh_token"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 type renewAccessTokenResponse struct {
@@ -202,4 +205,72 @@ func (s *Server) HandleRenewAccessToken(c *gin.Context) {
 		AccessTokenExpiresAt: accessPayload.ExpiredAt,
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+type updateProfileRequest struct {
+	ID                       int       `json:"id"`
+	FirstName                string    `json:"first_name"`
+	LastName                 string    `json:"last_name"`
+	PhoneNumber              string    `json:"phone_number"`
+	DateOfBirth              time.Time `json:"date_of_birth"`
+	IdentificationCardNumber string    `json:"identification_card_number"`
+	DrivingLicense           string    `json:"driving_license"`
+	Password                 string    `json:"password"`
+}
+
+func (s *Server) HandleUpdateProfile(c *gin.Context) {
+	req := updateProfileRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByID(req.ID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+	if acct == nil || acct.Email != authPayload.Email {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("mismatch token or account not found")))
+		return
+	}
+
+	updateParams := map[string]interface{}{
+		"first_name":                 req.FirstName,
+		"last_name":                  req.LastName,
+		"phone_number":               req.PhoneNumber,
+		"identification_card_number": req.IdentificationCardNumber,
+		"driving_license":            req.DrivingLicense,
+		"date_of_birth":              req.DateOfBirth,
+	}
+	if len(req.Password) > 0 {
+		h, err := s.hashVerifier.Hash(req.Password)
+		if err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
+		updateParams["password"] = h
+	}
+
+	if err := s.store.AccountStore.Update(req.ID, updateParams); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	updatedAcct, err := s.store.AccountStore.GetByID(req.ID)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, accountResponse{
+		ID:                       updatedAcct.ID,
+		Role:                     updatedAcct.Role.RoleName,
+		FirstName:                updatedAcct.FirstName,
+		LastName:                 updatedAcct.LastName,
+		PhoneNumber:              updatedAcct.PhoneNumber,
+		Email:                    updatedAcct.Email,
+		IdentificationCardNumber: updatedAcct.IdentificationCardNumber,
+		AvatarUrl:                updatedAcct.AvatarURL,
+	})
 }

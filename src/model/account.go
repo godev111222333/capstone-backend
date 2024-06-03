@@ -6,23 +6,23 @@ type AccountStatus string
 
 const (
 	AccountStatusWaitingConfirmEmail AccountStatus = "waiting_confirm_email"
-	AccountStatusEnable              AccountStatus = "active"
-	AccountStatusDisable             AccountStatus = "inactive"
+	AccountStatusActive              AccountStatus = "active"
+	AccountStatusInactive            AccountStatus = "inactive"
 )
 
 type Account struct {
-	ID                       int           `json:"id,omitempty"`
-	RoleID                   RoleID        `json:"role_id,omitempty"`
+	ID                       int           `json:"id"`
+	RoleID                   RoleID        `json:"role_id"`
 	Role                     Role          `json:"role"`
-	FirstName                string        `json:"first_name,omitempty"`
-	LastName                 string        `json:"last_name,omitempty"`
-	PhoneNumber              string        `json:"phone_number,omitempty"`
-	Email                    string        `json:"email,omitempty"`
-	IdentificationCardNumber string        `json:"identification_card_number,omitempty"`
-	Password                 string        `json:"password,omitempty"`
-	AvatarURL                string        `json:"avatar_url,omitempty"`
+	FirstName                string        `json:"first_name"`
+	LastName                 string        `json:"last_name"`
+	PhoneNumber              string        `json:"phone_number"`
+	Email                    string        `json:"email"`
+	IdentificationCardNumber string        `json:"identification_card_number"`
+	Password                 string        `json:"password"`
+	AvatarURL                string        `json:"avatar_url"`
 	DrivingLicense           string        `json:"driving_license"`
-	Status                   AccountStatus `json:"status,omitempty"`
+	Status                   AccountStatus `json:"status"`
 	CreatedAt                time.Time     `json:"created_at"`
 	UpdatedAt                time.Time     `json:"updated_at"`
 }

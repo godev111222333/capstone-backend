@@ -1,9 +1,8 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 const (
@@ -13,6 +12,7 @@ const (
 	RouteUploadAvatar      = "upload_avatar"
 	RouteRawLogin          = "login"
 	RouteRenewAccessToken  = "renew_access_token"
+	RouteUpdateProfile     = "update_profile"
 )
 
 type RouteInfo = struct {
@@ -65,6 +65,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodPost,
 			Handler:     s.HandleRenewAccessToken,
 			RequireAuth: false,
+		},
+		RouteUpdateProfile: {
+			Path:        "/profile",
+			Method:      http.MethodPut,
+			Handler:     s.HandleUpdateProfile,
+			RequireAuth: true,
 		},
 	}
 }

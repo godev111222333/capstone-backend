@@ -64,6 +64,7 @@ func importFromFile(filePath string) ([]*model.CarModel, error) {
 			Model:         rc[2],
 			Year:          year,
 			NumberOfSeats: randomSeats(),
+			BasedPrice:    randomBasedPrice(),
 		})
 	}
 
@@ -74,4 +75,9 @@ func randomSeats() int {
 	seats := []int{4, 7, 15}
 	rand.Seed(time.Now().UnixNano())
 	return seats[rand.Intn(len(seats))]
+}
+
+// random price: 200k -> 1500k
+func randomBasedPrice() int {
+	return (200 + rand.Intn(1300)) * 1000
 }

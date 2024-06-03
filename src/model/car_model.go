@@ -8,6 +8,7 @@ type CarModel struct {
 	Model         string
 	Year          int
 	NumberOfSeats int
+	BasedPrice    int
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }

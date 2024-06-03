@@ -1,5 +1,9 @@
 gen:
 	go generate ./...
+
+import:
+	go run src/cmd/import/main.go
+
 test:
 	@go test -v ./...
 

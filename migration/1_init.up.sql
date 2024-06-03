@@ -41,6 +41,7 @@ create table car_models
     "model"           varchar(255) not null default '',
     "year"            bigint       not null default 0,
     "number_of_seats" bigint       not null default 0,
+    "based_price"     bigint       not null default 0,
     "created_at"      timestamptz           DEFAULT (now()),
     "updated_at"      timestamptz           DEFAULT (now())
 );

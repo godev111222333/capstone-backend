@@ -25,7 +25,7 @@ func (s *CarModelStore) Create(models []*model.CarModel) error {
 }
 
 func (s *CarModelStore) GetAll() ([]*model.CarModel, error) {
-	models := make([]*model.CarModel, 0)
+	var models []*model.CarModel
 	if err := s.db.Find(&models).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

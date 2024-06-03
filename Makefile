@@ -20,6 +20,7 @@ dev-down:
 
 migrate-up:
 	@migrate -path migration -database "postgres://root:password@localhost:5432/rental_car?sslmode=disable" -verbose up
+	go run src/cmd/import/main.go
 
 migrate-down:
 	@migrate -path migration -database "postgres://root:password@localhost:5432/rental_car?sslmode=disable" -verbose down

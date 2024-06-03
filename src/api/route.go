@@ -13,6 +13,7 @@ const (
 	RouteRawLogin          = "login"
 	RouteRenewAccessToken  = "renew_access_token"
 	RouteUpdateProfile     = "update_profile"
+	RouteGetAllCarModels   = "all_car_models"
 )
 
 type RouteInfo = struct {
@@ -71,6 +72,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodPut,
 			Handler:     s.HandleUpdateProfile,
 			RequireAuth: true,
+		},
+		RouteGetAllCarModels: {
+			Path:        "/models",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetAllCarModels,
+			RequireAuth: false,
 		},
 	}
 }

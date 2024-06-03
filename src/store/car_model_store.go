@@ -1,0 +1,39 @@
+package store
+
+import (
+	"errors"
+	"fmt"
+	"gorm.io/gorm"
+
+	"github.com/godev111222333/capstone-backend/src/model"
+)
+
+type CarModelStore struct {
+	db *gorm.DB
+}
+
+func NewCarModelStore(db *gorm.DB) *CarModelStore {
+	return &CarModelStore{db: db}
+}
+
+func (s *CarModelStore) Create(models []*model.CarModel) error {
+	if err := s.db.Create(models).Error; err != nil {
+		fmt.Printf("CarModelStore: Create %v\n", err)
+		return err
+	}
+	return nil
+}
+
+func (s *CarModelStore) GetAll() ([]*model.CarModel, error) {
+	models := make([]*model.CarModel, 0)
+	if err := s.db.Find(&models).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		fmt.Printf("CarModelStore: GetAll %v\n", err)
+		return nil, err
+	}
+
+	return models, nil
+}

@@ -39,6 +39,7 @@ create table car_models
     "id"              serial primary key,
     "brand"           varchar(255) not null default '',
     "model"           varchar(255) not null default '',
+    "year"            bigint       not null default 0,
     "number_of_seats" bigint       not null default 0,
     "created_at"      timestamptz           DEFAULT (now()),
     "updated_at"      timestamptz           DEFAULT (now())
@@ -217,7 +218,7 @@ create table "sessions"
     "updated_at"    timestamptz            DEFAULT (now())
 );
 
-create table garage_config
+create table garage_configs
 (
     "id"         serial primary key,
     "type"       varchar(255) not null default '',

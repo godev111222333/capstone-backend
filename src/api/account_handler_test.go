@@ -183,6 +183,19 @@ func TestUpdateProfile(t *testing.T) {
 	})
 }
 
+func seedAccountAndLogin(email, password string, role model.RoleID) (*model.Account, *rawLoginResponse) {
+	h, _ := TestServer.hashVerifier.Hash(password)
+	acct := &model.Account{
+		Email:    email,
+		Password: h,
+		RoleID:   role,
+		Status:   model.AccountStatusActive,
+	}
+	_ = TestDb.AccountStore.Create(acct)
+
+	return acct, login(email, password)
+}
+
 func login(email, password string) *rawLoginResponse {
 	route := TestServer.AllRoutes()[RouteRawLogin]
 	body := rawLoginRequest{

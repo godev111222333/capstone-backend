@@ -15,6 +15,7 @@ const (
 	RouteUpdateProfile          = "update_profile"
 	RouteGetRegisterCarMetadata = "register_car_metadata"
 	RouteRegisterCar            = "register_car"
+	RouteUpdateRentalPrice      = "update_rental_price"
 )
 
 type RouteInfo = struct {
@@ -84,6 +85,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/car",
 			Method:      http.MethodPost,
 			Handler:     s.HandleRegisterCar,
+			RequireAuth: true,
+		},
+		RouteUpdateRentalPrice: {
+			Path:        "/car/price",
+			Method:      http.MethodPut,
+			Handler:     s.HandleUpdateRentalPrice,
 			RequireAuth: true,
 		},
 	}

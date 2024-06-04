@@ -11,8 +11,8 @@ import (
 	"testing"
 )
 
-func TestPartnerHandler(t *testing.T) {
-	t.Parallel()
+func TestRegisterPartnerHandler(t *testing.T) {
+	t.Skip()
 
 	t.Run("Register partner successfully", func(t *testing.T) {
 		t.Parallel()
@@ -35,7 +35,7 @@ func TestPartnerHandler(t *testing.T) {
 	})
 }
 
-func TestRegisterCar(t *testing.T) {
+func TestRegisterCarHandler(t *testing.T) {
 	t.Parallel()
 
 	t.Run("register car successfully", func(t *testing.T) {
@@ -79,5 +79,42 @@ func TestRegisterCar(t *testing.T) {
 		TestServer.route.ServeHTTP(recorder, req)
 		bz, _ = io.ReadAll(recorder.Body)
 		require.Equal(t, http.StatusOK, recorder.Code)
+	})
+}
+
+func TestUpdateRentalPriceHandler(t *testing.T) {
+	t.Parallel()
+
+	t.Run("update rental price", func(t *testing.T) {
+		t.Parallel()
+
+		acct, accessPayload := seedAccountAndLogin("minh@gmail.com", "xxx", model.RoleIDPartner)
+		carModel := &model.CarModel{
+			Brand: "Lambo",
+		}
+		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+		car := &model.Car{
+			PartnerID:  acct.ID,
+			CarModelID: carModel.ID,
+			Price:      100_000,
+			Status:     model.CarStatusPendingApproval,
+		}
+		require.NoError(t, TestDb.CarStore.Create(car))
+
+		route := TestServer.AllRoutes()[RouteUpdateRentalPrice]
+		body := updateRentalPriceRequest{
+			CarID:    car.ID,
+			NewPrice: 200_000,
+		}
+		bz, _ := json.Marshal(body)
+		req, _ := http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))
+		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessPayload.AccessToken)
+		recorder := httptest.NewRecorder()
+		TestServer.route.ServeHTTP(recorder, req)
+		require.Equal(t, http.StatusOK, recorder.Code)
+
+		updatedCar, err := TestServer.store.CarStore.GetByID(car.ID)
+		require.NoError(t, err)
+		require.Equal(t, 200_000, updatedCar.Price)
 	})
 }

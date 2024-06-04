@@ -107,7 +107,51 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		return
 	}
 
+	insertedCar, err := s.store.CarStore.GetByID(car.ID)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "register car successfully",
+		"car":    insertedCar,
+	})
+}
+
+type updateRentalPriceRequest struct {
+	CarID    int `json:"car_id" binding:"required"`
+	NewPrice int `json:"new_price" binding:"required"`
+}
+
+func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := updateRentalPriceRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if car.Account.Email != authPayload.Email {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		return
+	}
+
+	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
+		"price": req.NewPrice,
+	}); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"car_id":    car.ID,
+		"new_price": req.NewPrice,
 	})
 }

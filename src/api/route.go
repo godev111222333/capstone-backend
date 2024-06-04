@@ -9,6 +9,7 @@ const (
 	RoutePing                   = "ping"
 	RouteTestAuthorization      = "test_authorization"
 	RouteRegisterPartner        = "register_partner"
+	RouteVerifyOTP              = "verify_otp"
 	RouteUploadAvatar           = "upload_avatar"
 	RouteRawLogin               = "login"
 	RouteRenewAccessToken       = "renew_access_token"
@@ -16,6 +17,7 @@ const (
 	RouteGetRegisterCarMetadata = "register_car_metadata"
 	RouteRegisterCar            = "register_car"
 	RouteUpdateRentalPrice      = "update_rental_price"
+	RouteUploadCarImages        = "upload_car_images"
 )
 
 type RouteInfo = struct {
@@ -55,6 +57,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/user/avatar/upload",
 			Method:      http.MethodPost,
 			Handler:     s.HandleUploadAvatar,
+			RequireAuth: true,
+		},
+		RouteVerifyOTP: {
+			Path:        "/user/otp",
+			Method:      http.MethodPost,
+			Handler:     s.HandleVerifyOTP,
 			RequireAuth: false,
 		},
 		RouteRawLogin: {
@@ -91,6 +99,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/car/price",
 			Method:      http.MethodPut,
 			Handler:     s.HandleUpdateRentalPrice,
+			RequireAuth: true,
+		},
+		RouteUploadCarImages: {
+			Path:        "/car/document",
+			Method:      http.MethodPost,
+			Handler:     s.HandleUploadCarDocuments,
 			RequireAuth: true,
 		},
 	}

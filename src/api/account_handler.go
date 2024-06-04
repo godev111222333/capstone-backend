@@ -51,6 +51,13 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 		return
 	}
 
+	if err := s.store.AccountStore.Update(account.ID, map[string]interface{}{
+		"status": model.AccountStatusActive,
+	}); err != nil {
+		responseError(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"status": "verify account successfully",
 	})

@@ -28,7 +28,7 @@ func (s *OTPStore) Create(otp *model.OTP) error {
 func (s *OTPStore) GetLastByOTPType(email string, otpType model.OTPType) (*model.OTP, error) {
 	r := &model.OTP{}
 
-	if err := s.Db.Where("email = ? AND type = ?", email, string(otpType)).Order("updated_at desc").First(&r).Error; err != nil {
+	if err := s.Db.Where("account_email = ? AND otp_type = ?", email, string(otpType)).Order("updated_at desc").First(&r).Error; err != nil {
 		fmt.Printf("error when get last otp, err=%v\n", err)
 		return nil, err
 	}

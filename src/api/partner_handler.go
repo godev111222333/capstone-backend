@@ -1,8 +1,17 @@
 package api
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"mime/multipart"
 	"net/http"
+	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
@@ -11,12 +20,11 @@ import (
 
 func (s *Server) RegisterPartner(c *gin.Context) {
 	req := struct {
-		FirstName                string `json:"first_name"`
-		LastName                 string `json:"last_name"`
-		PhoneNumber              string `json:"phone_number"`
-		Email                    string `json:"email"`
-		IdentificationCardNumber string `json:"identification_card_number"`
-		Password                 string `json:"password"`
+		FirstName   string `json:"first_name" binding:"required"`
+		LastName    string `json:"last_name" binding:"required"`
+		PhoneNumber string `json:"phone_number" binding:"required"`
+		Email       string `json:"email" binding:"required"`
+		Password    string `json:"password" binding:"required"`
 	}{}
 
 	if err := c.BindJSON(&req); err != nil {
@@ -31,14 +39,13 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 	}
 
 	partner := &model.Account{
-		RoleID:                   model.RoleIDPartner,
-		FirstName:                req.FirstName,
-		LastName:                 req.LastName,
-		PhoneNumber:              req.PhoneNumber,
-		Email:                    req.Email,
-		IdentificationCardNumber: req.IdentificationCardNumber,
-		Password:                 hashedPassword,
-		Status:                   model.AccountStatusWaitingConfirmEmail,
+		RoleID:      model.RoleIDPartner,
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		PhoneNumber: req.PhoneNumber,
+		Email:       req.Email,
+		Password:    hashedPassword,
+		Status:      model.AccountStatusWaitingConfirmEmail,
 	}
 
 	if err := s.store.AccountStore.Create(partner); err != nil {
@@ -58,11 +65,11 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 
 type registerCarRequest struct {
 	LicensePlate string           `json:"license_plate" binding:"required"`
-	CarModelID   int              `json:"car_model_id"`
-	Motion       model.Motion     `json:"motion_code"`
-	Fuel         model.Fuel       `json:"fuel_code"`
-	ParkingLot   model.ParkingLot `json:"parking_lot"`
-	PeriodCode   string           `json:"period_code"`
+	CarModelID   int              `json:"car_model_id" binding:"required"`
+	Motion       model.Motion     `json:"motion_code" binding:"required"`
+	Fuel         model.Fuel       `json:"fuel_code" binding:"required"`
+	ParkingLot   model.ParkingLot `json:"parking_lot" binding:"required"`
+	PeriodCode   string           `json:"period_code" binding:"required"`
 	Description  string           `json:"description"`
 }
 
@@ -153,5 +160,80 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"car_id":    car.ID,
 		"new_price": req.NewPrice,
+	})
+}
+
+func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := struct {
+		DocumentCategory model.DocumentCategory  `form:"document_category"`
+		CarID            int                     `form:"car_id"`
+		Files            []*multipart.FileHeader `form:"files"`
+	}{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if car.Account.Email != authPayload.Email {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		return
+	}
+
+	if len(req.Files) > MaxNumberFiles {
+		responseError(c, fmt.Errorf("exceed maximum number of files, max %d, has %d", MaxNumberFiles, len(req.Files)))
+		return
+	}
+
+	for _, f := range req.Files {
+		if f.Size > MaxUploadFileSize {
+			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
+			return
+		}
+
+		body, err := f.Open()
+		if err != nil {
+			responseError(c, err)
+			return
+		}
+		defer body.Close()
+
+		extension := strings.Split(f.Filename, ".")[1]
+		key := strings.Join([]string{uuid.NewString(), extension}, ".")
+		_, err = s.s3store.Client.PutObject(context.Background(), &s3.PutObjectInput{
+			Bucket: aws.String(s.s3store.Config.Bucket),
+			Body:   body,
+			Key:    aws.String(key),
+			ACL:    types.ObjectCannedACLPublicRead,
+		})
+		if err != nil {
+			responseError(c, err)
+			return
+		}
+
+		url := s.s3store.Config.BaseURL + key
+
+		document := &model.Document{
+			AccountID: car.Account.ID,
+			Url:       url,
+			Extension: extension,
+			Category:  req.DocumentCategory,
+			Status:    model.DocumentStatusActive,
+		}
+
+		if err := s.store.CarDocumentStore.Create(car.ID, document); err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "upload images successfully",
 	})
 }

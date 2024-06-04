@@ -3,12 +3,13 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/godev111222333/capstone-backend/src/model"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRegisterPartnerHandler(t *testing.T) {
@@ -23,7 +24,6 @@ func TestRegisterPartnerHandler(t *testing.T) {
 			"last_name": "Nguyen Van",
 			"phone_number": "8888",
 			"email": "nguyenvancuong11@gmail.com",
-			"identification_card_number": "6868",
 			"password": "abcXYZ123"
 		}`
 

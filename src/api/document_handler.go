@@ -12,14 +12,19 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"github.com/godev111222333/capstone-backend/src/token"
 )
 
-const MaxUploadFileSize = 5 * 1 << 20
+const (
+	MaxUploadFileSize = 5 * 1 << 20
+	MaxNumberFiles    = 5
+)
 
 func (s *Server) HandleUploadAvatar(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := struct {
-		AccountID int                   `form:"account_id"`
-		File      *multipart.FileHeader `form:"file"`
+		File *multipart.FileHeader `form:"file"`
 	}{}
 
 	if err := c.Bind(&req); err != nil {
@@ -54,7 +59,12 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 	}
 
 	url := s.s3store.Config.BaseURL + key
-	if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+	if err := s.store.AccountStore.Update(acct.ID, map[string]interface{}{
 		"avatar_url": url,
 	}); err != nil {
 		responseError(c, err)

@@ -20,12 +20,3 @@ func (h *HashVerifier) Hash(src string) (string, error) {
 
 	return base64.StdEncoding.EncodeToString(res), nil
 }
-
-func (h *HashVerifier) Compare(hashedPassword string, password string) error {
-	bzHash, err := base64.StdEncoding.DecodeString(hashedPassword)
-	if err != nil {
-		return err
-	}
-
-	return bcrypt.CompareHashAndPassword(bzHash, []byte(password))
-}

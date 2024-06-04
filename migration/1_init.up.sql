@@ -31,6 +31,8 @@ create table accounts
     "updated_at"                 timestamptz           DEFAULT (now())
 );
 
+insert into accounts(role_id, email, password, status) values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
+
 create unique index unique_phone_number on accounts (phone_number) where phone_number != '';
 create unique index unique_identification_card_number on accounts (identification_card_number) where identification_card_number != '';
 

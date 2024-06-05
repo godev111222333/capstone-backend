@@ -20,6 +20,7 @@ const (
 	RouteUpdateRentalPrice      = "update_rental_price"
 	RouteUploadCarDocuments     = "upload_car_images"
 	RouteGetRegisteredCars      = "get_registered_cars"
+	RouteGetBankMetadata        = "get_bank_metadata"
 )
 
 type RouteInfo = struct {
@@ -114,6 +115,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetRegisteredCars,
 			RequireAuth: true,
+		},
+		RouteGetBankMetadata: {
+			Path:        "/banks",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetPaymentInformationMetadata,
+			RequireAuth: false,
 		},
 	}
 }

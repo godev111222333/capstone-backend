@@ -52,11 +52,17 @@ func initTestDb(cfg *misc.DatabaseConfig) {
 }
 
 func initTestServer(cfg *misc.GlobalConfig) {
+	bankMetadata, err := misc.LoadBankMetadata("../../etc/converted_banks.txt")
+	if err != nil {
+		panic(err)
+	}
+
 	TestServer = NewServer(
 		cfg.ApiServer,
 		TestDb,
 		TestS3Store,
 		NewOTPService(TestDb, TestConfig.OTP.Email, TestConfig.OTP.Password),
+		bankMetadata,
 	)
 }
 

@@ -21,6 +21,8 @@ type Server struct {
 	tokenMaker   token.Maker
 	hashVerifier *misc.HashVerifier
 	otpService   *OTPService
+
+	bankMetadata []string
 }
 
 func NewServer(
@@ -28,6 +30,7 @@ func NewServer(
 	store *store.DbStore,
 	s3Store *store.S3Store,
 	otpService *OTPService,
+	bankMetadata []string,
 ) *Server {
 	route := gin.New()
 	tokenMaker, err := token.NewJWTMaker("12345678901234567890123456789012")
@@ -36,7 +39,14 @@ func NewServer(
 	}
 
 	server := &Server{
-		cfg, route, store, s3Store, tokenMaker, misc.NewHashVerifier(), otpService,
+		cfg,
+		route,
+		store,
+		s3Store,
+		tokenMaker,
+		misc.NewHashVerifier(),
+		otpService,
+		bankMetadata,
 	}
 	server.setUp()
 	return server

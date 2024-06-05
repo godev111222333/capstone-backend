@@ -10,13 +10,14 @@ import (
 )
 
 type DbStore struct {
-	DB               *gorm.DB
-	AccountStore     *AccountStore
-	OTPStore         *OTPStore
-	SessionStore     *SessionStore
-	CarModelStore    *CarModelStore
-	CarStore         *CarStore
-	CarDocumentStore *CarDocumentStore
+	DB                      *gorm.DB
+	AccountStore            *AccountStore
+	OTPStore                *OTPStore
+	SessionStore            *SessionStore
+	CarModelStore           *CarModelStore
+	CarStore                *CarStore
+	CarDocumentStore        *CarDocumentStore
+	PaymentInformationStore *PaymentInformationStore
 }
 
 func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
@@ -31,12 +32,13 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 	}
 
 	return &DbStore{
-		DB:               db,
-		AccountStore:     NewAccountStore(db),
-		OTPStore:         NewOTPStore(db),
-		SessionStore:     NewSessionStore(db),
-		CarModelStore:    NewCarModelStore(db),
-		CarStore:         NewCarStore(db),
-		CarDocumentStore: NewCarDocumentStore(db),
+		DB:                      db,
+		AccountStore:            NewAccountStore(db),
+		OTPStore:                NewOTPStore(db),
+		SessionStore:            NewSessionStore(db),
+		CarModelStore:           NewCarModelStore(db),
+		CarStore:                NewCarStore(db),
+		CarDocumentStore:        NewCarDocumentStore(db),
+		PaymentInformationStore: NewPaymentInformationStore(db),
 	}, nil
 }

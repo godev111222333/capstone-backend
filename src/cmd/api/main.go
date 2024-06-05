@@ -23,7 +23,12 @@ func main() {
 
 	otpService := api.NewOTPService(dbStore, cfg.OTP.Email, cfg.OTP.Password)
 	s3Store := store.NewS3Store(cfg.AWS)
-	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService)
+	bankMetadata, err := misc.LoadBankMetadata("etc/converted_banks.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService, bankMetadata)
 	go func() {
 		if err := server.Run(); err != nil {
 			panic(err)

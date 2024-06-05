@@ -25,11 +25,21 @@ func (s *PaymentInformationStore) Create(p *model.PaymentInformation) error {
 	return nil
 }
 
-func (s *PaymentInformationStore) Update(id int, values map[string]interface{}) error {
-	if err := s.db.Model(&model.PaymentInformation{}).Where("id = ?", id).Updates(values).Error; err != nil {
+func (s *PaymentInformationStore) Update(acctID int, values map[string]interface{}) error {
+	if err := s.db.Model(&model.PaymentInformation{}).Where("account_id = ?", acctID).Updates(values).Error; err != nil {
 		fmt.Printf("PaymentInformationStore: Update %v\n", err)
 		return err
 	}
 
 	return nil
+}
+
+func (s *PaymentInformationStore) GetByAcctID(acctID int) (*model.PaymentInformation, error) {
+	res := &model.PaymentInformation{}
+	if err := s.db.Where("account_id = ?", acctID).First(res).Error; err != nil {
+		fmt.Printf("PaymentInformationStore: GetByAcctID %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
 }

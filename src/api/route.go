@@ -7,20 +7,22 @@ import (
 )
 
 const (
-	RoutePing                   = "ping"
-	RouteTestAuthorization      = "test_authorization"
-	RouteRegisterPartner        = "register_partner"
-	RouteVerifyOTP              = "verify_otp"
-	RouteUploadAvatar           = "upload_avatar"
-	RouteRawLogin               = "login"
-	RouteRenewAccessToken       = "renew_access_token"
-	RouteUpdateProfile          = "update_profile"
-	RouteGetRegisterCarMetadata = "register_car_metadata"
-	RouteRegisterCar            = "register_car"
-	RouteUpdateRentalPrice      = "update_rental_price"
-	RouteUploadCarDocuments     = "upload_car_images"
-	RouteGetRegisteredCars      = "get_registered_cars"
-	RouteGetBankMetadata        = "get_bank_metadata"
+	RoutePing                     = "ping"
+	RouteTestAuthorization        = "test_authorization"
+	RouteRegisterPartner          = "register_partner"
+	RouteVerifyOTP                = "verify_otp"
+	RouteUploadAvatar             = "upload_avatar"
+	RouteRawLogin                 = "login"
+	RouteRenewAccessToken         = "renew_access_token"
+	RouteUpdateProfile            = "update_profile"
+	RouteGetRegisterCarMetadata   = "register_car_metadata"
+	RouteRegisterCar              = "register_car"
+	RouteUpdateRentalPrice        = "update_rental_price"
+	RouteUploadCarDocuments       = "upload_car_images"
+	RouteGetRegisteredCars        = "get_registered_cars"
+	RouteGetBankMetadata          = "get_bank_metadata"
+	RouteUpdatePaymentInformation = "update_payment_information"
+	RouteGetPaymentInformation    = "get_payment_information"
 )
 
 type RouteInfo = struct {
@@ -121,6 +123,18 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetPaymentInformationMetadata,
 			RequireAuth: false,
+		},
+		RouteGetPaymentInformation: {
+			Path:        "/payment_info",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetPaymentInformation,
+			RequireAuth: true,
+		},
+		RouteUpdatePaymentInformation: {
+			Path:        "/payment_info",
+			Method:      http.MethodPut,
+			Handler:     s.HandleUpdatePaymentInformation,
+			RequireAuth: true,
 		},
 	}
 }

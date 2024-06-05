@@ -122,7 +122,7 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 	}
 
 	if s.hashVerifier.Compare(acct.Password, req.Password) != nil {
-		responseError(c, errors.New("password is not matched"))
+		responseError(c, errors.New("invalid email or password"))
 		return
 	}
 
@@ -280,4 +280,54 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 		IdentificationCardNumber: updatedAcct.IdentificationCardNumber,
 		AvatarUrl:                updatedAcct.AvatarURL,
 	})
+}
+
+type updatePaymentInfoRequest struct {
+	BankNumber string `json:"bank_number" binding:"required"`
+	BankOwner  string `json:"bank_owner" binding:"required"`
+	BankName   string `json:"bank_name" binding:"required"`
+}
+
+func (s *Server) HandleUpdatePaymentInformation(c *gin.Context) {
+	req := updatePaymentInfoRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	if err := s.store.PaymentInformationStore.Update(acct.ID, map[string]interface{}{
+		"bank_number": req.BankNumber,
+		"bank_owner":  req.BankOwner,
+		"bank_name":   req.BankName,
+	}); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "updated payment information successfully",
+	})
+}
+
+func (s *Server) HandleGetPaymentInformation(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	p, err := s.store.PaymentInformationStore.GetByAcctID(acct.ID)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, p)
 }

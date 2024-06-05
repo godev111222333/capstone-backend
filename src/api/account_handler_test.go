@@ -183,6 +183,42 @@ func TestUpdateProfile(t *testing.T) {
 	})
 }
 
+func TestUpdatePaymentInformation(t *testing.T) {
+	t.Parallel()
+
+	_, accessPayload := seedAccountAndLogin("sonle1@gmail.com", "9999", model.RoleIDPartner)
+
+	route := TestServer.AllRoutes()[RouteUpdatePaymentInformation]
+	reqBody := updatePaymentInfoRequest{
+		BankNumber: "9999-9999-9999",
+		BankOwner:  "Le Thanh Son",
+		BankName:   "Ngan hang thuong mai co phan - VCB",
+	}
+	reqBz, _ := json.Marshal(reqBody)
+	req, _ := http.NewRequest(route.Method, route.Path, bytes.NewReader(reqBz))
+	req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessPayload.AccessToken)
+
+	recorder := httptest.NewRecorder()
+	TestServer.route.ServeHTTP(recorder, req)
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	// get payment information after updating
+	route = TestServer.AllRoutes()[RouteGetPaymentInformation]
+	req, _ = http.NewRequest(route.Method, route.Path, nil)
+	req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessPayload.AccessToken)
+	recorder = httptest.NewRecorder()
+	TestServer.route.ServeHTTP(recorder, req)
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	resp := &model.PaymentInformation{}
+	bz, _ := io.ReadAll(recorder.Body)
+	require.NoError(t, json.Unmarshal(bz, resp))
+
+	require.Equal(t, "9999-9999-9999", resp.BankNumber)
+	require.Equal(t, "Le Thanh Son", resp.BankOwner)
+	require.Equal(t, "Ngan hang thuong mai co phan - VCB", resp.BankName)
+}
+
 func seedAccountAndLogin(email, password string, role model.RoleID) (*model.Account, *rawLoginResponse) {
 	h, _ := TestServer.hashVerifier.Hash(password)
 	acct := &model.Account{

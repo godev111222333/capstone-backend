@@ -237,3 +237,89 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		"status": "upload images successfully",
 	})
 }
+
+type Pagination struct {
+	Offset int `form:"offset"`
+	Limit  int `form:"limit"`
+}
+
+type carResponse struct {
+	ID           int              `json:"id"`
+	PartnerID    int              `json:"partner_id"`
+	CarModel     model.CarModel   `json:"car_model"`
+	LicensePlate string           `json:"license_plate"`
+	ParkingLot   model.ParkingLot `json:"parking_lot"`
+	Description  string           `json:"description"`
+	Fuel         model.Fuel       `json:"fuel"`
+	Motion       model.Motion     `json:"motion"`
+	Price        int              `json:"price"`
+	Status       model.CarStatus  `json:"status"`
+	ThumbnailURL string           `json:"thumbnail_url"`
+}
+
+func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
+	thumbnailURL, err := s.store.CarDocumentStore.GetThumbnailURL(car.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &carResponse{
+		ID:           car.ID,
+		PartnerID:    car.PartnerID,
+		CarModel:     car.CarModel,
+		LicensePlate: car.LicensePlate,
+		ParkingLot:   car.ParkingLot,
+		Description:  car.Description,
+		Fuel:         car.Fuel,
+		Motion:       car.Motion,
+		Price:        car.Price,
+		Status:       car.Status,
+		ThumbnailURL: thumbnailURL,
+	}, nil
+}
+
+type getRegisteredCarsResponse struct {
+	Cars []*carResponse `json:"cars"`
+}
+
+func (s *Server) HandleGetRegisteredCars(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := struct {
+		*Pagination
+		CarStatus string `form:"car_status"`
+	}{}
+
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	var status model.CarStatus
+	if len(req.CarStatus) == 0 {
+		status = model.CarStatusNoFilter
+	} else {
+		status = model.CarStatus(req.CarStatus)
+	}
+	cars, err := s.store.CarStore.GetByPartner(acct.ID, req.Offset, req.Limit, status)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	carResp := make([]*carResponse, 0, len(cars))
+	for _, car := range cars {
+		r, err := s.newCarResponse(car)
+		if err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
+		carResp = append(carResp, r)
+	}
+	c.JSON(http.StatusOK, getRegisteredCarsResponse{Cars: carResp})
+}

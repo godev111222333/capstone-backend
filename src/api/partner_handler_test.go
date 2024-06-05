@@ -3,13 +3,12 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/godev111222333/capstone-backend/src/model"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRegisterPartnerHandler(t *testing.T) {
@@ -79,6 +78,24 @@ func TestRegisterCarHandler(t *testing.T) {
 		TestServer.route.ServeHTTP(recorder, req)
 		bz, _ = io.ReadAll(recorder.Body)
 		require.Equal(t, http.StatusOK, recorder.Code)
+
+		// get registered cars
+		recorder = httptest.NewRecorder()
+		route = TestServer.AllRoutes()[RouteGetRegisteredCars]
+		req, _ = http.NewRequest(route.Method, route.Path, nil)
+		q := req.URL.Query()
+		q.Set("offset", "0")
+		q.Set("limit", "1")
+		q.Set("car_status", string(model.CarStatusPendingApproval))
+		req.URL.RawQuery = q.Encode()
+		req.Header.Add(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken)
+		TestServer.route.ServeHTTP(recorder, req)
+		require.Equal(t, http.StatusOK, recorder.Code)
+
+		resp := &getRegisteredCarsResponse{}
+		bz, _ = io.ReadAll(recorder.Body)
+		require.NoError(t, json.Unmarshal(bz, resp))
+		require.Len(t, resp.Cars, 1)
 	})
 }
 

@@ -31,3 +31,14 @@ func (s *CarDocumentStore) Create(carID int, document *model.Document) error {
 	}
 	return nil
 }
+
+func (s *CarDocumentStore) GetThumbnailURL(carID int) (string, error) {
+	rawSQL := `select * from documents where status = ? and category = ? and id in (select id from car_documents where car_id = ?) order by id asc limit 1;`
+	res := &model.Document{}
+	if err := s.db.Raw(rawSQL, model.DocumentStatusActive, model.DocumentCategoryCarImages, carID).Scan(res).Error; err != nil {
+		fmt.Printf("CarDocumentStore: GetThumbnail %v\n", err)
+		return "", err
+	}
+
+	return res.Url, nil
+}

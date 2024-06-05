@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -17,7 +18,8 @@ const (
 	RouteGetRegisterCarMetadata = "register_car_metadata"
 	RouteRegisterCar            = "register_car"
 	RouteUpdateRentalPrice      = "update_rental_price"
-	RouteUploadCarImages        = "upload_car_images"
+	RouteUploadCarDocuments     = "upload_car_images"
+	RouteGetRegisteredCars      = "get_registered_cars"
 )
 
 type RouteInfo = struct {
@@ -101,10 +103,16 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleUpdateRentalPrice,
 			RequireAuth: true,
 		},
-		RouteUploadCarImages: {
+		RouteUploadCarDocuments: {
 			Path:        "/car/document",
 			Method:      http.MethodPost,
 			Handler:     s.HandleUploadCarDocuments,
+			RequireAuth: true,
+		},
+		RouteGetRegisteredCars: {
+			Path:        "/cars",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetRegisteredCars,
 			RequireAuth: true,
 		},
 	}

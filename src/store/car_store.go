@@ -36,6 +36,30 @@ func (s *CarStore) GetByID(id int) (*model.Car, error) {
 	return res, nil
 }
 
+func (s *CarStore) GetByPartner(partnerID, offset, limit int, status model.CarStatus) ([]*model.Car, error) {
+	var res []*model.Car
+	if limit == 0 {
+		limit = 1000
+	}
+
+	var row *gorm.DB
+	if status == model.CarStatusNoFilter {
+		row = s.db.Where("partner_id = ?", partnerID).Preload("Account").Preload("CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res)
+	} else {
+		row = s.db.Where("partner_id = ? and status = ?", partnerID, string(status)).Preload("Account").Preload("CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res)
+	}
+	if err := row.Error; err != nil {
+		fmt.Printf("CarStore: GetByPartner %v\n", err)
+		return nil, err
+	}
+
+	if row.RowsAffected == 0 {
+		return []*model.Car{}, nil
+	}
+
+	return res, nil
+}
+
 func (s *CarStore) Update(id int, values map[string]interface{}) error {
 	if err := s.db.Model(&model.Car{}).Where("id = ?", id).Updates(values).Error; err != nil {
 		fmt.Printf("CarStore: Update %v\n", err)

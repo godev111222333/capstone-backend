@@ -18,9 +18,9 @@ const (
 )
 
 type Role struct {
-	ID        int
-	RoleName  string
-	RoleCode  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int       `json:"id"`
+	RoleName  string    `json:"role_name"`
+	RoleCode  string    `json:"role_code"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

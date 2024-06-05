@@ -2,6 +2,8 @@ package api
 
 import (
 	"errors"
+	"fmt"
+	"mime/multipart"
 	"net/http"
 	"time"
 
@@ -77,15 +79,16 @@ type rawLoginResponse struct {
 }
 
 type accountResponse struct {
-	ID                       int    `json:"id"`
-	Role                     string `json:"role"`
-	FirstName                string `json:"first_name"`
-	LastName                 string `json:"last_name"`
-	PhoneNumber              string `json:"phone_number"`
-	Email                    string `json:"email"`
-	IdentificationCardNumber string `json:"identification_card_number"`
-	AvatarUrl                string `json:"avatar_url"`
-	DrivingLicense           string `json:"driving_license"`
+	ID                       int       `json:"id"`
+	Role                     string    `json:"role"`
+	FirstName                string    `json:"first_name"`
+	LastName                 string    `json:"last_name"`
+	PhoneNumber              string    `json:"phone_number"`
+	Email                    string    `json:"email"`
+	IdentificationCardNumber string    `json:"identification_card_number"`
+	AvatarUrl                string    `json:"avatar_url"`
+	DrivingLicense           string    `json:"driving_license"`
+	DateOfBirth              time.Time `json:"date_of_birth"`
 }
 
 func newAccountResponse(acct *model.Account) *accountResponse {
@@ -99,6 +102,7 @@ func newAccountResponse(acct *model.Account) *accountResponse {
 		IdentificationCardNumber: acct.IdentificationCardNumber,
 		AvatarUrl:                acct.AvatarURL,
 		DrivingLicense:           acct.DrivingLicense,
+		DateOfBirth:              acct.DateOfBirth,
 	}
 }
 
@@ -215,7 +219,6 @@ func (s *Server) HandleRenewAccessToken(c *gin.Context) {
 }
 
 type updateProfileRequest struct {
-	ID                       int       `json:"id"`
 	FirstName                string    `json:"first_name"`
 	LastName                 string    `json:"last_name"`
 	PhoneNumber              string    `json:"phone_number"`
@@ -225,6 +228,17 @@ type updateProfileRequest struct {
 	Password                 string    `json:"password"`
 }
 
+func (s *Server) HandleGetProfile(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, newAccountResponse(acct))
+}
+
 func (s *Server) HandleUpdateProfile(c *gin.Context) {
 	req := updateProfileRequest{}
 	if err := c.BindJSON(&req); err != nil {
@@ -232,7 +246,7 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 		return
 	}
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByID(req.ID)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -259,12 +273,12 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 		updateParams["password"] = h
 	}
 
-	if err := s.store.AccountStore.Update(req.ID, updateParams); err != nil {
+	if err := s.store.AccountStore.Update(acct.ID, updateParams); err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
 
-	updatedAcct, err := s.store.AccountStore.GetByID(req.ID)
+	updatedAcct, err := s.store.AccountStore.GetByID(acct.ID)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -279,6 +293,7 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 		Email:                    updatedAcct.Email,
 		IdentificationCardNumber: updatedAcct.IdentificationCardNumber,
 		AvatarUrl:                updatedAcct.AvatarURL,
+		DateOfBirth:              updatedAcct.DateOfBirth,
 	})
 }
 
@@ -330,4 +345,50 @@ func (s *Server) HandleGetPaymentInformation(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, p)
+}
+
+func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	req := struct {
+		File *multipart.FileHeader `form:"file"`
+	}{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if req.File.Size > MaxUploadFileSize {
+		responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, req.File.Size))
+		return
+	}
+
+	file, err := req.File.Open()
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+	defer file.Close()
+
+	doc, err := s.uploadDocument(file, acct.ID, req.File.Filename, model.DocumentCategoryQRCodeImage)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	if err := s.store.PaymentInformationStore.Update(acct.ID, map[string]interface{}{
+		"qr_code_url": doc.Url,
+	}); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"qr_code_url": doc.Url,
+	})
 }

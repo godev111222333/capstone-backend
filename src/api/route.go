@@ -23,6 +23,8 @@ const (
 	RouteGetBankMetadata          = "get_bank_metadata"
 	RouteUpdatePaymentInformation = "update_payment_information"
 	RouteGetPaymentInformation    = "get_payment_information"
+	RouteGetProfile               = "get_profile"
+	RouteUploadQRCode             = "upload_qr_code"
 )
 
 type RouteInfo = struct {
@@ -88,6 +90,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleUpdateProfile,
 			RequireAuth: true,
 		},
+		RouteGetProfile: {
+			Path:        "/profile",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetProfile,
+			RequireAuth: true,
+		},
 		RouteGetRegisterCarMetadata: {
 			Path:        "/models",
 			Method:      http.MethodGet,
@@ -134,6 +142,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/payment_info",
 			Method:      http.MethodPut,
 			Handler:     s.HandleUpdatePaymentInformation,
+			RequireAuth: true,
+		},
+		RouteUploadQRCode: {
+			Path:        "/payment_info/qr",
+			Method:      http.MethodPost,
+			Handler:     s.HandleUpdateQRCodeImage,
 			RequireAuth: true,
 		},
 	}

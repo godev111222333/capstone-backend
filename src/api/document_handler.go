@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
@@ -45,33 +47,57 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 	}
 	defer body.Close()
 
-	extension := strings.Split(header.Filename, ".")[1]
-	key := strings.Join([]string{uuid.NewString(), extension}, ".")
-	_, err = s.s3store.Client.PutObject(context.Background(), &s3.PutObjectInput{
-		Bucket: aws.String(s.s3store.Config.Bucket),
-		Body:   body,
-		Key:    aws.String(key),
-		ACL:    types.ObjectCannedACLPublicRead,
-	})
-	if err != nil {
-		responseError(c, err)
-		return
-	}
-
-	url := s.s3store.Config.BaseURL + key
 	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
+
+	doc, err := s.uploadDocument(body, acct.ID, header.Filename, model.DocumentCategoryQRCodeImage)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
 	if err := s.store.AccountStore.Update(acct.ID, map[string]interface{}{
-		"avatar_url": url,
+		"avatar_url": doc.Url,
 	}); err != nil {
 		responseError(c, err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": "upload avatar successfully",
-		"url":    url,
+		"url":    doc.Url,
 	})
+}
+
+func (s *Server) uploadDocument(
+	reader io.Reader,
+	accountID int,
+	fileName string,
+	category model.DocumentCategory,
+) (*model.Document, error) {
+	extension := strings.Split(fileName, ".")[1]
+	key := strings.Join([]string{uuid.NewString(), extension}, ".")
+
+	_, err := s.s3store.Client.PutObject(context.Background(), &s3.PutObjectInput{
+		Bucket: aws.String(s.s3store.Config.Bucket),
+		Body:   reader,
+		Key:    aws.String(key),
+		ACL:    types.ObjectCannedACLPublicRead,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	url := s.s3store.Config.BaseURL + key
+	doc := &model.Document{
+		AccountID: accountID,
+		Url:       url,
+		Extension: extension,
+		Category:  category,
+		Status:    model.DocumentStatusActive,
+	}
+
+	return doc, s.store.DB.Create(doc).Error
 }

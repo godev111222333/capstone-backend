@@ -8,10 +8,12 @@ type (
 )
 
 const (
-	DocumentCategoryCarImages DocumentCategory = "CAR_IMAGES"
-	DocumentCategoryCaveat    DocumentCategory = "CAR_CAVEAT"
-	DocumentStatusActive      DocumentStatus   = "active"
-	DocumentStatusInactive    DocumentStatus   = "inactive"
+	DocumentCategoryCarImages   DocumentCategory = "CAR_IMAGES"
+	DocumentCategoryCaveat      DocumentCategory = "CAR_CAVEAT"
+	DocumentCategoryQRCodeImage DocumentCategory = "QR_CODE"
+	DocumentCategoryAvatarImage DocumentCategory = "AVATAR"
+	DocumentStatusActive        DocumentStatus   = "active"
+	DocumentStatusInactive      DocumentStatus   = "inactive"
 )
 
 type Document struct {

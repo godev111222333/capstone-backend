@@ -97,7 +97,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 		},
 		RouteGetRegisterCarMetadata: {
-			Path:        "/models",
+			Path:        "/register_car_metadata",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetRegisterCarMetadata,
 			RequireAuth: false,

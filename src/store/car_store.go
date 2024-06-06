@@ -24,6 +24,31 @@ func (s *CarStore) Create(car *model.Car) error {
 	return nil
 }
 
+func (s *CarStore) GetAll(offset, limit int, status model.CarStatus) ([]*model.Car, error) {
+	if limit == 0 {
+		limit = 1000
+	}
+
+	res := make([]*model.Car, 0)
+	if status == model.CarStatusNoFilter {
+		if err := s.db.
+			Offset(offset).Limit(limit).
+			Order("ID desc").Find(&res).Error; err != nil {
+			fmt.Printf("CarStore: GetAll %v\n", err)
+			return nil, err
+		}
+	} else {
+		if err := s.db.Where("status = ?", string(status)).
+			Offset(offset).Limit(limit).
+			Order("ID desc").Find(&res).Error; err != nil {
+			fmt.Printf("CarStore: GetAll %v\n", err)
+			return nil, err
+		}
+	}
+
+	return res, nil
+}
+
 func (s *CarStore) GetByID(id int) (*model.Car, error) {
 	res := &model.Car{}
 	if err := s.db.Where("id = ?", id).Preload("Account").Find(res).Error; err != nil {

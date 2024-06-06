@@ -80,4 +80,52 @@ func TestCarStore(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, cars, 1)
 	})
+
+	t.Run("get all", func(t *testing.T) {
+		t.Parallel()
+
+		partner := &model.Account{
+			RoleID:    model.RoleIDPartner,
+			Email:     "cuongdola2@gmail.com",
+			FirstName: "Cuong dola 2",
+			Status:    model.AccountStatusActive,
+		}
+		require.NoError(t, TestDb.AccountStore.Create(partner))
+		carModel := &model.CarModel{
+			Brand: "Bugatti",
+		}
+		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+
+		for i := 1; i <= 5; i++ {
+			car := &model.Car{
+				PartnerID:    partner.ID,
+				CarModelID:   carModel.ID,
+				LicensePlate: "51A" + strconv.Itoa(i),
+				Status:       model.CarStatusActive,
+			}
+			require.NoError(t, TestDb.CarStore.Create(car))
+		}
+
+		for i := 1; i <= 3; i++ {
+			car := &model.Car{
+				PartnerID:    partner.ID,
+				CarModelID:   carModel.ID,
+				LicensePlate: "xxxx-" + strconv.Itoa(i),
+				Status:       model.CarStatusPendingApproval,
+			}
+			require.NoError(t, TestDb.CarStore.Create(car))
+		}
+
+		cars, err := TestDb.CarStore.GetAll(0, 100, model.CarStatusNoFilter)
+		require.NoError(t, err)
+		require.Len(t, cars, 8)
+
+		cars, err = TestDb.CarStore.GetAll(0, 100, model.CarStatusPendingApproval)
+		require.NoError(t, err)
+		require.Len(t, cars, 3)
+
+		cars, err = TestDb.CarStore.GetAll(0, 1, model.CarStatusPendingApproval)
+		require.NoError(t, err)
+		require.Len(t, cars, 1)
+	})
 }

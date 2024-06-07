@@ -230,3 +230,7 @@ create table garage_configs
     "created_at" timestamptz           DEFAULT (now()),
     "updated_at" timestamptz           DEFAULT (now())
 );
+
+insert into garage_configs(type, maximum) values ('MAX_4_SEATS', 10);
+insert into garage_configs(type, maximum) values ('MAX_7_SEATS', 5);
+insert into garage_configs(type, maximum) values ('MAX_15_SEATS', 3);

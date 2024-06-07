@@ -156,7 +156,6 @@ func TestUpdateProfile(t *testing.T) {
 		require.NoError(t, err)
 		accessToken := login(acct.Email, "3333").AccessToken
 		body := updateProfileRequest{
-			ID:                       acct.ID,
 			FirstName:                "Son",
 			LastName:                 "Le Thanh",
 			PhoneNumber:              "0123456",

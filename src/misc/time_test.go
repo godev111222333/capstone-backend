@@ -1,7 +1,6 @@
 package misc
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -16,6 +15,5 @@ func TestCustomTime(t *testing.T) {
 		data := []byte("2023-11-19 09:30:00")
 		var unmarshalTime DateTime
 		require.NoError(t, unmarshalTime.UnmarshalJSON(data))
-		fmt.Println(unmarshalTime.Time)
 	})
 }

@@ -1,10 +1,10 @@
 drop table if exists garage_configs;
 drop table if exists sessions;
-drop table if exists trip_documents;
-drop table if exists trip_feedbacks;
-drop table if exists trip_contracts;
-drop table if exists trip_payment_documents;
-drop table if exists trip_payments;
+drop table if exists customer_contract_documents;
+drop table if exists customer_feedbacks;
+drop table if exists customer_payment_documents;
+drop table if exists customer_payments;
+drop table if exists customer_contracts;
 drop table if exists trips;
 drop table if exists partner_payment_histories;
 drop table if exists partner_contracts;

@@ -31,7 +31,8 @@ create table accounts
     "updated_at"                 timestamptz           DEFAULT (now())
 );
 
-insert into accounts(role_id, email, password, status) values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
+insert into accounts(role_id, email, password, status)
+values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
 
 create unique index unique_phone_number on accounts (phone_number) where phone_number != '';
 create unique index unique_identification_card_number on accounts (identification_card_number) where identification_card_number != '';
@@ -144,70 +145,61 @@ create table "partner_payment_histories"
     "updated_at" timestamptz           DEFAULT (now())
 );
 
-create table "trips"
-(
-    "id"               serial primary key,
-    "customer_id"      bigint references accounts (id),
-    "car_id"           bigint references cars (id),
-    "start_date"       timestamptz            default (now()),
-    "end_date"         timestamptz            default (now()),
-    "status"           varchar(255)  not null default '',
-    "reason"           varchar(1023) not null default '',
-    "insurance_amount" bigint        not null default 0,
-    "created_at"       timestamptz            DEFAULT (now()),
-    "updated_at"       timestamptz            DEFAULT (now())
-);
-
-create table "trip_payments"
-(
-    "id"           serial primary key,
-    "trip_id"      bigint references trips (id),
-    "payment_type" varchar(255)  not null default '',
-    "amount"       bigint        not null default 0,
-    "note"         varchar(1023) not null default '',
-    "status"       varchar(255)  not null default '',
-    "created_at"   timestamptz            DEFAULT (now()),
-    "updated_at"   timestamptz            DEFAULT (now())
-);
-
-create table "trip_payment_documents"
-(
-    "id"              serial primary key,
-    "trip_payment_id" bigint references trip_payments (id),
-    "document_id"     bigint references documents (id),
-    "created_at"      timestamptz DEFAULT (now()),
-    "updated_at"      timestamptz DEFAULT (now())
-);
-
-create table "trip_contracts"
+create table "customer_contracts"
 (
     "id"                         serial primary key,
-    "trip_id"                    bigint references trips (id),
-    "collateral_type"            varchar(255) not null default '',
-    "status"                     varchar(255) not null default '',
-    "is_return_collateral_asset" boolean               default false,
-    "created_at"                 timestamptz           DEFAULT (now()),
-    "updated_at"                 timestamptz           DEFAULT (now())
+    "customer_id"                bigint references accounts (id),
+    "car_id"                     bigint references cars (id),
+    "start_date"                 timestamptz            default (now()),
+    "end_date"                   timestamptz            default (now()),
+    "status"                     varchar(255)  not null default '',
+    "reason"                     varchar(1023) not null default '',
+    "insurance_amount"           bigint        not null default 0,
+    "collateral_type"            varchar(255)  not null default '',
+    "is_return_collateral_asset" boolean                default false,
+    "created_at"                 timestamptz            DEFAULT (now()),
+    "updated_at"                 timestamptz            DEFAULT (now())
 );
 
-create table "trip_feedbacks"
+create table "customer_payments"
 (
-    "id"         serial primary key,
-    "trip_id"    bigint references trips (id),
-    "content"    varchar(1023) not null default '',
-    "rating"     bigint        not null default 0,
-    "status"     bigint        not null default 0,
-    "created_at" timestamptz            DEFAULT (now()),
-    "updated_at" timestamptz            DEFAULT (now())
+    "id"                   serial primary key,
+    "customer_contract_id" bigint references customer_contracts (id),
+    "payment_type"         varchar(255)  not null default '',
+    "amount"               bigint        not null default 0,
+    "note"                 varchar(1023) not null default '',
+    "status"               varchar(255)  not null default '',
+    "created_at"           timestamptz            DEFAULT (now()),
+    "updated_at"           timestamptz            DEFAULT (now())
 );
 
-create table "trip_documents"
+create table "customer_payment_documents"
 (
-    "id"          serial primary key,
-    "trip_id"     bigint references trips (id),
-    "document_id" bigint references documents (id),
-    "created_at"  timestamptz DEFAULT (now()),
-    "updated_at"  timestamptz DEFAULT (now())
+    "id"                  serial primary key,
+    "customer_payment_id" bigint references customer_payments (id),
+    "document_id"         bigint references documents (id),
+    "created_at"          timestamptz DEFAULT (now()),
+    "updated_at"          timestamptz DEFAULT (now())
+);
+
+create table "customer_feedbacks"
+(
+    "id"                   serial primary key,
+    "customer_contract_id" bigint references customer_contracts (id),
+    "content"              varchar(1023) not null default '',
+    "rating"               bigint        not null default 0,
+    "status"               bigint        not null default 0,
+    "created_at"           timestamptz            DEFAULT (now()),
+    "updated_at"           timestamptz            DEFAULT (now())
+);
+
+create table "customer_contract_documents"
+(
+    "id"                   serial primary key,
+    "customer_contract_id" bigint references customer_contracts (id),
+    "document_id"          bigint references documents (id),
+    "created_at"           timestamptz DEFAULT (now()),
+    "updated_at"           timestamptz DEFAULT (now())
 );
 
 create table "sessions"
@@ -231,6 +223,9 @@ create table garage_configs
     "updated_at" timestamptz           DEFAULT (now())
 );
 
-insert into garage_configs(type, maximum) values ('MAX_4_SEATS', 10);
-insert into garage_configs(type, maximum) values ('MAX_7_SEATS', 5);
-insert into garage_configs(type, maximum) values ('MAX_15_SEATS', 3);
+insert into garage_configs(type, maximum)
+values ('MAX_4_SEATS', 10);
+insert into garage_configs(type, maximum)
+values ('MAX_7_SEATS', 5);
+insert into garage_configs(type, maximum)
+values ('MAX_15_SEATS', 3);

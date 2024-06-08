@@ -285,7 +285,7 @@ type getRegisteredCarsResponse struct {
 func (s *Server) HandleGetRegisteredCars(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := struct {
-		*Pagination
+		Pagination
 		CarStatus string `form:"car_status"`
 	}{}
 

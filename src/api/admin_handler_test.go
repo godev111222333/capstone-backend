@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/godev111222333/capstone-backend/src/model"
@@ -45,4 +47,41 @@ func TestAdminHandler_GarageConfigs(t *testing.T) {
 	require.Equal(t, 6, resp.Max7Seats)
 	require.Equal(t, 9, resp.Max15Seats)
 	require.Equal(t, 18, resp.Total)
+}
+
+func TestAdminHandler_GetCar(t *testing.T) {
+	t.Parallel()
+
+	carModel := &model.CarModel{
+		Brand: "Toyota",
+	}
+	require.NoError(t, TestServer.store.CarModelStore.Create([]*model.CarModel{carModel}))
+	partner, _ := seedAccountAndLogin("parter@gmail.com", "aa", model.RoleIDPartner)
+	car := &model.Car{
+		PartnerID:    partner.ID,
+		CarModelID:   carModel.ID,
+		LicensePlate: "59A33",
+		Status:       model.CarStatusActive,
+	}
+	require.NoError(t, TestDb.CarStore.Create(car))
+
+	adminAuthPayload := login("admin", "admin")
+
+	route := TestServer.AllRoutes()[RouteAdminGetCarDetails]
+	req, err := http.NewRequest(
+		route.Method,
+		strings.Replace(route.Path, ":id", strconv.Itoa(car.ID), 1),
+		nil,
+	)
+	req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+adminAuthPayload.AccessToken)
+	require.NoError(t, err)
+	recorder := httptest.NewRecorder()
+	TestServer.route.ServeHTTP(recorder, req)
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	car = &model.Car{}
+	bz, err := io.ReadAll(recorder.Body)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(bz, car))
+	require.Equal(t, "59A33", car.LicensePlate)
 }

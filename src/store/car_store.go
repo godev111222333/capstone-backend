@@ -33,7 +33,7 @@ func (s *CarStore) GetAll(offset, limit int, status model.CarStatus) ([]*model.C
 	if status == model.CarStatusNoFilter {
 		if err := s.db.
 			Offset(offset).Limit(limit).
-			Order("ID desc").Find(&res).Error; err != nil {
+			Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
 			fmt.Printf("CarStore: GetAll %v\n", err)
 			return nil, err
 		}
@@ -51,7 +51,7 @@ func (s *CarStore) GetAll(offset, limit int, status model.CarStatus) ([]*model.C
 
 func (s *CarStore) GetByID(id int) (*model.Car, error) {
 	res := &model.Car{}
-	if err := s.db.Where("id = ?", id).Preload("Account").Find(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Preload("Account").Preload("CarModel").Find(res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

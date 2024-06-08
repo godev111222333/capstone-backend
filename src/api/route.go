@@ -27,6 +27,8 @@ const (
 	RouteUploadQRCode             = "upload_qr_code"
 	RouteGetGarageConfigs         = "get_garage_configs"
 	RouteUpdateGarageConfigs      = "update_garage_configs"
+	RouteAdminGetCars             = "admin_get_cars"
+	RouteAdminGetCarDetails       = "admin_get_car_details"
 )
 
 type RouteInfo = struct {
@@ -162,6 +164,18 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/garage_config",
 			Method:      http.MethodPut,
 			Handler:     s.HandleUpdateGarageConfigs,
+			RequireAuth: true,
+		},
+		RouteAdminGetCars: {
+			Path:        "/admin/cars",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetCars,
+			RequireAuth: true,
+		},
+		RouteAdminGetCarDetails: {
+			Path:        "/admin/car/:id",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetCarDetails,
 			RequireAuth: true,
 		},
 	}

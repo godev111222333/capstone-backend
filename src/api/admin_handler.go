@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
@@ -11,7 +12,7 @@ import (
 )
 
 type getCarsRequest struct {
-	*Pagination
+	Pagination
 	CarStatus string `form:"car_status"`
 }
 
@@ -46,6 +47,35 @@ func (s *Server) HandleAdminGetCars(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, cars)
+}
+
+func (s *Server) HandleAdminGetCarDetails(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	auth, err := s.checkValidRole(authPayload, model.RoleIDAdmin)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	if !auth {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid permission")))
+		return
+	}
+
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(id)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, car)
 }
 
 type getGarageConfigResponse struct {

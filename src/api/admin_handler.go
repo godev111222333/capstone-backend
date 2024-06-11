@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -18,14 +17,8 @@ type getCarsRequest struct {
 
 func (s *Server) HandleAdminGetCars(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	auth, err := s.checkValidRole(authPayload, model.RoleIDAdmin)
-	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	if !auth {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid permission")))
+	if authPayload.Role != model.RoleNameAdmin {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
 		return
 	}
 
@@ -51,14 +44,8 @@ func (s *Server) HandleAdminGetCars(c *gin.Context) {
 
 func (s *Server) HandleAdminGetCarDetails(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	auth, err := s.checkValidRole(authPayload, model.RoleIDAdmin)
-	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	if !auth {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid permission")))
+	if authPayload.Role != model.RoleNameAdmin {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
 		return
 	}
 
@@ -87,14 +74,7 @@ type getGarageConfigResponse struct {
 
 func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	isValidRole, err := s.checkValidRole(authPayload, model.RoleIDAdmin)
-	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	if !isValidRole {
-		fmt.Println("????")
+	if authPayload.Role != model.RoleNameAdmin {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
 		return
 	}
@@ -123,13 +103,7 @@ type updateGarageConfigRequest struct {
 
 func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	isValidRole, err := s.checkValidRole(authPayload, model.RoleIDAdmin)
-	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	if !isValidRole {
+	if authPayload.Role != model.RoleNameAdmin {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
 		return
 	}
@@ -152,13 +126,4 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "update garage configs successfully"})
-}
-
-func (s *Server) checkValidRole(authPayload *token.Payload, role model.RoleID) (bool, error) {
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
-	if err != nil {
-		return false, err
-	}
-
-	return acct.Role.ID == int(role), nil
 }

@@ -29,6 +29,7 @@ const (
 	RouteUpdateGarageConfigs      = "update_garage_configs"
 	RouteAdminGetCars             = "admin_get_cars"
 	RouteAdminGetCarDetails       = "admin_get_car_details"
+	RouteAdminApproveCar          = "admin_approve_car"
 )
 
 type RouteInfo = struct {
@@ -176,6 +177,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/car/:id",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetCarDetails,
+			RequireAuth: true,
+		},
+		RouteAdminApproveCar: {
+			Path:        "/admin/car/:id/approve",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminApproveCar,
 			RequireAuth: true,
 		},
 	}

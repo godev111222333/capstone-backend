@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -126,4 +127,39 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "update garage configs successfully"})
+}
+
+func (s *Server) HandleAdminApproveCar(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Role != model.RoleNameAdmin {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
+		return
+	}
+
+	carID := c.Param("id")
+	carIDInt, err := strconv.Atoi(carID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(carIDInt)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if car.Status != model.CarStatusPendingApproval {
+		c.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("invalid car status, require pending_approval, found %s", string(car.Status))))
+		return
+	}
+
+	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
+		"status": string(model.CarStatusActive),
+	}); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "approve car successfully"})
 }

@@ -231,6 +231,10 @@ func seedAccountAndLogin(email, password string, role model.RoleID) (*model.Acco
 	return acct, login(email, password)
 }
 
+func loginAdmin() *rawLoginResponse {
+	return login("admin", "admin")
+}
+
 func login(email, password string) *rawLoginResponse {
 	route := TestServer.AllRoutes()[RouteRawLogin]
 	body := rawLoginRequest{

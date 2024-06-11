@@ -254,11 +254,11 @@ type carResponse struct {
 	Motion       model.Motion     `json:"motion"`
 	Price        int              `json:"price"`
 	Status       model.CarStatus  `json:"status"`
-	ThumbnailURL string           `json:"thumbnail_url"`
+	Images       []string         `json:"images"`
 }
 
 func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
-	thumbnailURL, err := s.store.CarDocumentStore.GetThumbnailURL(car.ID)
+	images, err := s.store.CarDocumentStore.GetCarImages(car.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +274,7 @@ func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
 		Motion:       car.Motion,
 		Price:        car.Price,
 		Status:       car.Status,
-		ThumbnailURL: thumbnailURL,
+		Images:       images,
 	}, nil
 }
 

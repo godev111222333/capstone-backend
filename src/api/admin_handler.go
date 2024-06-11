@@ -63,7 +63,13 @@ func (s *Server) HandleAdminGetCarDetails(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, car)
+	resp, err := s.newCarResponse(car)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 type getGarageConfigResponse struct {

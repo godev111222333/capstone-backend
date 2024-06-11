@@ -89,7 +89,7 @@ func TestAdminHandler_GetCar(t *testing.T) {
 func TestHandleApproveCar(t *testing.T) {
 	t.Parallel()
 
-	t.Run("approve successfully", func(t *testing.T) {
+	t.Run("reject car", func(t *testing.T) {
 		t.Parallel()
 
 		carModel := &model.CarModel{Brand: "toyota"}
@@ -104,11 +104,82 @@ func TestHandleApproveCar(t *testing.T) {
 		require.NoError(t, TestDb.CarStore.Create(car))
 		accessToken := loginAdmin()
 
+		reqB := adminApproveOrRejectRequest{CarID: car.ID, Action: "reject"}
+		reqBz, err := json.Marshal(reqB)
+		require.NoError(t, err)
 		route := TestServer.AllRoutes()[RouteAdminApproveCar]
 		req, err := http.NewRequest(
 			route.Method,
-			strings.Replace(route.Path, ":id", strconv.Itoa(car.ID), 1),
-			nil,
+			route.Path,
+			bytes.NewReader(reqBz),
+		)
+		require.NoError(t, err)
+		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken.AccessToken)
+		recorder := httptest.NewRecorder()
+		TestServer.route.ServeHTTP(recorder, req)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		updatedCar, err := TestDb.CarStore.GetByID(car.ID)
+		require.NoError(t, err)
+		require.Equal(t, model.CarStatusRejected, updatedCar.Status)
+	})
+
+	t.Run("approve registration car", func(t *testing.T) {
+		t.Parallel()
+
+		carModel := &model.CarModel{Brand: "toyota"}
+		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+		partner, _ := seedAccountAndLogin("partner_vip2", "aaa", model.RoleIDPartner)
+		car := &model.Car{
+			PartnerID:    partner.ID,
+			CarModelID:   carModel.ID,
+			LicensePlate: "69A1",
+			Status:       model.CarStatusPendingApproval,
+		}
+		require.NoError(t, TestDb.CarStore.Create(car))
+		accessToken := loginAdmin()
+
+		reqB := adminApproveOrRejectRequest{CarID: car.ID, Action: "approve_register"}
+		reqBz, err := json.Marshal(reqB)
+		require.NoError(t, err)
+		route := TestServer.AllRoutes()[RouteAdminApproveCar]
+		req, err := http.NewRequest(
+			route.Method,
+			route.Path,
+			bytes.NewReader(reqBz),
+		)
+		require.NoError(t, err)
+		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken.AccessToken)
+		recorder := httptest.NewRecorder()
+		TestServer.route.ServeHTTP(recorder, req)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		updatedCar, err := TestDb.CarStore.GetByID(car.ID)
+		require.NoError(t, err)
+		require.Equal(t, model.CarStatusWaitingDelivery, updatedCar.Status)
+	})
+
+	t.Run("approve delivery car", func(t *testing.T) {
+		t.Parallel()
+
+		carModel := &model.CarModel{Brand: "toyota"}
+		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+		partner, _ := seedAccountAndLogin("partner_vip3", "aaa", model.RoleIDPartner)
+		car := &model.Car{
+			PartnerID:    partner.ID,
+			CarModelID:   carModel.ID,
+			LicensePlate: "69A1",
+			Status:       model.CarStatusWaitingDelivery,
+		}
+		require.NoError(t, TestDb.CarStore.Create(car))
+		accessToken := loginAdmin()
+
+		reqB := adminApproveOrRejectRequest{CarID: car.ID, Action: "approve_delivery"}
+		reqBz, err := json.Marshal(reqB)
+		require.NoError(t, err)
+		route := TestServer.AllRoutes()[RouteAdminApproveCar]
+		req, err := http.NewRequest(
+			route.Method,
+			route.Path,
+			bytes.NewReader(reqBz),
 		)
 		require.NoError(t, err)
 		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken.AccessToken)

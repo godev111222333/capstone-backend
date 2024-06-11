@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"fmt"
 	"gorm.io/gorm"
 
@@ -52,10 +51,6 @@ func (s *CarStore) GetAll(offset, limit int, status model.CarStatus) ([]*model.C
 func (s *CarStore) GetByID(id int) (*model.Car, error) {
 	res := &model.Car{}
 	if err := s.db.Where("id = ?", id).Preload("Account").Preload("CarModel").Find(res).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
 		return nil, err
 	}
 	return res, nil

@@ -135,37 +135,76 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "update garage configs successfully"})
 }
 
-func (s *Server) HandleAdminApproveCar(c *gin.Context) {
+type ApplicationAction string
+
+const (
+	ApplicationActionApproveRegister ApplicationAction = "approve_register"
+	ApplicationActionApproveDelivery ApplicationAction = "approve_delivery"
+	ApplicationActionReject          ApplicationAction = "reject"
+)
+
+type adminApproveOrRejectRequest struct {
+	CarID  int               `json:"car_id"`
+	Action ApplicationAction `json:"action"`
+}
+
+func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if authPayload.Role != model.RoleNameAdmin {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
 		return
 	}
 
-	carID := c.Param("id")
-	carIDInt, err := strconv.Atoi(carID)
+	req := adminApproveOrRejectRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
 		responseError(c, err)
 		return
 	}
 
-	car, err := s.store.CarStore.GetByID(carIDInt)
-	if err != nil {
-		responseError(c, err)
-		return
+	newStatus := string(model.CarStatusRejected)
+	if req.Action == ApplicationActionApproveRegister {
+		if car.Status != model.CarStatusPendingApproval {
+			c.JSON(http.StatusBadRequest, errorResponse(
+				fmt.Errorf(
+					"invalid car status, require %s,"+
+						" found %s",
+					string(model.CarStatusPendingApproval),
+					string(car.Status),
+				),
+			))
+			return
+		}
+
+		newStatus = string(model.CarStatusWaitingDelivery)
 	}
 
-	if car.Status != model.CarStatusPendingApproval {
-		c.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("invalid car status, require pending_approval, found %s", string(car.Status))))
-		return
+	if req.Action == ApplicationActionApproveDelivery {
+		if car.Status != model.CarStatusWaitingDelivery {
+			c.JSON(http.StatusBadRequest, errorResponse(
+				fmt.Errorf(
+					"invalid car status, require %s, found %s",
+					string(model.CarStatusWaitingDelivery),
+					string(car.Status),
+				),
+			))
+			return
+		}
+
+		newStatus = string(model.CarStatusActive)
 	}
 
 	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
-		"status": string(model.CarStatusActive),
+		"status": newStatus,
 	}); err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "approve car successfully"})
+	c.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("%s car successfully", req.Action)})
 }

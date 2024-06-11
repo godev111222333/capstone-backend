@@ -180,9 +180,9 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 		},
 		RouteAdminApproveCar: {
-			Path:        "/admin/car/:id/approve",
+			Path:        "/admin/car_application",
 			Method:      http.MethodPut,
-			Handler:     s.HandleAdminApproveCar,
+			Handler:     s.HandleAdminApproveOrRejectCar,
 			RequireAuth: true,
 		},
 	}

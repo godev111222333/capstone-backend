@@ -50,5 +50,9 @@ func TestCarHandler(t *testing.T) {
 			{Code: "automatic_transmission", Text: "Số tự động"},
 			{Code: "manual_transmission", Text: "Số sàn"},
 		}, resp.Motions)
+		require.Equal(t, []OptionResponse{
+			{Code: "home", Text: "Tại nhà"},
+			{Code: "garage", Text: "Bãi đỗ MinhHungCar"},
+		}, resp.ParkingLot)
 	})
 }

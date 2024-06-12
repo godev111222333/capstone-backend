@@ -55,13 +55,24 @@ var (
 			Text: "Số sàn",
 		},
 	}
+	ParkingLotMetadata = []OptionResponse{
+		{
+			Code: string(model.ParkingLotHome),
+			Text: "Tại nhà",
+		},
+		{
+			Code: string(model.ParkingLotGarage),
+			Text: "Bãi đỗ MinhHungCar",
+		},
+	}
 )
 
 type registerCarMetadataResponse struct {
-	Models  []*model.CarModel `json:"models"`
-	Periods []OptionResponse  `json:"periods"`
-	Fuels   []OptionResponse  `json:"fuels"`
-	Motions []OptionResponse  `json:"motions"`
+	Models     []*model.CarModel `json:"models"`
+	Periods    []OptionResponse  `json:"periods"`
+	Fuels      []OptionResponse  `json:"fuels"`
+	Motions    []OptionResponse  `json:"motions"`
+	ParkingLot []OptionResponse  `json:"parking_lot"`
 }
 
 func (s *Server) HandleGetRegisterCarMetadata(c *gin.Context) {
@@ -72,9 +83,10 @@ func (s *Server) HandleGetRegisterCarMetadata(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, registerCarMetadataResponse{
-		Models:  models,
-		Periods: RegisterCarPeriods,
-		Fuels:   RegisterCarFuels,
-		Motions: RegisterCarMotions,
+		Models:     models,
+		Periods:    RegisterCarPeriods,
+		Fuels:      RegisterCarFuels,
+		Motions:    RegisterCarMotions,
+		ParkingLot: ParkingLotMetadata,
 	})
 }

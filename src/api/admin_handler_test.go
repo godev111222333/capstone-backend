@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/stretchr/testify/require"
@@ -170,6 +171,14 @@ func TestHandleApproveCar(t *testing.T) {
 			Status:       model.CarStatusWaitingDelivery,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
+		contract := &model.PartnerContract{
+			CarID:     car.ID,
+			StartDate: time.Now(),
+			EndDate:   time.Now().AddDate(0, 3, 0),
+			Url:       FakePDF,
+			Status:    model.PartnerContractStatusSigned,
+		}
+		require.NoError(t, TestDb.PartnerContractStore.Create(contract))
 		accessToken := loginAdmin()
 
 		reqB := adminApproveOrRejectRequest{CarID: car.ID, Action: "approve_delivery"}

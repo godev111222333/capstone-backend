@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
@@ -54,6 +55,24 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		}
 
 		ctx.Set(authorizationPayloadKey, payload)
+		ctx.Next()
+	}
+}
+
+func (s *Server) activeAccountMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+		acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		if acct.Status != model.AccountStatusActive {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(errors.New("account is not active")))
+			return
+		}
+
 		ctx.Next()
 	}
 }

@@ -37,5 +37,4 @@ type customerRentCarRequest struct {
 }
 
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {
-
 }

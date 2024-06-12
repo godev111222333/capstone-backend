@@ -68,7 +68,7 @@ func (s *Server) registerMiddleware() {
 }
 
 func (s *Server) registerHandlers() {
-	authGroup := s.route.Group("/").Use(authMiddleware(s.tokenMaker))
+	authGroup := s.route.Group("/").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware())
 
 	for _, r := range s.AllRoutes() {
 		if !r.RequireAuth {

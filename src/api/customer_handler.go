@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,11 +31,25 @@ func (s *Server) HandleCustomerFindCars(c *gin.Context) {
 }
 
 type customerRentCarRequest struct {
-	CarID          int
-	StartDate      time.Time
-	EndDate        time.Time
-	CollateralType model.CollateralType
+	CarID          int                  `json:"car_id" binding:"required"`
+	StartDate      time.Time            `json:"start_date" binding:"required"`
+	EndDate        time.Time            `json:"end_date" binding:"required"`
+	CollateralType model.CollateralType `json:"collateral_type" binding:"required"`
 }
 
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {
+	req := customerRentCarRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if req.StartDate.After(req.EndDate) {
+		responseError(c, errors.New("start_date must be less than end_date"))
+		return
+	}
+
+	// TODO: check time range between start_date and end_date (at least 1 day?)
+
+	// Check not overlap with other contracts
 }

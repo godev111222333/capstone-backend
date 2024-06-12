@@ -213,6 +213,17 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 			return
 		}
 
+		contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
+		if err != nil {
+			responseError(c, err)
+			return
+		}
+
+		if contract.Status != model.PartnerContractStatusSigned {
+			responseError(c, errors.New("partner must sign the contract first"))
+			return
+		}
+
 		newStatus = string(model.CarStatusActive)
 	}
 

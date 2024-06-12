@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
 )
+
+const FakePDF = "https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/vib_contract.pdf"
 
 type getCarsRequest struct {
 	Pagination
@@ -181,9 +184,23 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 			return
 		}
 
-		newStatus = string(model.CarStatusWaitingDelivery)
+		newStatus = string(model.CarStatusApproved)
+
+		// Create new partner contract record
+		contract := &model.PartnerContract{
+			CarID:     req.CarID,
+			StartDate: time.Now(),
+			EndDate:   time.Now().AddDate(0, car.Period, 0),
+			Status:    model.PartnerContractStatusWaitingForSigning,
+			Url:       FakePDF,
+		}
+		if err := s.store.PartnerContractStore.Create(contract); err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
 	}
 
+	// TODO: handle after partner sign contract
 	if req.Action == ApplicationActionApproveDelivery {
 		if car.Status != model.CarStatusWaitingDelivery {
 			c.JSON(http.StatusBadRequest, errorResponse(

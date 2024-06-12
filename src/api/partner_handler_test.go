@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestRegisterPartnerHandler(t *testing.T) {
@@ -134,4 +135,43 @@ func TestUpdateRentalPriceHandler(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 200_000, updatedCar.Price)
 	})
+}
+
+func TestSignContract(t *testing.T) {
+	t.Parallel()
+
+	carModel := &model.CarModel{Brand: "Ok"}
+	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+	partner, accessPayload := seedAccountAndLogin("partner1", "aa", model.RoleIDPartner)
+	car := &model.Car{
+		PartnerID:    partner.ID,
+		CarModelID:   carModel.ID,
+		LicensePlate: "89A8",
+	}
+	require.NoError(t, TestDb.CarStore.Create(car))
+	period := 3
+	contract := &model.PartnerContract{
+		CarID:     car.ID,
+		StartDate: time.Now(),
+		EndDate:   time.Now().AddDate(0, period, 0),
+		Url:       FakePDF,
+		Status:    model.PartnerContractStatusWaitingForSigning,
+	}
+	require.NoError(t, TestDb.PartnerContractStore.Create(contract))
+
+	route := TestServer.AllRoutes()[RoutePartnerSignContract]
+	r := partnerSignContractRequest{CarID: car.ID}
+	bz, err := json.Marshal(r)
+	require.NoError(t, err)
+	req, err := http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))
+	req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessPayload.AccessToken)
+	require.NoError(t, err)
+
+	recorder := httptest.NewRecorder()
+	TestServer.route.ServeHTTP(recorder, req)
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	updatedContract, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
+	require.NoError(t, err)
+	require.Equal(t, model.PartnerContractStatusSigned, updatedContract.Status)
 }

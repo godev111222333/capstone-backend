@@ -19,6 +19,7 @@ type DbStore struct {
 	CarDocumentStore        *CarDocumentStore
 	PaymentInformationStore *PaymentInformationStore
 	GarageConfigStore       *GarageConfigStore
+	PartnerContractStore    *PartnerContractStore
 }
 
 func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
@@ -42,5 +43,6 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 		CarDocumentStore:        NewCarDocumentStore(db),
 		PaymentInformationStore: NewPaymentInformationStore(db),
 		GarageConfigStore:       NewGarageConfigStore(db),
+		PartnerContractStore:    NewPartnerContractStore(db),
 	}, nil
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -97,6 +98,12 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		return
 	}
 
+	period, err := strconv.Atoi(req.PeriodCode)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
 	car := &model.Car{
 		PartnerID:    acct.ID,
 		CarModelID:   req.CarModelID,
@@ -106,6 +113,7 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		Fuel:         req.Fuel,
 		Motion:       req.Motion,
 		Price:        0,
+		Period:       period,
 		Status:       model.CarStatusPendingApproval,
 	}
 
@@ -322,4 +330,96 @@ func (s *Server) HandleGetRegisteredCars(c *gin.Context) {
 		carResp = append(carResp, r)
 	}
 	c.JSON(http.StatusOK, getRegisteredCarsResponse{Cars: carResp})
+}
+
+type partnerSignContractRequest struct {
+	CarID int `json:"car_id"`
+}
+
+func (s *Server) HandlePartnerSignContract(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Role != model.RoleNamePartner {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
+		return
+	}
+
+	req := partnerSignContractRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	partner, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if car.PartnerID != partner.ID {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		return
+	}
+
+	contract, err := s.store.PartnerContractStore.GetByCarID(req.CarID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if contract.Status != model.PartnerContractStatusWaitingForSigning {
+		responseError(c, errors.New("invalid contract status"))
+		return
+	}
+
+	if err := s.store.PartnerContractStore.Update(contract.ID, map[string]interface{}{
+		"status": string(model.PartnerContractStatusSigned),
+	}); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "sign contract successfully"})
+}
+
+type getContractRequest struct {
+	CarID int `form:"car_id"`
+}
+
+func (s *Server) HandleGetPartnerContractDetails(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Role != model.RoleNameAdmin && authPayload.Role != model.RoleNamePartner {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
+		return
+	}
+
+	req := getContractRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if authPayload.Role == model.RoleNamePartner && car.Account.Email != authPayload.Email {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		return
+	}
+
+	contract, err := s.store.PartnerContractStore.GetByCarID(req.CarID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, contract)
 }

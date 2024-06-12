@@ -61,6 +61,7 @@ create table cars
     "motion"        varchar(255)  not null default '',
     "price"         bigint        not null default 0,
     "status"        varchar(255)  not null default '',
+    "period"        bigint        not null default 0,
     "created_at"    timestamptz            DEFAULT (now()),
     "updated_at"    timestamptz            DEFAULT (now())
 );
@@ -126,11 +127,12 @@ create table "partner_contracts"
 (
     "id"         serial primary key,
     "car_id"     bigint references cars (id),
-    "partner_id" bigint references accounts (id),
-    "start_date" timestamptz DEFAULT (now()),
-    "end_date"   timestamptz DEFAULT (now()),
-    "created_at" timestamptz DEFAULT (now()),
-    "updated_at" timestamptz DEFAULT (now())
+    "start_date" timestamptz            DEFAULT (now()),
+    "end_date"   timestamptz            DEFAULT (now()),
+    "url"        varchar(1023) not null default '',
+    "status"     varchar(256)  not null default '',
+    "created_at" timestamptz            DEFAULT (now()),
+    "updated_at" timestamptz            DEFAULT (now())
 );
 
 create table "partner_payment_histories"

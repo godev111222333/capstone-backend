@@ -154,7 +154,7 @@ func TestHandleApproveCar(t *testing.T) {
 		require.Equal(t, http.StatusOK, recorder.Code)
 		updatedCar, err := TestDb.CarStore.GetByID(car.ID)
 		require.NoError(t, err)
-		require.Equal(t, model.CarStatusWaitingDelivery, updatedCar.Status)
+		require.Equal(t, model.CarStatusApproved, updatedCar.Status)
 	})
 
 	t.Run("approve delivery car", func(t *testing.T) {

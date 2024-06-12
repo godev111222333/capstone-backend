@@ -40,6 +40,7 @@ type Car struct {
 	Motion       Motion     `json:"motion"`
 	Price        int        `json:"price"`
 	Status       CarStatus  `json:"status"`
+	Period       int        `json:"period"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 }

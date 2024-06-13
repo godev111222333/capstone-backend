@@ -87,7 +87,7 @@ func TestRegisterCarHandler(t *testing.T) {
 		q := req.URL.Query()
 		q.Set("offset", "0")
 		q.Set("limit", "1")
-		q.Set("car_status", string(model.CarStatusPendingApproval))
+		q.Set("car_status", string(model.CarStatusPendingApplicationPendingCarImages))
 		req.URL.RawQuery = q.Encode()
 		req.Header.Add(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken)
 		TestServer.route.ServeHTTP(recorder, req)

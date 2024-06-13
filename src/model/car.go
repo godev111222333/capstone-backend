@@ -14,17 +14,21 @@ const (
 
 	ParkingLotGarage ParkingLot = "garage"
 
-	FuelGas                     Fuel      = "gas"
-	FuelOil                     Fuel      = "oil"
-	FuelElectricity             Fuel      = "electricity"
-	MotionAutomaticTransmission Motion    = "automatic_transmission"
-	MotionManualTransmission    Motion    = "manual_transmission"
-	CarStatusPendingApproval    CarStatus = "pending_approval"
-	CarStatusApproved           CarStatus = "approved"
-	CarStatusRejected           CarStatus = "rejected"
-	CarStatusActive             CarStatus = "active"
-	CarStatusWaitingDelivery    CarStatus = "waiting_car_delivery"
-	CarStatusNoFilter           CarStatus = "no_filter"
+	FuelGas                                     Fuel      = "gas"
+	FuelOil                                     Fuel      = "oil"
+	FuelElectricity                             Fuel      = "electricity"
+	MotionAutomaticTransmission                 Motion    = "automatic_transmission"
+	MotionManualTransmission                    Motion    = "manual_transmission"
+	CarStatusPendingApplication                 CarStatus = "pending_application"
+	CarStatusPendingApplicationPendingCarImages           = CarStatusPendingApplication + ":pending_car_images"
+	CarStatusPendingApplicationPendingCarCaveat           = CarStatusPendingApplication + ":pending_car_caveat"
+	CarStatusPendingApplicationPendingPrice               = CarStatusPendingApplication + ":pending_price"
+	CarStatusPendingApproval                    CarStatus = "pending_approval"
+	CarStatusApproved                           CarStatus = "approved"
+	CarStatusRejected                           CarStatus = "rejected"
+	CarStatusActive                             CarStatus = "active"
+	CarStatusWaitingDelivery                    CarStatus = "waiting_car_delivery"
+	CarStatusNoFilter                           CarStatus = "no_filter"
 )
 
 type Car struct {
@@ -83,4 +87,23 @@ func (m *CarJoinCarModel) ToCar() *Car {
 		CreatedAt:    m.CreatedAt,
 		UpdatedAt:    m.UpdatedAt,
 	}
+}
+
+var CarStates = []CarStatus{
+	CarStatusPendingApplicationPendingCarImages,
+	CarStatusPendingApplicationPendingCarCaveat,
+	CarStatusPendingApplicationPendingPrice,
+	CarStatusPendingApproval,
+	CarStatusWaitingDelivery,
+	CarStatusActive,
+}
+
+func MoveNextCarState(curState CarStatus) CarStatus {
+	for i := 0; i < len(CarStates); i++ {
+		if curState == CarStates[i] {
+			return CarStates[i+1]
+		}
+	}
+
+	return CarStatusRejected
 }

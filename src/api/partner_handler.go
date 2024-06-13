@@ -87,11 +87,6 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		return
 	}
 
-	if acct.Status != model.AccountStatusActive {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("account is not active")))
-		return
-	}
-
 	req := registerCarRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		responseError(c, err)
@@ -114,7 +109,7 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		Motion:       req.Motion,
 		Price:        0,
 		Period:       period,
-		Status:       model.CarStatusPendingApproval,
+		Status:       model.CarStatusPendingApplicationPendingCarImages,
 	}
 
 	if err := s.store.CarStore.Create(car); err != nil {
@@ -189,6 +184,17 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		return
 	}
 
+	if !strings.Contains(string(car.Status), string(model.CarStatusPendingApplication)) {
+		responseError(c, errors.New("invalid car state"))
+		return
+	}
+
+	if (req.DocumentCategory == model.DocumentCategoryCarImages && car.Status != model.CarStatusPendingApplicationPendingCarImages) ||
+		req.DocumentCategory == model.DocumentCategoryCaveat && car.Status != model.CarStatusPendingApplicationPendingCarCaveat {
+		responseError(c, errors.New("invalid document category with current car state"))
+		return
+	}
+
 	if car.Account.Email != authPayload.Email {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
@@ -239,6 +245,11 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 			responseInternalServerError(c, err)
 			return
 		}
+	}
+
+	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{"status": model.MoveNextCarState(car.Status)}); err != nil {
+		responseInternalServerError(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{

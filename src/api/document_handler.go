@@ -53,7 +53,7 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 		return
 	}
 
-	doc, err := s.uploadDocument(body, acct.ID, header.Filename, model.DocumentCategoryQRCodeImage)
+	doc, err := s.uploadDocument(body, acct.ID, header.Filename, model.DocumentCategoryAvatarImage)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return

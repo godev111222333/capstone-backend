@@ -10,8 +10,6 @@ import (
 )
 
 func TestSessionStore(t *testing.T) {
-	t.Parallel()
-
 	t.Run("create and get session", func(t *testing.T) {
 		t.Parallel()
 

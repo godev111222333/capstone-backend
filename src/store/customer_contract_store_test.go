@@ -10,8 +10,6 @@ import (
 )
 
 func TestCustomerContractStore(t *testing.T) {
-	t.Parallel()
-
 	carModel := &model.CarModel{Brand: "AudiVIP"}
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 	partner := &model.Account{Email: "chipu@gmail.com", Status: model.AccountStatusActive, RoleID: model.RoleIDPartner}

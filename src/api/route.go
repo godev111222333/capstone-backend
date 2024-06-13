@@ -32,6 +32,8 @@ const (
 	RouteAdminApproveCar           = "admin_approve_car"
 	RoutePartnerSignContract       = "partner_sign_contract"
 	RouteGetPartnerContractDetails = "get_partner_contract_detail"
+	RouteCustomerFindCars          = "customer_find_cars"
+	RouteCustomerRentCar           = "customer_rent_car"
 )
 
 type RouteInfo = struct {
@@ -194,10 +196,21 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 		},
 		RouteGetPartnerContractDetails: {
-
 			Path:        "/partner/contract",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetPartnerContractDetails,
+			RequireAuth: true,
+		},
+		RouteCustomerFindCars: {
+			Path:        "/customer/cars",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCustomerFindCars,
+			RequireAuth: false,
+		},
+		RouteCustomerRentCar: {
+			Path:        "/customer/rent",
+			Method:      http.MethodPost,
+			Handler:     s.HandleCustomerRentCar,
 			RequireAuth: true,
 		},
 	}

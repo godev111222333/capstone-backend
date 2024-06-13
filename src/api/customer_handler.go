@@ -12,17 +12,54 @@ import (
 )
 
 type customerFindCarsRequest struct {
-	StartDate     time.Time        `json:"start_date" binding:"required"`
-	EndDate       time.Time        `json:"end_date" binding:"required"`
-	Brand         string           `json:"brand"`
-	Fuel          string           `json:"fuel"`
-	Motion        string           `json:"motion"`
-	NumberOfSeats int              `json:"number_of_seats"`
-	ParkingLot    model.ParkingLot `json:"parking_lot"`
+	StartDate     time.Time `form:"start_date" binding:"required"`
+	EndDate       time.Time `form:"end_date" binding:"required"`
+	Brand         string    `form:"brand"`
+	Fuel          string    `form:"fuel"`
+	Motion        string    `form:"motion"`
+	NumberOfSeats int       `form:"number_of_seats"`
+	ParkingLot    string    `form:"parking_lot"`
 }
 
 func (s *Server) HandleCustomerFindCars(c *gin.Context) {
+	req := customerFindCarsRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
 
+	findQueries := make(map[string]interface{}, 0)
+	if len(req.Brand) > 0 {
+		findQueries["brand"] = req.Brand
+	}
+	if len(req.Fuel) > 0 {
+		findQueries["fuel"] = model.Fuel(req.Fuel)
+	}
+	if len(req.Motion) > 0 {
+		findQueries["motion"] = model.Fuel(req.Motion)
+	}
+	if req.NumberOfSeats > 0 {
+		findQueries["number_of_seats"] = req.NumberOfSeats
+	}
+	if len(req.ParkingLot) > 0 {
+		findQueries["parking_lot"] = model.ParkingLot(req.ParkingLot)
+	}
+
+	foundCars, err := s.store.CarStore.FindCars(req.StartDate, req.EndDate, findQueries)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+	respCars := make([]*carResponse, len(foundCars))
+	for i, car := range foundCars {
+		respCars[i], err = s.newCarResponse(car)
+		if err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, respCars)
 }
 
 type customerRentCarRequest struct {

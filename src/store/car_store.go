@@ -69,7 +69,7 @@ func (s *CarStore) GetByPartner(partnerID, offset, limit int, status model.CarSt
 	if status == model.CarStatusNoFilter {
 		row = s.db.Where("partner_id = ?", partnerID).Preload("Account").Preload("CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res)
 	} else {
-		row = s.db.Where("partner_id = ? and status = ?", partnerID, string(status)).Preload("Account").Preload("CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res)
+		row = s.db.Where("partner_id = ? and status like ?", partnerID, "%"+string(status)+"%").Preload("Account").Preload("CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res)
 	}
 	if err := row.Error; err != nil {
 		fmt.Printf("CarStore: GetByPartner %v\n", err)

@@ -62,18 +62,31 @@ func TestCarStore(t *testing.T) {
 			}
 			require.NoError(t, TestDb.CarStore.Create(car))
 		}
-		car := &model.Car{
-			PartnerID:    partner.ID,
-			CarModelID:   carModel.ID,
-			LicensePlate: "86AX",
-			Status:       model.CarStatusPendingApproval,
+		cars := []*model.Car{
+			{
+				PartnerID:    partner.ID,
+				CarModelID:   carModel.ID,
+				LicensePlate: "86AX",
+				Status:       model.CarStatusPendingApproval,
+			},
+			{
+				PartnerID:    partner.ID,
+				CarModelID:   carModel.ID,
+				LicensePlate: "86AX",
+				Status:       model.CarStatusPendingApplicationPendingCarImages,
+			},
 		}
-		require.NoError(t, TestDb.CarStore.Create(car))
+		for _, car := range cars {
+			require.NoError(t, TestDb.CarStore.Create(car))
+		}
 
 		cars, err := TestDb.CarStore.GetByPartner(partner.ID, 0, 0, model.CarStatusNoFilter)
 		require.NoError(t, err)
-		require.Len(t, cars, 3)
+		require.Len(t, cars, 4)
 		cars, err = TestDb.CarStore.GetByPartner(partner.ID, 0, 2, model.CarStatusPendingApproval)
+		require.NoError(t, err)
+		require.Len(t, cars, 1)
+		cars, err = TestDb.CarStore.GetByPartner(partner.ID, 0, 2, model.CarStatusPendingApplication)
 		require.NoError(t, err)
 		require.Len(t, cars, 1)
 	})

@@ -13,7 +13,7 @@ import (
 )
 
 func TestCustomerHandler_FindCars(t *testing.T) {
-	t.Parallel()
+	require.NoError(t, ResetDb(TestConfig.Database))
 
 	carModels := []*model.CarModel{
 		{Model: "Z9", Brand: "Lexus", NumberOfSeats: 15},

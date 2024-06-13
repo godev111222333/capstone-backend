@@ -13,6 +13,51 @@ import (
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
+func (s *Server) RegisterCustomer(c *gin.Context) {
+	req := struct {
+		FirstName   string `json:"first_name" binding:"required"`
+		LastName    string `json:"last_name" binding:"required"`
+		PhoneNumber string `json:"phone_number" binding:"required"`
+		Email       string `json:"email" binding:"required"`
+		Password    string `json:"password" binding:"required"`
+	}{}
+
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	hashedPassword, err := s.hashVerifier.Hash(req.Password)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	customer := &model.Account{
+		RoleID:      model.RoleIDCustomer,
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		PhoneNumber: req.PhoneNumber,
+		Email:       req.Email,
+		Password:    hashedPassword,
+		Status:      model.AccountStatusWaitingConfirmEmail,
+	}
+
+	if err := s.store.AccountStore.Create(customer); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if err := s.otpService.SendOTP(model.OTPTypeRegister, req.Email); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "register customer successfully. please confirm OTP sent to your email",
+	})
+}
+
 type customerFindCarsRequest struct {
 	StartDate     time.Time `form:"start_date" binding:"required"`
 	EndDate       time.Time `form:"end_date" binding:"required"`

@@ -10,6 +10,7 @@ const (
 	RoutePing                      = "ping"
 	RouteTestAuthorization         = "test_authorization"
 	RouteRegisterPartner           = "register_partner"
+	RouteRegisterCustomer          = "register_customer"
 	RouteVerifyOTP                 = "verify_otp"
 	RouteUploadAvatar              = "upload_avatar"
 	RouteRawLogin                  = "login"
@@ -212,6 +213,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodPost,
 			Handler:     s.HandleCustomerRentCar,
 			RequireAuth: true,
+		},
+		RouteRegisterCustomer: {
+			Path:        "/customer/register",
+			Method:      http.MethodPost,
+			Handler:     s.RegisterCustomer,
+			RequireAuth: false,
 		},
 	}
 }

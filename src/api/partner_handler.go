@@ -1,22 +1,12 @@
 package api
 
 import (
-	"context"
 	"errors"
-	"fmt"
-	"mime/multipart"
-	"net/http"
-	"strconv"
-	"strings"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/google/uuid"
-
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
+	"net/http"
+	"strconv"
 )
 
 func (s *Server) RegisterPartner(c *gin.Context) {
@@ -163,97 +153,6 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"car_id":    car.ID,
 		"new_price": req.NewPrice,
-	})
-}
-
-func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
-	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	req := struct {
-		DocumentCategory model.DocumentCategory  `form:"document_category"`
-		CarID            int                     `form:"car_id"`
-		Files            []*multipart.FileHeader `form:"files"`
-	}{}
-	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
-		return
-	}
-
-	car, err := s.store.CarStore.GetByID(req.CarID)
-	if err != nil {
-		responseError(c, err)
-		return
-	}
-
-	if !strings.Contains(string(car.Status), string(model.CarStatusPendingApplication)) {
-		responseError(c, errors.New("invalid car state"))
-		return
-	}
-
-	if (req.DocumentCategory == model.DocumentCategoryCarImages && car.Status != model.CarStatusPendingApplicationPendingCarImages) ||
-		req.DocumentCategory == model.DocumentCategoryCaveat && car.Status != model.CarStatusPendingApplicationPendingCarCaveat {
-		responseError(c, errors.New("invalid document category with current car state"))
-		return
-	}
-
-	if car.Account.Email != authPayload.Email {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
-		return
-	}
-
-	if len(req.Files) > MaxNumberFiles {
-		responseError(c, fmt.Errorf("exceed maximum number of files, max %d, has %d", MaxNumberFiles, len(req.Files)))
-		return
-	}
-
-	for _, f := range req.Files {
-		if f.Size > MaxUploadFileSize {
-			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
-			return
-		}
-
-		body, err := f.Open()
-		if err != nil {
-			responseError(c, err)
-			return
-		}
-		defer body.Close()
-
-		extension := strings.Split(f.Filename, ".")[1]
-		key := strings.Join([]string{uuid.NewString(), extension}, ".")
-		_, err = s.s3store.Client.PutObject(context.Background(), &s3.PutObjectInput{
-			Bucket: aws.String(s.s3store.Config.Bucket),
-			Body:   body,
-			Key:    aws.String(key),
-			ACL:    types.ObjectCannedACLPublicRead,
-		})
-		if err != nil {
-			responseError(c, err)
-			return
-		}
-
-		url := s.s3store.Config.BaseURL + key
-
-		document := &model.Document{
-			AccountID: car.Account.ID,
-			Url:       url,
-			Extension: extension,
-			Category:  req.DocumentCategory,
-			Status:    model.DocumentStatusActive,
-		}
-
-		if err := s.store.CarDocumentStore.Create(car.ID, document); err != nil {
-			responseInternalServerError(c, err)
-			return
-		}
-	}
-
-	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{"status": model.MoveNextCarState(car.Status)}); err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "upload images successfully",
 	})
 }
 

@@ -13,7 +13,7 @@ import (
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
-func (s *Server) RegisterCustomer(c *gin.Context) {
+func (s *Server) HandleRegisterCustomer(c *gin.Context) {
 	req := struct {
 		FirstName   string `json:"first_name" binding:"required"`
 		LastName    string `json:"last_name" binding:"required"`

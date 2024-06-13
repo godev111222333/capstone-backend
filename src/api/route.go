@@ -7,34 +7,35 @@ import (
 )
 
 const (
-	RoutePing                      = "ping"
-	RouteTestAuthorization         = "test_authorization"
-	RouteRegisterPartner           = "register_partner"
-	RouteRegisterCustomer          = "register_customer"
-	RouteVerifyOTP                 = "verify_otp"
-	RouteUploadAvatar              = "upload_avatar"
-	RouteRawLogin                  = "login"
-	RouteRenewAccessToken          = "renew_access_token"
-	RouteUpdateProfile             = "update_profile"
-	RouteGetRegisterCarMetadata    = "register_car_metadata"
-	RouteRegisterCar               = "register_car"
-	RouteUpdateRentalPrice         = "update_rental_price"
-	RouteUploadCarDocuments        = "upload_car_images"
-	RouteGetRegisteredCars         = "get_registered_cars"
-	RouteGetBankMetadata           = "get_bank_metadata"
-	RouteUpdatePaymentInformation  = "update_payment_information"
-	RouteGetPaymentInformation     = "get_payment_information"
-	RouteGetProfile                = "get_profile"
-	RouteUploadQRCode              = "upload_qr_code"
-	RouteGetGarageConfigs          = "get_garage_configs"
-	RouteUpdateGarageConfigs       = "update_garage_configs"
-	RouteAdminGetCars              = "admin_get_cars"
-	RouteAdminGetCarDetails        = "admin_get_car_details"
-	RouteAdminApproveCar           = "admin_approve_car"
-	RoutePartnerSignContract       = "partner_sign_contract"
-	RouteGetPartnerContractDetails = "get_partner_contract_detail"
-	RouteCustomerFindCars          = "customer_find_cars"
-	RouteCustomerRentCar           = "customer_rent_car"
+	RoutePing                               = "ping"
+	RouteTestAuthorization                  = "test_authorization"
+	RouteRegisterPartner                    = "register_partner"
+	RouteRegisterCustomer                   = "register_customer"
+	RouteVerifyOTP                          = "verify_otp"
+	RouteUploadAvatar                       = "upload_avatar"
+	RouteRawLogin                           = "login"
+	RouteRenewAccessToken                   = "renew_access_token"
+	RouteUpdateProfile                      = "update_profile"
+	RouteGetRegisterCarMetadata             = "register_car_metadata"
+	RouteRegisterCar                        = "register_car"
+	RouteUpdateRentalPrice                  = "update_rental_price"
+	RouteUploadCarDocuments                 = "upload_car_images"
+	RouteGetRegisteredCars                  = "get_registered_cars"
+	RouteGetBankMetadata                    = "get_bank_metadata"
+	RouteUpdatePaymentInformation           = "update_payment_information"
+	RouteGetPaymentInformation              = "get_payment_information"
+	RouteGetProfile                         = "get_profile"
+	RouteUploadQRCode                       = "upload_qr_code"
+	RouteGetGarageConfigs                   = "get_garage_configs"
+	RouteUpdateGarageConfigs                = "update_garage_configs"
+	RouteAdminGetCars                       = "admin_get_cars"
+	RouteAdminGetCarDetails                 = "admin_get_car_details"
+	RouteAdminApproveCar                    = "admin_approve_car"
+	RoutePartnerSignContract                = "partner_sign_contract"
+	RouteGetPartnerContractDetails          = "get_partner_contract_detail"
+	RouteCustomerFindCars                   = "customer_find_cars"
+	RouteCustomerRentCar                    = "customer_rent_car"
+	RouteCustomerUploadDrivingLicenseImages = "customer_upload_driving_license_images"
 )
 
 type RouteInfo = struct {
@@ -217,8 +218,14 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 		RouteRegisterCustomer: {
 			Path:        "/customer/register",
 			Method:      http.MethodPost,
-			Handler:     s.RegisterCustomer,
+			Handler:     s.HandleRegisterCustomer,
 			RequireAuth: false,
+		},
+		RouteCustomerUploadDrivingLicenseImages: {
+			Path:        "/customer/driving_license",
+			Method:      http.MethodPost,
+			Handler:     s.HandleUploadDrivingLicenses,
+			RequireAuth: true,
 		},
 	}
 }

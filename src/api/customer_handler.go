@@ -3,6 +3,8 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +16,11 @@ import (
 type customerFindCarsRequest struct {
 	StartDate     time.Time `form:"start_date" binding:"required"`
 	EndDate       time.Time `form:"end_date" binding:"required"`
-	Brand         string    `form:"brand"`
-	Fuel          string    `form:"fuel"`
-	Motion        string    `form:"motion"`
-	NumberOfSeats int       `form:"number_of_seats"`
-	ParkingLot    string    `form:"parking_lot"`
+	Brands        string    `form:"brands"`
+	Fuels         string    `form:"fuels"`
+	Motions       string    `form:"motions"`
+	NumberOfSeats string    `form:"number_of_seats"`
+	ParkingLots   string    `form:"parking_lots"`
 }
 
 func (s *Server) HandleCustomerFindCars(c *gin.Context) {
@@ -29,20 +31,31 @@ func (s *Server) HandleCustomerFindCars(c *gin.Context) {
 	}
 
 	findQueries := make(map[string]interface{}, 0)
-	if len(req.Brand) > 0 {
-		findQueries["brand"] = req.Brand
+	separator := ","
+	if len(req.Brands) > 0 {
+		findQueries["brands"] = strings.Split(req.Brands, separator)
 	}
-	if len(req.Fuel) > 0 {
-		findQueries["fuel"] = model.Fuel(req.Fuel)
+	if len(req.Fuels) > 0 {
+		findQueries["fuels"] = strings.Split(req.Fuels, separator)
 	}
-	if len(req.Motion) > 0 {
-		findQueries["motion"] = model.Fuel(req.Motion)
+	if len(req.Motions) > 0 {
+		findQueries["motions"] = strings.Split(req.Motions, separator)
 	}
-	if req.NumberOfSeats > 0 {
-		findQueries["number_of_seats"] = req.NumberOfSeats
+	if len(req.NumberOfSeats) > 0 {
+		arr := strings.Split(req.NumberOfSeats, separator)
+		arrInt := make([]int, len(arr))
+		for i, s := range arr {
+			var err error
+			arrInt[i], err = strconv.Atoi(s)
+			if err != nil {
+				responseError(c, err)
+				return
+			}
+		}
+		findQueries["number_of_seats"] = arrInt
 	}
-	if len(req.ParkingLot) > 0 {
-		findQueries["parking_lot"] = model.ParkingLot(req.ParkingLot)
+	if len(req.ParkingLots) > 0 {
+		findQueries["parking_lots"] = strings.Split(req.ParkingLots, separator)
 	}
 
 	foundCars, err := s.store.CarStore.FindCars(req.StartDate, req.EndDate, findQueries)

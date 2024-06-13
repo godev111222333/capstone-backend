@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"strconv"
 	"strings"
 	"time"
 
@@ -95,20 +96,20 @@ func (s *CarStore) FindCars(
 	optionParams map[string]interface{},
 ) ([]*model.Car, error) {
 	optionsSQL := make([]string, 0, len(optionParams))
-	if value, ok := optionParams["brand"]; ok {
-		optionsSQL = append(optionsSQL, fmt.Sprintf("brand = '%s'", value))
+	if values, ok := optionParams["brands"].([]string); ok {
+		optionsSQL = append(optionsSQL, fmt.Sprintf("brand in %s", quoteString(values)))
 	}
-	if value, ok := optionParams["fuel"]; ok {
-		optionsSQL = append(optionsSQL, fmt.Sprintf("fuel = '%s'", value))
+	if values, ok := optionParams["fuels"].([]string); ok {
+		optionsSQL = append(optionsSQL, fmt.Sprintf("fuel in %s", quoteString(values)))
 	}
-	if value, ok := optionParams["motion"]; ok {
-		optionsSQL = append(optionsSQL, fmt.Sprintf("motion = '%s'", value))
+	if values, ok := optionParams["motions"].([]string); ok {
+		optionsSQL = append(optionsSQL, fmt.Sprintf("motion in %s", quoteString(values)))
 	}
-	if value, ok := optionParams["number_of_seats"]; ok {
-		optionsSQL = append(optionsSQL, fmt.Sprintf("number_of_seats = %d", value))
+	if values, ok := optionParams["number_of_seats"].([]int); ok {
+		optionsSQL = append(optionsSQL, fmt.Sprintf("number_of_seats in %s", quoteInt(values)))
 	}
-	if value, ok := optionParams["parking_lot"]; ok {
-		optionsSQL = append(optionsSQL, fmt.Sprintf("parking_lot = '%s'", value))
+	if values, ok := optionParams["parking_lots"].([]string); ok {
+		optionsSQL = append(optionsSQL, fmt.Sprintf("parking_lot in %s", quoteString(values)))
 	}
 
 	opt := strings.Join(optionsSQL, " and ")
@@ -170,4 +171,29 @@ func takeDuplicatedCars(cars1, cars2 []*model.CarJoinCarModel) []*model.CarJoinC
 	}
 
 	return res
+}
+
+func quoteString(src []string) string {
+	if len(src) == 0 {
+		return ""
+	}
+
+	for i, s := range src {
+		src[i] = "'" + s + "'"
+	}
+
+	return "(" + strings.Join(src, ",") + ")"
+}
+
+func quoteInt(src []int) string {
+	if len(src) == 0 {
+		return ""
+	}
+
+	res := []string{}
+	for _, s := range src {
+		res = append(res, strconv.Itoa(s))
+	}
+
+	return "(" + strings.Join(res, ",") + ")"
 }

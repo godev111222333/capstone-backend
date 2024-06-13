@@ -11,11 +11,7 @@ import (
 )
 
 func TestCarStore(t *testing.T) {
-	t.Parallel()
-
 	t.Run("create car successfully", func(t *testing.T) {
-		t.Parallel()
-
 		carModel := &model.CarModel{
 			Brand:         "BMW",
 			Model:         "X8",
@@ -45,8 +41,6 @@ func TestCarStore(t *testing.T) {
 	})
 
 	t.Run("get owned car successfully", func(t *testing.T) {
-		t.Parallel()
-
 		partner := &model.Account{
 			RoleID:    model.RoleIDPartner,
 			Email:     "cuongdola@gmail.com",
@@ -85,8 +79,6 @@ func TestCarStore(t *testing.T) {
 	})
 
 	t.Run("get all", func(t *testing.T) {
-		t.Parallel()
-
 		partner := &model.Account{
 			RoleID:    model.RoleIDPartner,
 			Email:     "cuongdola2@gmail.com",
@@ -133,7 +125,6 @@ func TestCarStore(t *testing.T) {
 	})
 
 	t.Run("find cars", func(t *testing.T) {
-
 		require.NoError(t, ResetDb(TestConfig.Database))
 		carModels := []*model.CarModel{
 			{Brand: "toyota", Model: "X8", Year: 2024, NumberOfSeats: 4},
@@ -223,12 +214,12 @@ func TestCarStore(t *testing.T) {
 			{StartDate: 0, EndDate: 2, OptionParams: map[string]interface{}{}, ExpectedLenCar: 2},
 			{StartDate: 2, EndDate: 4, OptionParams: map[string]interface{}{}, ExpectedLenCar: 2},
 			{StartDate: 10, EndDate: 12, OptionParams: map[string]interface{}{}, ExpectedLenCar: 3},
-			{StartDate: 0, EndDate: 2, OptionParams: map[string]interface{}{"fuel": string(model.FuelElectricity)}, ExpectedLenCar: 1},
-			{StartDate: 2, EndDate: 4, OptionParams: map[string]interface{}{"motion": string(model.MotionAutomaticTransmission)}, ExpectedLenCar: 1},
-			{StartDate: 10, EndDate: 12, OptionParams: map[string]interface{}{"parking_lot": string(model.ParkingLotGarage)}, ExpectedLenCar: 2},
-			{StartDate: 10, EndDate: 12, OptionParams: map[string]interface{}{"parking_lot": string(model.ParkingLotGarage), "motion": string(model.MotionManualTransmission)}, ExpectedLenCar: 1},
-			{StartDate: 10, EndDate: 12, OptionParams: map[string]interface{}{"parking_lot": string(model.ParkingLotGarage), "motion": string(model.MotionAutomaticTransmission)}, ExpectedLenCar: 1},
-			{StartDate: 0, EndDate: 24, OptionParams: map[string]interface{}{"parking_lot": string(model.ParkingLotGarage), "motion": string(model.MotionAutomaticTransmission)}, ExpectedLenCar: 0},
+			{StartDate: 0, EndDate: 2, OptionParams: map[string]interface{}{"fuels": []string{string(model.FuelElectricity)}}, ExpectedLenCar: 1},
+			{StartDate: 2, EndDate: 4, OptionParams: map[string]interface{}{"motions": []string{string(model.MotionAutomaticTransmission)}}, ExpectedLenCar: 1},
+			{StartDate: 10, EndDate: 12, OptionParams: map[string]interface{}{"parking_lots": []string{string(model.ParkingLotGarage)}}, ExpectedLenCar: 2},
+			{StartDate: 10, EndDate: 12, OptionParams: map[string]interface{}{"parking_lots": []string{string(model.ParkingLotGarage)}, "motions": []string{string(model.MotionManualTransmission)}, "number_of_seats": []int{15}}, ExpectedLenCar: 1},
+			{StartDate: 10, EndDate: 12, OptionParams: map[string]interface{}{"parking_lots": []string{string(model.ParkingLotGarage)}, "motions": []string{string(model.MotionAutomaticTransmission)}}, ExpectedLenCar: 1},
+			{StartDate: 0, EndDate: 24, OptionParams: map[string]interface{}{"parking_lots": []string{string(model.ParkingLotGarage)}, "motions": []string{string(model.MotionAutomaticTransmission)}}, ExpectedLenCar: 0},
 		}
 
 		toTime := func(hour int) time.Time {

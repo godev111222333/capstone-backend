@@ -66,7 +66,8 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 
 		query.Add("start_date", now.Format(time.RFC3339))
 		query.Add("end_date", now.Add(time.Hour*time.Duration(3)).Format(time.RFC3339))
-		query.Add("brand", "Lexus")
+		query.Add("brands", "Lexus")
+		query.Add("number_of_seats", "4,7,15")
 		req.URL.RawQuery = query.Encode()
 		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessPayload.AccessToken)
 

@@ -14,9 +14,11 @@ const (
 	ShouldResetDatabase = true
 )
 
-var TestDb *DbStore
-
-var TestS3Store *S3Store
+var (
+	TestDb      *DbStore
+	TestS3Store *S3Store
+	TestConfig  *misc.GlobalConfig
+)
 
 func TestMain(m *testing.M) {
 	cfg, err := misc.LoadConfig("../../config.yaml")
@@ -25,6 +27,7 @@ func TestMain(m *testing.M) {
 	}
 
 	TestS3Store = NewS3Store(cfg.AWS)
+	TestConfig = cfg
 	dbConfig := cfg.Database
 	initTestDb(dbConfig)
 	code := m.Run()

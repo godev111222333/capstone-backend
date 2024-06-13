@@ -25,7 +25,7 @@ func (s *CustomerContractStore) Create(c *model.CustomerContract) error {
 	return nil
 }
 
-func (s *CustomerContractStore) CheckOverlap(carID int, desiredStartDate time.Time, desiredEndDate time.Time) (bool, error) {
+func (s *CustomerContractStore) IsOverlap(carID int, desiredStartDate time.Time, desiredEndDate time.Time) (bool, error) {
 	// 1. case start_date >= desiredStartDate
 	counter := struct {
 		Count int `json:"count"`

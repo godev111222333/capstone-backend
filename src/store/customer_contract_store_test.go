@@ -96,7 +96,7 @@ func TestCustomerContractStore(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("from %d to %d", tc.desiredStartDate, tc.desiredEndDate), func(t *testing.T) {
-			isOverlap, err := TestDb.CustomerContractStore.CheckOverlap(
+			isOverlap, err := TestDb.CustomerContractStore.IsOverlap(
 				car.ID,
 				now.Add(time.Hour*time.Duration(tc.desiredStartDate)),
 				now.Add(time.Hour*time.Duration(tc.desiredEndDate)),

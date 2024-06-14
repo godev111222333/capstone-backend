@@ -164,7 +164,7 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 	})
 }
 
-func (s *Server) HandleUploadDrivingLicenses(c *gin.Context) {
+func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := struct {
 		Files []*multipart.FileHeader `form:"files"`
@@ -205,6 +205,28 @@ func (s *Server) HandleUploadDrivingLicenses(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "upload driving license images successfully"})
+}
+
+func (s *Server) HandleGetDrivingLicenseImages(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	docs, err := s.store.DocumentStore.GetByCategory(acct.ID, model.DocumentCategoryDrivingLicense, 2)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	urls := make([]string, len(docs))
+	for i, d := range docs {
+		urls[i] = d.Url
+	}
+
+	c.JSON(http.StatusOK, urls)
 }
 
 func (s *Server) uploadDocument(

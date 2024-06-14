@@ -5,8 +5,8 @@ import "time"
 type PartnerContractStatus string
 
 const (
-	PartnerContractStatusWaitingForSigning PartnerContractStatus = "waiting_for_signing"
-	PartnerContractStatusSigned            PartnerContractStatus = "signed"
+	PartnerContractStatusWaitingForAgreement PartnerContractStatus = "waiting_for_agreement"
+	PartnerContractStatusAgreed              PartnerContractStatus = "agreed"
 )
 
 type PartnerContract struct {

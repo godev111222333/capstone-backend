@@ -193,9 +193,9 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 		},
 		RoutePartnerSignContract: {
-			Path:        "/partner/contract/sign",
+			Path:        "/partner/contract/agree",
 			Method:      http.MethodPut,
-			Handler:     s.HandlePartnerSignContract,
+			Handler:     s.HandlePartnerAgreeContract,
 			RequireAuth: true,
 		},
 		RouteGetPartnerContractDetails: {

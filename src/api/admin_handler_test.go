@@ -176,7 +176,7 @@ func TestHandleApproveCar(t *testing.T) {
 			StartDate: time.Now(),
 			EndDate:   time.Now().AddDate(0, 3, 0),
 			Url:       FakePDF,
-			Status:    model.PartnerContractStatusSigned,
+			Status:    model.PartnerContractStatusAgreed,
 		}
 		require.NoError(t, TestDb.PartnerContractStore.Create(contract))
 		accessToken := loginAdmin()

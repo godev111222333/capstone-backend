@@ -178,7 +178,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		CarPrice:                car.Price,
 		StartDate:               req.StartDate,
 		EndDate:                 req.EndDate,
-		Status:                  model.CustomerContractStatusWaitingContractSigning,
+		Status:                  model.CustomerContractStatusWaitingContractAgreement,
 		InsuranceAmount:         insuranceAmount,
 		CollateralType:          req.CollateralType,
 		IsReturnCollateralAsset: false,
@@ -188,9 +188,38 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "create customer contract successfully"})
+	c.JSON(http.StatusOK, gin.H{"status": "create customer contract successfully", "contract": contract})
 }
 
-func (s *Server) HandleCustomerSignContract(c *gin.Context) {
+type customerSignContractRequest struct {
+	CustomerContractID int `json:"customer_contract_id"`
+}
 
+func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
+	req := customerSignContractRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusWaitingContractAgreement {
+		responseError(c, errors.New("invalid customer contract status"))
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(
+		req.CustomerContractID,
+		map[string]interface{}{"status": string(model.CustomerContractStatusWaitingContractPayment)},
+	); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully"})
 }

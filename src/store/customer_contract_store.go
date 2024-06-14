@@ -49,3 +49,21 @@ func (s *CustomerContractStore) IsOverlap(carID int, desiredStartDate time.Time,
 
 	return counter.Count > 0, nil
 }
+
+func (s *CustomerContractStore) FindByID(id int) (*model.CustomerContract, error) {
+	res := &model.CustomerContract{}
+	if err := s.db.Where("id = ?", id).Preload("Account").Preload("Car").Find(res).Error; err != nil {
+		fmt.Printf("CustomerContractStore: FindByID %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (s *CustomerContractStore) Update(id int, values map[string]interface{}) error {
+	if err := s.db.Where("id = ?", id).Updates(values).Error; err != nil {
+		fmt.Printf("CustomerContractStore: Update %v\n", err)
+		return err
+	}
+	return nil
+}

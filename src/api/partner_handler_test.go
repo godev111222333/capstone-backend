@@ -155,7 +155,7 @@ func TestSignContract(t *testing.T) {
 		StartDate: time.Now(),
 		EndDate:   time.Now().AddDate(0, period, 0),
 		Url:       FakePDF,
-		Status:    model.PartnerContractStatusWaitingForSigning,
+		Status:    model.PartnerContractStatusWaitingForAgreement,
 	}
 	require.NoError(t, TestDb.PartnerContractStore.Create(contract))
 
@@ -173,5 +173,5 @@ func TestSignContract(t *testing.T) {
 
 	updatedContract, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
 	require.NoError(t, err)
-	require.Equal(t, model.PartnerContractStatusSigned, updatedContract.Status)
+	require.Equal(t, model.PartnerContractStatusAgreed, updatedContract.Status)
 }

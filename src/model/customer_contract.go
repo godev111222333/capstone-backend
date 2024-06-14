@@ -6,12 +6,12 @@ type CustomerContractStatus string
 type CollateralType string
 
 const (
-	CustomerContractStatusWaitingContractSigning CustomerContractStatus = "waiting_for_signing"
-	CustomerContractStatusWaitingContractPayment CustomerContractStatus = "waiting_contract_payment"
-	CustomerContractStatusOrdered                CustomerContractStatus = "ordered"
-	CustomerContractStatusRenting                CustomerContractStatus = "renting"
-	CustomerContractStatusCompleted              CustomerContractStatus = "completed"
-	CustomerContractStatusCancel                 CustomerContractStatus = "canceled"
+	CustomerContractStatusWaitingContractAgreement CustomerContractStatus = "waiting_for_agreement"
+	CustomerContractStatusWaitingContractPayment   CustomerContractStatus = "waiting_contract_payment"
+	CustomerContractStatusOrdered                  CustomerContractStatus = "ordered"
+	CustomerContractStatusRenting                  CustomerContractStatus = "renting"
+	CustomerContractStatusCompleted                CustomerContractStatus = "completed"
+	CustomerContractStatusCancel                   CustomerContractStatus = "canceled"
 
 	CollateralTypeCash      CollateralType = "cash"
 	CollateralTypeMotorbike CollateralType = "motorbike"

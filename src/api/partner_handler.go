@@ -250,7 +250,7 @@ type partnerSignContractRequest struct {
 	CarID int `json:"car_id"`
 }
 
-func (s *Server) HandlePartnerSignContract(c *gin.Context) {
+func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if authPayload.Role != model.RoleNamePartner {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
@@ -286,19 +286,19 @@ func (s *Server) HandlePartnerSignContract(c *gin.Context) {
 		return
 	}
 
-	if contract.Status != model.PartnerContractStatusWaitingForSigning {
+	if contract.Status != model.PartnerContractStatusWaitingForAgreement {
 		responseError(c, errors.New("invalid contract status"))
 		return
 	}
 
 	if err := s.store.PartnerContractStore.Update(contract.ID, map[string]interface{}{
-		"status": string(model.PartnerContractStatusSigned),
+		"status": string(model.PartnerContractStatusAgreed),
 	}); err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "sign contract successfully"})
+	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully"})
 }
 
 type getContractRequest struct {

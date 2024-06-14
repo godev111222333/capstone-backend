@@ -191,7 +191,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 			CarID:     req.CarID,
 			StartDate: time.Now(),
 			EndDate:   time.Now().AddDate(0, car.Period, 0),
-			Status:    model.PartnerContractStatusWaitingForSigning,
+			Status:    model.PartnerContractStatusWaitingForAgreement,
 			Url:       FakePDF,
 		}
 		if err := s.store.PartnerContractStore.Create(contract); err != nil {
@@ -200,7 +200,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}
 	}
 
-	// TODO: handle after partner sign contract
+	// TODO: handle after partner agree contract
 	if req.Action == ApplicationActionApproveDelivery {
 		if car.Status != model.CarStatusWaitingDelivery {
 			c.JSON(http.StatusBadRequest, errorResponse(
@@ -219,8 +219,8 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 			return
 		}
 
-		if contract.Status != model.PartnerContractStatusSigned {
-			responseError(c, errors.New("partner must sign the contract first"))
+		if contract.Status != model.PartnerContractStatusAgreed {
+			responseError(c, errors.New("partner must agree the contract first"))
 			return
 		}
 

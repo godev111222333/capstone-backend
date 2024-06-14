@@ -23,6 +23,7 @@ type CustomerContract struct {
 	Customer                Account                `gorm:"foreignKey:CustomerID" json:"customer"`
 	CarID                   int                    `json:"car_id"`
 	Car                     Car                    `json:"car"`
+	CarPrice                int                    `json:"car_price"`
 	StartDate               time.Time              `json:"start_date"`
 	EndDate                 time.Time              `json:"end_date"`
 	Status                  CustomerContractStatus `json:"status"`

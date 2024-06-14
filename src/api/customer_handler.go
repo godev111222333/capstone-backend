@@ -175,6 +175,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
+		CarPrice:                car.Price,
 		StartDate:               req.StartDate,
 		EndDate:                 req.EndDate,
 		Status:                  model.CustomerContractStatusWaitingContractSigning,

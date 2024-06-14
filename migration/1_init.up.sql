@@ -152,6 +152,7 @@ create table "customer_contracts"
     "id"                         serial primary key,
     "customer_id"                bigint references accounts (id),
     "car_id"                     bigint references cars (id),
+    "car_price"                  bigint        not null default 0,
     "start_date"                 timestamptz            default (now()),
     "end_date"                   timestamptz            default (now()),
     "status"                     varchar(255)  not null default '',

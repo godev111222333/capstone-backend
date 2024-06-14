@@ -33,7 +33,7 @@ func (s *CarDocumentStore) Create(carID int, document *model.Document) error {
 }
 
 func (s *CarDocumentStore) GetCarImages(carID int) ([]string, error) {
-	rawSQL := `select * from documents where status = ? and category = ? and id in (select id from car_documents where car_id = ?) order by id asc limit 5;`
+	rawSQL := `select * from documents where status = ? and category = ? and id in (select id from car_documents where car_id = ?) order by id desc limit 5;`
 	images := []*model.Document{}
 	if err := s.db.Raw(rawSQL, model.DocumentStatusActive, model.DocumentCategoryCarImages, carID).Scan(&images).Error; err != nil {
 		fmt.Printf("CarDocumentStore: GetCarImages %v\n", err)
@@ -45,5 +45,10 @@ func (s *CarDocumentStore) GetCarImages(carID int) ([]string, error) {
 		urls[i] = image.Url
 	}
 
-	return urls, nil
+	reverse := make([]string, len(urls))
+	for i := range urls {
+		reverse[i] = urls[len(urls)-i-1]
+	}
+
+	return reverse, nil
 }

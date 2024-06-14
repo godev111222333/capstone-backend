@@ -190,3 +190,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "create customer contract successfully"})
 }
+
+func (s *Server) HandleCustomerSignContract(c *gin.Context) {
+
+}

@@ -36,10 +36,15 @@ func (s *DocumentStore) GetByCategory(
 		accID,
 		string(category),
 		model.DocumentStatusActive,
-	).Order("id asc").Limit(limit).Find(&docs).Error; err != nil {
+	).Order("id desc").Limit(limit).Find(&docs).Error; err != nil {
 		fmt.Printf("DocumentStore: GetByCategory %v\n", err)
 		return nil, err
 	}
 
-	return docs, nil
+	reverse := make([]*model.Document, len(docs))
+	for i := range docs {
+		reverse[i] = docs[len(docs)-i-1]
+	}
+
+	return reverse, nil
 }

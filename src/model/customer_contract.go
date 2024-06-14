@@ -6,7 +6,7 @@ type CustomerContractStatus string
 type CollateralType string
 
 const (
-	CustomerContractStatusWaitingContractSigning CustomerContractStatus = "waiting_contract_signing"
+	CustomerContractStatusWaitingContractSigning CustomerContractStatus = "waiting_for_signing"
 	CustomerContractStatusWaitingContractPayment CustomerContractStatus = "waiting_contract_payment"
 	CustomerContractStatusOrdered                CustomerContractStatus = "ordered"
 	CustomerContractStatusRenting                CustomerContractStatus = "renting"

@@ -138,13 +138,19 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 		return
 	}
 
+	if car.Status != model.CarStatusPendingApplicationPendingPrice {
+		responseError(c, errors.New("invalid state"))
+		return
+	}
+
 	if car.Account.Email != authPayload.Email {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}
 
 	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
-		"price": req.NewPrice,
+		"price":  req.NewPrice,
+		"status": model.MoveNextCarState(car.Status),
 	}); err != nil {
 		responseInternalServerError(c, err)
 		return

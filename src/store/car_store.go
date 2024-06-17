@@ -42,7 +42,7 @@ func (s *CarStore) GetAll(offset, limit int, status model.CarStatus) ([]*model.C
 	} else {
 		if err := s.db.Where("status like ?", "%"+string(status)+"%").
 			Offset(offset).Limit(limit).
-			Order("ID desc").Find(&res).Error; err != nil {
+			Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
 			fmt.Printf("CarStore: GetAll %v\n", err)
 			return nil, err
 		}

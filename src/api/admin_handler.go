@@ -12,8 +12,6 @@ import (
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
-const FakePDF = "https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/vib_contract.pdf"
-
 type getCarsRequest struct {
 	Pagination
 	CarStatus string `form:"car_status"`

@@ -154,7 +154,6 @@ func TestSignContract(t *testing.T) {
 		CarID:     car.ID,
 		StartDate: time.Now(),
 		EndDate:   time.Now().AddDate(0, period, 0),
-		Url:       FakePDF,
 		Status:    model.PartnerContractStatusWaitingForAgreement,
 	}
 	require.NoError(t, TestDb.PartnerContractStore.Create(contract))

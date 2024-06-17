@@ -175,7 +175,6 @@ func TestHandleApproveCar(t *testing.T) {
 			CarID:     car.ID,
 			StartDate: time.Now(),
 			EndDate:   time.Now().AddDate(0, 3, 0),
-			Url:       FakePDF,
 			Status:    model.PartnerContractStatusAgreed,
 		}
 		require.NoError(t, TestDb.PartnerContractStore.Create(contract))

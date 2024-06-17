@@ -8,6 +8,10 @@ type (
 )
 
 const (
+	ExtensionPDF = "pdf"
+)
+
+const (
 	DocumentCategoryCarImages      DocumentCategory = "CAR_IMAGES"
 	DocumentCategoryCaveat         DocumentCategory = "CAR_CAVEAT"
 	DocumentCategoryDrivingLicense DocumentCategory = "DRIVING_LICENSE"

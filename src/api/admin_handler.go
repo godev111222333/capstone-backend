@@ -200,7 +200,6 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}
 	}
 
-	// TODO: handle after partner agree contract
 	if req.Action == ApplicationActionApproveDelivery {
 		if car.Status != model.CarStatusWaitingDelivery {
 			c.JSON(http.StatusBadRequest, errorResponse(

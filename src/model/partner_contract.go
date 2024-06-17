@@ -12,7 +12,7 @@ const (
 type PartnerContract struct {
 	ID        int                   `json:"id"`
 	CarID     int                   `json:"car_id"`
-	Car       Car                   `json:"car"`
+	Car       Car                   `json:"car" gorm:"foreignKey:CarID"`
 	StartDate time.Time             `json:"start_date"`
 	EndDate   time.Time             `json:"end_date"`
 	Url       string                `json:"url"`

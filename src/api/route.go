@@ -31,7 +31,7 @@ const (
 	RouteAdminGetCars                       = "admin_get_cars"
 	RouteAdminGetCarDetails                 = "admin_get_car_details"
 	RouteAdminApproveCar                    = "admin_approve_car"
-	RoutePartnerSignContract                = "partner_sign_contract"
+	RoutePartnerAgreeContract               = "partner_agree_contract"
 	RouteGetPartnerContractDetails          = "get_partner_contract_detail"
 	RouteCustomerFindCars                   = "customer_find_cars"
 	RouteCustomerRentCar                    = "customer_rent_car"
@@ -192,7 +192,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleAdminApproveOrRejectCar,
 			RequireAuth: true,
 		},
-		RoutePartnerSignContract: {
+		RoutePartnerAgreeContract: {
 			Path:        "/partner/contract/agree",
 			Method:      http.MethodPut,
 			Handler:     s.HandlePartnerAgreeContract,

@@ -27,7 +27,7 @@ func (s *PartnerContractStore) Create(c *model.PartnerContract) error {
 
 func (s *PartnerContractStore) GetByCarID(carID int) (*model.PartnerContract, error) {
 	res := &model.PartnerContract{}
-	if err := s.db.Where("car_id = ?", carID).Preload("Car").First(res).Error; err != nil {
+	if err := s.db.Where("car_id = ?", carID).Preload("Car").Preload("Car.CarModel").Find(res).Error; err != nil {
 		fmt.Printf("PartnerContractStore: GetByCarID %v\n", err)
 		return nil, err
 	}

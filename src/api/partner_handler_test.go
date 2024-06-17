@@ -159,7 +159,7 @@ func TestSignContract(t *testing.T) {
 	}
 	require.NoError(t, TestDb.PartnerContractStore.Create(contract))
 
-	route := TestServer.AllRoutes()[RoutePartnerSignContract]
+	route := TestServer.AllRoutes()[RoutePartnerAgreeContract]
 	r := partnerSignContractRequest{CarID: car.ID}
 	bz, err := json.Marshal(r)
 	require.NoError(t, err)
@@ -174,4 +174,49 @@ func TestSignContract(t *testing.T) {
 	updatedContract, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
 	require.NoError(t, err)
 	require.Equal(t, model.PartnerContractStatusAgreed, updatedContract.Status)
+}
+
+func TestRenderPartnerContract(t *testing.T) {
+	t.Skip()
+
+	TestServer.pdfService = NewPDFService(TestConfig.PDFService)
+	defer func() {
+		TestServer.pdfService = nil
+	}()
+
+	partner := &model.Account{
+		FirstName:                "Cuong",
+		LastName:                 "Tran Van",
+		IdentificationCardNumber: "123456789",
+		Email:                    "ppp1@gmail.com",
+		Status:                   model.AccountStatusActive,
+		RoleID:                   model.RoleIDPartner,
+	}
+	require.NoError(t, TestDb.AccountStore.Create(partner))
+	carModel := &model.CarModel{Brand: "BMW", Model: "VIP 2", NumberOfSeats: 4, Year: 2024}
+	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+	car := &model.Car{
+		PartnerID:    partner.ID,
+		CarModelID:   carModel.ID,
+		LicensePlate: "96A1",
+		Price:        400_000,
+		Period:       6,
+	}
+	require.NoError(t, TestDb.CarStore.Create(car))
+
+	now := time.Now()
+	contract := &model.PartnerContract{
+		CarID:     car.ID,
+		StartDate: now,
+		EndDate:   now.AddDate(0, 6, 0),
+	}
+	require.NoError(t, TestDb.PartnerContractStore.Create(contract))
+	ct, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
+	require.NoError(t, err)
+
+	require.NoError(t, TestServer.RenderPartnerPDF(partner, &ct.Car))
+
+	updatedContract, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedContract.Url)
 }

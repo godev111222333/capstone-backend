@@ -34,11 +34,17 @@ type OTPConfig struct {
 	Password string `yaml:"password"`
 }
 
+type PDFServiceConfig struct {
+	Url     string        `yaml:"url"`
+	Timeout time.Duration `yaml:"timeout"`
+}
+
 type GlobalConfig struct {
-	Database  *DatabaseConfig  `yaml:"database"`
-	ApiServer *ApiServerConfig `yaml:"api_server"`
-	AWS       *AWSConfig       `yaml:"aws"`
-	OTP       *OTPConfig       `yaml:"otp"`
+	Database   *DatabaseConfig   `yaml:"database"`
+	ApiServer  *ApiServerConfig  `yaml:"api_server"`
+	AWS        *AWSConfig        `yaml:"aws"`
+	OTP        *OTPConfig        `yaml:"otp"`
+	PDFService *PDFServiceConfig `yaml:"pdf_service"`
 }
 
 func LoadConfig(path string) (*GlobalConfig, error) {

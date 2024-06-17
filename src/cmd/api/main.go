@@ -28,7 +28,9 @@ func main() {
 		panic(err)
 	}
 
-	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService, bankMetadata)
+	pdfService := api.NewPDFService(cfg.PDFService)
+
+	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService, bankMetadata, pdfService)
 	go func() {
 		if err := server.Run(); err != nil {
 			panic(err)

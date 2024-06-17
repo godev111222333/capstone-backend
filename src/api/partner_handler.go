@@ -2,12 +2,9 @@ package api
 
 import (
 	"errors"
-	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"time"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
@@ -160,70 +157,10 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 		return
 	}
 
-	go func() {
-		partner, err := s.store.AccountStore.GetByEmail(authPayload.Email)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		_ = s.RenderPartnerPDF(partner, car)
-	}()
-
 	c.JSON(http.StatusOK, gin.H{
 		"car_id":    car.ID,
 		"new_price": req.NewPrice,
 	})
-}
-
-func (s *Server) RenderPartnerPDF(partner *model.Account, car *model.Car) error {
-	now := time.Now()
-	year, month, date := now.Date()
-	layoutDateMonthYear := "01/02/2006"
-
-	contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	startYear, startMonth, startDate := contract.StartDate.Date()
-	endYear, endMonth, endDate := contract.EndDate.Date()
-
-	docUUID, err := s.pdfService.Render(RenderTypePartner, map[string]string{
-		"now_date":              strconv.Itoa(date),
-		"now_month":             strconv.Itoa(int(month)),
-		"now_year":              strconv.Itoa(year),
-		"partner_fullname":      partner.LastName + " " + partner.FirstName,
-		"partner_date_of_birth": partner.DateOfBirth.Format(layoutDateMonthYear),
-		"partner_id_card":       partner.IdentificationCardNumber,
-		"partner_address":       "dummy address",
-		"brand_model":           car.CarModel.Brand + " " + car.CarModel.Model,
-		"license_plate":         car.LicensePlate,
-		"number_of_seats":       strconv.Itoa(car.CarModel.NumberOfSeats),
-		"car_year":              strconv.Itoa(car.CarModel.Year),
-		"price":                 strconv.Itoa(car.Price),
-		"period":                strconv.Itoa(car.Period),
-		"period_start_date":     strconv.Itoa(startDate),
-		"period_start_month":    strconv.Itoa(int(startMonth)),
-		"period_start_year":     strconv.Itoa(startYear),
-		"period_end_date":       strconv.Itoa(endDate),
-		"period_end_month":      strconv.Itoa(int(endMonth)),
-		"period_end_year":       strconv.Itoa(endYear),
-	})
-	if err != nil {
-		fmt.Printf("error when rendering partner contract %v\n", err)
-		return err
-	}
-
-	if err := s.store.PartnerContractStore.Update(
-		contract.ID,
-		map[string]interface{}{"url": s.fromUUIDToURL(docUUID, model.ExtensionPDF)},
-	); err != nil {
-		fmt.Printf("error when update partner contract URL %v\n", err)
-		return err
-	}
-
-	return nil
 }
 
 type Pagination struct {

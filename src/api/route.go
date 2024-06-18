@@ -40,6 +40,8 @@ const (
 	RouteCustomerGetContracts               = "customer_get_contracts"
 	RouteCustomerGetContractDetails         = "customer_get_contract_details"
 	RouteCustomerAgreeContract              = "customer_agree_contract"
+	RouteVNPayIPNURL                        = "vn_pay_ipn_url"
+	RouteVNPayReturnURL                     = "vn_pay_return_url"
 )
 
 type RouteInfo = struct {
@@ -254,6 +256,18 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodPut,
 			Handler:     s.HandleCustomerAgreeContract,
 			RequireAuth: true,
+		},
+		RouteVNPayIPNURL: {
+			Path:        "/IPN",
+			Method:      http.MethodGet,
+			Handler:     s.HandleVnPayIPN,
+			RequireAuth: false,
+		},
+		RouteVNPayReturnURL: {
+			Path:        "/ReturnUrl",
+			Method:      http.MethodGet,
+			Handler:     s.HandleVnPayReturnURL,
+			RequireAuth: false,
 		},
 	}
 }

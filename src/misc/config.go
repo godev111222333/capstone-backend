@@ -39,12 +39,25 @@ type PDFServiceConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
+type VNPayConfig struct {
+	PayURL     string `yaml:"pay_url"`
+	HashSecret string `yaml:"hash_secret"`
+	Version    string `yaml:"version"`
+	Command    string `yaml:"command"`
+	TMNCode    string `yaml:"tmn_code"`
+	BankCode   string `yaml:"bank_code"`
+	Locale     string `yaml:"locale"`
+	ReturnURL  string `yaml:"return_url"`
+	IpnURL     string `yaml:"ipn_url"`
+}
+
 type GlobalConfig struct {
 	Database   *DatabaseConfig   `yaml:"database"`
 	ApiServer  *ApiServerConfig  `yaml:"api_server"`
 	AWS        *AWSConfig        `yaml:"aws"`
 	OTP        *OTPConfig        `yaml:"otp"`
 	PDFService *PDFServiceConfig `yaml:"pdf_service"`
+	VNPay      *VNPayConfig      `yaml:"vn_pay"`
 }
 
 func LoadConfig(path string) (*GlobalConfig, error) {

@@ -305,6 +305,13 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		return
 	}
 
+	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
+		"status": string(model.CarStatusWaitingDelivery),
+	}); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully"})
 }
 

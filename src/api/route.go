@@ -37,6 +37,8 @@ const (
 	RouteCustomerRentCar                    = "customer_rent_car"
 	RouteCustomerUploadDrivingLicenseImages = "customer_upload_driving_license_images"
 	RouteCustomerGetDrivingLicenseImages    = "customer_get_driving_license_images"
+	RouteCustomerGetContracts               = "customer_get_contracts"
+	RouteCustomerGetContractDetails         = "customer_get_contract_details"
 )
 
 type RouteInfo = struct {
@@ -232,6 +234,18 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/customer/driving_license",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetDrivingLicenseImages,
+			RequireAuth: true,
+		},
+		RouteCustomerGetContracts: {
+			Path:        "/customer/contracts",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCustomerGetContracts,
+			RequireAuth: true,
+		},
+		RouteCustomerGetContractDetails: {
+			Path:        "/customer/contract/:customer_contract_id",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCustomerGetContractDetails,
 			RequireAuth: true,
 		},
 	}

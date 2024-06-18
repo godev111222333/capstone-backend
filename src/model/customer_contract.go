@@ -12,6 +12,7 @@ const (
 	CustomerContractStatusRenting                  CustomerContractStatus = "renting"
 	CustomerContractStatusCompleted                CustomerContractStatus = "completed"
 	CustomerContractStatusCancel                   CustomerContractStatus = "canceled"
+	CustomerContractStatusNoFilter                 CustomerContractStatus = "no_filter"
 
 	CollateralTypeCash      CollateralType = "cash"
 	CollateralTypeMotorbike CollateralType = "motorbike"

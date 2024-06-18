@@ -67,3 +67,24 @@ func (s *CustomerContractStore) Update(id int, values map[string]interface{}) er
 	}
 	return nil
 }
+
+func (s *CustomerContractStore) GetByCustomerID(cusID int, status model.CustomerContractStatus, offset, limit int) ([]*model.CustomerContract, error) {
+	var res []*model.CustomerContract
+	if limit == 0 {
+		limit = 1000
+	}
+
+	if status == model.CustomerContractStatusNoFilter {
+		if err := s.db.Where("customer_id = ?", cusID).Preload("Account").Preload("Car").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
+			return nil, err
+		}
+	} else {
+		if err := s.db.Where("customer_id = ? and status like ?", cusID, "%"+string(status)+"%").Preload("Account").Preload("Car").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
+			return nil, err
+		}
+	}
+
+	return res, nil
+}

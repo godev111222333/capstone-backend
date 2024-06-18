@@ -171,6 +171,11 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
+	if car.Status != model.CarStatusActive {
+		responseError(c, errors.New("invalid car status. require active"))
+		return
+	}
+
 	rentPrice := car.Price * (req.EndDate.Day() - req.StartDate.Day())
 	insuranceAmount := rentPrice / 10
 	contract := &model.CustomerContract{
@@ -227,4 +232,66 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully"})
+}
+
+type customerGetContractsRequest struct {
+	*Pagination
+	ContractStatus string `form:"contract_status"`
+}
+
+func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := customerGetContractsRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	status := model.CustomerContractStatusNoFilter
+	if len(req.ContractStatus) > 0 {
+		status = model.CustomerContractStatus(req.ContractStatus)
+	}
+
+	contracts, err := s.store.CustomerContractStore.GetByCustomerID(acct.ID, status, req.Offset, req.Limit)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, contracts)
+}
+
+func (s *Server) HandleCustomerGetContractDetails(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	id := c.Param("customer_contract_id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(idInt)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	if contract.CustomerID != acct.ID {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		return
+	}
+
+	c.JSON(http.StatusOK, contract)
 }

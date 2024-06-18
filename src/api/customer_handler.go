@@ -201,12 +201,12 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "create customer contract successfully", "contract": contract})
 }
 
-type customerSignContractRequest struct {
+type customerAgreeContractRequest struct {
 	CustomerContractID int `json:"customer_contract_id"`
 }
 
 func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
-	req := customerSignContractRequest{}
+	req := customerAgreeContractRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		responseError(c, err)
 		return

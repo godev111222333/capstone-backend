@@ -258,9 +258,6 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 	startYear, startMonth, startDate := contract.StartDate.Date()
 	endYear, endMonth, endDate := contract.EndDate.Date()
 
-	if s.pdfService == nil {
-		fmt.Println("WTFFFFFFFFFF")
-	}
 	docUUID, err := s.pdfService.Render(RenderTypePartner, map[string]string{
 		"now_date":              strconv.Itoa(date),
 		"now_month":             strconv.Itoa(int(month)),
@@ -268,12 +265,12 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 		"partner_fullname":      partner.LastName + " " + partner.FirstName,
 		"partner_date_of_birth": partner.DateOfBirth.Format(layoutDateMonthYear),
 		"partner_id_card":       partner.IdentificationCardNumber,
-		"partner_address":       "dummy address",
+		"partner_address":       "",
 		"brand_model":           car.CarModel.Brand + " " + car.CarModel.Model,
 		"license_plate":         car.LicensePlate,
 		"number_of_seats":       strconv.Itoa(car.CarModel.NumberOfSeats),
 		"car_year":              strconv.Itoa(car.CarModel.Year),
-		"price":                 strconv.Itoa(car.Price * car.Period),
+		"price":                 strconv.Itoa(car.Price * car.Period * 30),
 		"period":                strconv.Itoa(car.Period),
 		"period_start_date":     strconv.Itoa(startDate),
 		"period_start_month":    strconv.Itoa(int(startMonth)),

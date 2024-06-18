@@ -23,7 +23,7 @@ type CustomerContract struct {
 	Customer                Account                `gorm:"foreignKey:CustomerID" json:"customer"`
 	CarID                   int                    `json:"car_id"`
 	Car                     Car                    `json:"car"`
-	CarPrice                int                    `json:"car_price"`
+	RentPrice               int                    `json:"rent_price"`
 	StartDate               time.Time              `json:"start_date"`
 	EndDate                 time.Time              `json:"end_date"`
 	Status                  CustomerContractStatus `json:"status"`
@@ -31,6 +31,7 @@ type CustomerContract struct {
 	InsuranceAmount         int                    `json:"insurance_amount"`
 	CollateralType          CollateralType         `json:"collateral_type"`
 	IsReturnCollateralAsset bool                   `json:"is_return_collateral_asset"`
+	Url                     string                 `json:"url"`
 	CreatedAt               time.Time              `json:"created_at"`
 	UpdatedAt               time.Time              `json:"updated_at"`
 }

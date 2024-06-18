@@ -14,8 +14,6 @@ import (
 )
 
 func TestAccountHandlerRawLogin(t *testing.T) {
-	t.Parallel()
-
 	t.Run("HandleRawLogin", func(t *testing.T) {
 		hashedPassword, err := TestServer.hashVerifier.Hash("password")
 		require.NoError(t, err)
@@ -68,11 +66,7 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 }
 
 func TestRenewAccessToken(t *testing.T) {
-	t.Parallel()
-
 	t.Run("renew access token successfully", func(t *testing.T) {
-		t.Parallel()
-
 		// Create and login as partner role
 		hashedPassword, err := TestServer.hashVerifier.Hash("password")
 		require.NoError(t, err)

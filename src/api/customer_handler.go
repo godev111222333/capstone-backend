@@ -171,11 +171,12 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	insuranceAmount := car.Price / 10
+	rentPrice := car.Price * (req.EndDate.Day() - req.StartDate.Day())
+	insuranceAmount := rentPrice / 10
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
-		CarPrice:                car.Price,
+		RentPrice:               rentPrice,
 		StartDate:               req.StartDate,
 		EndDate:                 req.EndDate,
 		Status:                  model.CustomerContractStatusWaitingContractAgreement,
@@ -187,6 +188,10 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		responseError(c, err)
 		return
 	}
+
+	go func() {
+		_ = s.RenderCustomerContractPDF(customer, car, contract)
+	}()
 
 	c.JSON(http.StatusOK, gin.H{"status": "create customer contract successfully", "contract": contract})
 }

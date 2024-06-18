@@ -101,11 +101,7 @@ func TestRegisterCarHandler(t *testing.T) {
 }
 
 func TestUpdateRentalPriceHandler(t *testing.T) {
-	t.Parallel()
-
 	t.Run("update rental price", func(t *testing.T) {
-		t.Parallel()
-
 		acct, accessPayload := seedAccountAndLogin("minh@gmail.com", "xxx", model.RoleIDPartner)
 		carModel := &model.CarModel{
 			Brand: "Lambo",
@@ -115,7 +111,7 @@ func TestUpdateRentalPriceHandler(t *testing.T) {
 			PartnerID:  acct.ID,
 			CarModelID: carModel.ID,
 			Price:      100_000,
-			Status:     model.CarStatusPendingApproval,
+			Status:     model.CarStatusPendingApplicationPendingPrice,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
 
@@ -178,9 +174,10 @@ func TestSignContract(t *testing.T) {
 func TestRenderPartnerContract(t *testing.T) {
 	t.Skip()
 
+	previousPdfService := TestServer.pdfService
 	TestServer.pdfService = NewPDFService(TestConfig.PDFService)
 	defer func() {
-		TestServer.pdfService = nil
+		TestServer.pdfService = previousPdfService
 	}()
 
 	partner := &model.Account{
@@ -213,9 +210,71 @@ func TestRenderPartnerContract(t *testing.T) {
 	ct, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
 	require.NoError(t, err)
 
-	require.NoError(t, TestServer.RenderPartnerPDF(partner, &ct.Car))
+	require.NoError(t, TestServer.RenderPartnerContractPDF(partner, &ct.Car))
 
 	updatedContract, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedContract.Url)
+}
+
+func TestRenderCustomerContract(t *testing.T) {
+	t.Skip()
+
+	previousPdfService := TestServer.pdfService
+	TestServer.pdfService = NewPDFService(TestConfig.PDFService)
+	defer func() {
+		TestServer.pdfService = previousPdfService
+	}()
+
+	partner := &model.Account{
+		FirstName:                "Khanh",
+		LastName:                 "Tran Van",
+		IdentificationCardNumber: "987678976",
+		Email:                    "khanh@gmail.com",
+		Status:                   model.AccountStatusActive,
+		RoleID:                   model.RoleIDPartner,
+	}
+	require.NoError(t, TestDb.AccountStore.Create(partner))
+	carModel := &model.CarModel{Brand: "BMW", Model: "VIP 2", NumberOfSeats: 4, Year: 2024}
+	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+	car := &model.Car{
+		PartnerID:    partner.ID,
+		CarModelID:   carModel.ID,
+		LicensePlate: "96A1",
+		Price:        400_000,
+		Period:       6,
+	}
+	require.NoError(t, TestDb.CarStore.Create(car))
+	var err error
+	car, err = TestDb.CarStore.GetByID(car.ID)
+	require.NoError(t, err)
+
+	customer := &model.Account{
+		FirstName:                "Toan",
+		LastName:                 "Le Thanh",
+		IdentificationCardNumber: "88888888",
+		Email:                    "toan@gmail.com",
+		Status:                   model.AccountStatusActive,
+		RoleID:                   model.RoleIDCustomer,
+	}
+	require.NoError(t, TestDb.AccountStore.Create(customer))
+
+	now := time.Now()
+	contract := &model.CustomerContract{
+		CustomerID:              customer.ID,
+		CarID:                   car.ID,
+		RentPrice:               car.Price * 3,
+		StartDate:               now,
+		EndDate:                 now.AddDate(0, 0, 3),
+		Status:                  model.CustomerContractStatusWaitingContractAgreement,
+		InsuranceAmount:         car.Price / 10,
+		CollateralType:          model.CollateralTypeCash,
+		IsReturnCollateralAsset: false,
+	}
+	require.NoError(t, TestDb.CustomerContractStore.Create(contract))
+
+	require.NoError(t, TestServer.RenderCustomerContractPDF(customer, car, contract))
+	updatedContract, err := TestDb.CustomerContractStore.FindByID(contract.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, updatedContract.Url)
 }

@@ -11,7 +11,6 @@ import (
 
 func TestSessionStore(t *testing.T) {
 	t.Run("create and get session", func(t *testing.T) {
-		t.Parallel()
 
 		id := uuid.New()
 		require.NoError(t, TestDb.SessionStore.Create(&model.Session{

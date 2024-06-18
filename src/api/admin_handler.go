@@ -12,6 +12,8 @@ import (
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
+const layoutDateMonthYear = "01/02/2006"
+
 type getCarsRequest struct {
 	Pagination
 	CarStatus string `form:"car_status"`
@@ -202,7 +204,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 				fmt.Println(err)
 				return
 			}
-			if err := s.RenderPartnerPDF(partner, car); err != nil {
+			if err := s.RenderPartnerContractPDF(partner, car); err != nil {
 				fmt.Println(err)
 			}
 		}()
@@ -244,10 +246,9 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("%s car successfully", req.Action)})
 }
 
-func (s *Server) RenderPartnerPDF(partner *model.Account, car *model.Car) error {
+func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car) error {
 	now := time.Now()
 	year, month, date := now.Date()
-	layoutDateMonthYear := "01/02/2006"
 
 	contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
 	if err != nil {
@@ -257,6 +258,9 @@ func (s *Server) RenderPartnerPDF(partner *model.Account, car *model.Car) error 
 	startYear, startMonth, startDate := contract.StartDate.Date()
 	endYear, endMonth, endDate := contract.EndDate.Date()
 
+	if s.pdfService == nil {
+		fmt.Println("WTFFFFFFFFFF")
+	}
 	docUUID, err := s.pdfService.Render(RenderTypePartner, map[string]string{
 		"now_date":              strconv.Itoa(date),
 		"now_month":             strconv.Itoa(int(month)),
@@ -269,7 +273,7 @@ func (s *Server) RenderPartnerPDF(partner *model.Account, car *model.Car) error 
 		"license_plate":         car.LicensePlate,
 		"number_of_seats":       strconv.Itoa(car.CarModel.NumberOfSeats),
 		"car_year":              strconv.Itoa(car.CarModel.Year),
-		"price":                 strconv.Itoa(car.Price),
+		"price":                 strconv.Itoa(car.Price * car.Period),
 		"period":                strconv.Itoa(car.Period),
 		"period_start_date":     strconv.Itoa(startDate),
 		"period_start_month":    strconv.Itoa(int(startMonth)),
@@ -288,6 +292,52 @@ func (s *Server) RenderPartnerPDF(partner *model.Account, car *model.Car) error 
 		map[string]interface{}{"url": s.fromUUIDToURL(docUUID, model.ExtensionPDF)},
 	); err != nil {
 		fmt.Printf("error when update partner contract URL %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) RenderCustomerContractPDF(
+	customer *model.Account, car *model.Car,
+	contract *model.CustomerContract,
+) error {
+	nowYear, nowMonth, nowDate := time.Now().Date()
+	startDate, endDate := contract.StartDate, contract.EndDate
+	startHour, startDay, startMonth, startYear := startDate.Hour(), startDate.Day(), int(startDate.Month()), startDate.Year()
+	endHour, endDay, endMonth, endYear := endDate.Hour(), endDate.Day(), int(endDate.Month()), endDate.Year()
+	docUUID, err := s.pdfService.Render(RenderTypeCustomer, map[string]string{
+		"now_date":               strconv.Itoa(nowDate),
+		"now_month":              strconv.Itoa(int(nowMonth)),
+		"now_year":               strconv.Itoa(nowYear),
+		"customer_fullname":      customer.LastName + " " + customer.FirstName,
+		"customer_date_of_birth": customer.DateOfBirth.Format(layoutDateMonthYear),
+		"customer_id_card":       customer.IdentificationCardNumber,
+		"customer_address":       "",
+		"brand_model":            car.CarModel.Brand + " " + car.CarModel.Model,
+		"license_plate":          car.LicensePlate,
+		"number_of_seats":        strconv.Itoa(car.CarModel.NumberOfSeats),
+		"car_year":               strconv.Itoa(car.CarModel.Year),
+		"price":                  strconv.Itoa(car.Price*endDay - startDay),
+		"start_hour":             strconv.Itoa(startHour),
+		"start_date":             strconv.Itoa(startDay),
+		"start_month":            strconv.Itoa(startMonth),
+		"start_year":             strconv.Itoa(startYear),
+		"end_hour":               strconv.Itoa(endHour),
+		"end_date":               strconv.Itoa(endDay),
+		"end_month":              strconv.Itoa(endMonth),
+		"end_year":               strconv.Itoa(endYear),
+	})
+	if err != nil {
+		fmt.Printf("error when rendering customer contract %v\n", err)
+		return err
+	}
+
+	if err := s.store.CustomerContractStore.Update(
+		contract.ID,
+		map[string]interface{}{"url": s.fromUUIDToURL(docUUID, model.ExtensionPDF)},
+	); err != nil {
+		fmt.Printf("error when update customer contract URL %v\n", err)
 		return err
 	}
 

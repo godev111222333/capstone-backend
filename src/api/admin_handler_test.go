@@ -88,11 +88,7 @@ func TestAdminHandler_GetCar(t *testing.T) {
 }
 
 func TestHandleApproveCar(t *testing.T) {
-	t.Parallel()
-
 	t.Run("reject car", func(t *testing.T) {
-		t.Parallel()
-
 		carModel := &model.CarModel{Brand: "toyota"}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		partner, _ := seedAccountAndLogin("partner_vip", "aaa", model.RoleIDPartner)
@@ -125,7 +121,11 @@ func TestHandleApproveCar(t *testing.T) {
 	})
 
 	t.Run("approve registration car", func(t *testing.T) {
-		t.Parallel()
+		previousPdfService := TestServer.pdfService
+		TestServer.pdfService = &MockPDFService{}
+		defer func() {
+			TestServer.pdfService = previousPdfService
+		}()
 
 		carModel := &model.CarModel{Brand: "toyota"}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
@@ -156,11 +156,10 @@ func TestHandleApproveCar(t *testing.T) {
 		updatedCar, err := TestDb.CarStore.GetByID(car.ID)
 		require.NoError(t, err)
 		require.Equal(t, model.CarStatusApproved, updatedCar.Status)
+		time.Sleep(2 * time.Second)
 	})
 
 	t.Run("approve delivery car", func(t *testing.T) {
-		t.Parallel()
-
 		carModel := &model.CarModel{Brand: "toyota"}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		partner, _ := seedAccountAndLogin("partner_vip3", "aaa", model.RoleIDPartner)

@@ -152,7 +152,7 @@ create table "customer_contracts"
     "id"                         serial primary key,
     "customer_id"                bigint references accounts (id),
     "car_id"                     bigint references cars (id),
-    "car_price"                  bigint        not null default 0,
+    "rent_price"                 bigint        not null default 0,
     "start_date"                 timestamptz            default (now()),
     "end_date"                   timestamptz            default (now()),
     "status"                     varchar(255)  not null default '',
@@ -160,6 +160,7 @@ create table "customer_contracts"
     "insurance_amount"           bigint        not null default 0,
     "collateral_type"            varchar(255)  not null default '',
     "is_return_collateral_asset" boolean                default false,
+    "url"                        varchar(1023) not null default '',
     "created_at"                 timestamptz            DEFAULT (now()),
     "updated_at"                 timestamptz            DEFAULT (now())
 );

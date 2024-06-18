@@ -258,13 +258,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 		},
 		RouteVNPayIPNURL: {
-			Path:        "/IPN",
+			Path:        "/vnpay/ipn",
 			Method:      http.MethodGet,
 			Handler:     s.HandleVnPayIPN,
 			RequireAuth: false,
 		},
 		RouteVNPayReturnURL: {
-			Path:        "/ReturnUrl",
+			Path:        "/vnpay/return_url",
 			Method:      http.MethodGet,
 			Handler:     s.HandleVnPayReturnURL,
 			RequireAuth: false,

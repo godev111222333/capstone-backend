@@ -19,7 +19,6 @@ type PayRequest struct {
 	Command     string `url:"vnp_Command"`
 	TmnCode     string `url:"vnp_TmnCode"`
 	Amount      int    `url:"vnp_Amount"`
-	BankCode    string `url:"vnp_BankCode"`
 	CreatedDate string `url:"vnp_CreateDate"`
 	CurrCode    string `url:"vnp_CurrCode"`
 	IpAddress   string `url:"vnp_IpAddr"`
@@ -61,8 +60,7 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, data string) (s
 		Version:     s.cfg.Version,
 		Command:     s.cfg.Command,
 		TmnCode:     s.cfg.TMNCode,
-		Amount:      amount,
-		BankCode:    s.cfg.BankCode,
+		Amount:      amount * 100,
 		CreatedDate: now.Format(layoutyyyyMMddHHmmss),
 		CurrCode:    "VND",
 		IpAddress:   "123.123.123.123",
@@ -85,6 +83,7 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, data string) (s
 	secureHash := hex.EncodeToString(s.signer.Sum(nil))
 
 	req.URL.RawQuery = values.Encode() + "&vnp_SecureHash=" + secureHash
+	fmt.Println(secureHash)
 	return req.URL.String(), nil
 }
 
@@ -111,9 +110,12 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "update payment successfully"})
+	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 }
 
 func (s *Server) HandleVnPayReturnURL(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
+
+//https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=1806000&vnp_Command=pay&vnp_CreateDate=20210801153333&vnp_CurrCode=VND&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+%3A5&vnp_OrderType=other&vnp_ReturnUrl=https%3A%2F%2Fdomainmerchant.vn%2FReturnUrl&vnp_TmnCode=DEMOV210&vnp_TxnRef=5&vnp_Version=2.1.0&vnp_SecureHash=3e0d61a0c0534b2e36680b3f7277743e8784cc4e1d68fa7d276e79c23be7d6318d338b477910a27992f5057bb1582bd44bd82ae8009ffaf6d141219218625c42
+//https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=10000000&vnp_Command=pay&vnp_CreateDate=20241806211631&vnp_CurrCode=VND&vnp_ExpireDate=20241906211631&vnp_IpAddr=123.123.123.123&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+cho+payment+%231+tai+MinhHungCar.+Tong+so+tien+100000&vnp_OrderType=other&vnp_ReturnUrl=https%3A%2F%2Fminhhungcar.xyz%2Fvnpay%2Freturn_url&vnp_SecureHash=&vnp_TmnCode=UPUEB83F&vnp_TxnRef=1&vnp_Version=2.1.0&vnp_SecureHash=3eaab587793416839df5aed76561451c561d80187d95028c29b8261ad27ac0fa8eb1e39903149254f67db59968464e90853994a56ba0f7389e1a55ec1af56d4c

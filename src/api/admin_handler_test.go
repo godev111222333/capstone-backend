@@ -68,7 +68,7 @@ func TestAdminHandler_GetCar(t *testing.T) {
 
 	adminAuthPayload := login("admin", "admin")
 
-	route := TestServer.AllRoutes()[RouteAdminGetCarDetails]
+	route := TestServer.AllRoutes()[RouteGetCarDetail]
 	req, err := http.NewRequest(
 		route.Method,
 		strings.Replace(route.Path, ":id", strconv.Itoa(car.ID), 1),

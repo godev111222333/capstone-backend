@@ -29,7 +29,7 @@ const (
 	RouteGetGarageConfigs                   = "get_garage_configs"
 	RouteUpdateGarageConfigs                = "update_garage_configs"
 	RouteAdminGetCars                       = "admin_get_cars"
-	RouteAdminGetCarDetails                 = "admin_get_car_details"
+	RouteGetCarDetail                       = "admin_get_car_details"
 	RouteAdminApproveCar                    = "admin_approve_car"
 	RoutePartnerAgreeContract               = "partner_agree_contract"
 	RouteGetPartnerContractDetails          = "get_partner_contract_detail"
@@ -183,11 +183,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleAdminGetCars,
 			RequireAuth: true,
 		},
-		RouteAdminGetCarDetails: {
-			Path:        "/admin/car/:id",
+		RouteGetCarDetail: {
+			Path:        "/car/:id",
 			Method:      http.MethodGet,
-			Handler:     s.HandleAdminGetCarDetails,
-			RequireAuth: true,
+			Handler:     s.HandleGetCarDetail,
+			RequireAuth: false,
 		},
 		RouteAdminApproveCar: {
 			Path:        "/admin/car_application",

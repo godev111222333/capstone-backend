@@ -46,13 +46,7 @@ func (s *Server) HandleAdminGetCars(c *gin.Context) {
 	c.JSON(http.StatusOK, cars)
 }
 
-func (s *Server) HandleAdminGetCarDetails(c *gin.Context) {
-	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNameAdmin {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
-		return
-	}
-
+func (s *Server) HandleGetCarDetail(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {

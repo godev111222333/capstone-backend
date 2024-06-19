@@ -115,8 +115,6 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("request: %+v", req)
-
 	if req.ResponseCode != "00" {
 		c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 		return
@@ -130,7 +128,21 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
 		return
 	}
-	fmt.Println("update database successfully")
+
+	// Update contract status to Ordered
+	payment, err := s.store.CustomerPaymentStore.GetByID(paymentID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(
+		payment.CustomerContractID,
+		map[string]interface{}{"status": string(model.CustomerContractStatusOrdered)},
+	); err != nil {
+		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 }

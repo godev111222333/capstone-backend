@@ -43,3 +43,13 @@ func (s *CustomerPaymentStore) Update(id int, values map[string]interface{}) err
 	}
 	return nil
 }
+
+func (s *CustomerPaymentStore) GetByID(id int) (*model.CustomerPayment, error) {
+	res := &model.CustomerPayment{}
+	if err := s.db.Where("id = ?", id).Preload("CustomerContract").Find(res).Error; err != nil {
+		fmt.Printf("CustomerPaymentStore: GetByID %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

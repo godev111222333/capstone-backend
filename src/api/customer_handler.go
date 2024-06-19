@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"errors"
+	"github.com/google/uuid"
 	"net/http"
 	"strconv"
 	"strings"
@@ -206,6 +208,13 @@ type customerAgreeContractRequest struct {
 }
 
 func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
 	req := customerAgreeContractRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		responseError(c, err)
@@ -215,6 +224,11 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
 	if err != nil {
 		responseError(c, err)
+		return
+	}
+
+	if contract.CustomerID != acct.ID {
+		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}
 
@@ -231,18 +245,42 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	//payment := &model.CustomerPayment{
-	//	CustomerContractID: contract.ID,
-	//	PaymentType:        model.PaymentTypePrePay,
-	//	Amount:             0,
-	//	Note:               "",
-	//	Status:             "",
-	//	CreatedAt:          time.Time{},
-	//	UpdatedAt:          time.Time{},
-	//}
-	//url, err := s.paymentService.GeneratePaymentURL()
+	url, err := s.generatePrepayQRCode(acct.ID, contract)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully"})
+	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "qr_code_image": url})
+}
+
+func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContract) (string, error) {
+	prepayAmt := (contract.RentPrice + contract.InsuranceAmount) * 30 / 100
+	payment := &model.CustomerPayment{
+		CustomerContractID: contract.ID,
+		PaymentType:        model.PaymentTypePrePay,
+		Amount:             prepayAmt,
+		Status:             model.PaymentTypeStatusPending,
+	}
+	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
+		return "", err
+	}
+	url, err := s.paymentService.GeneratePaymentURL(payment.ID, prepayAmt, "")
+	if err != nil {
+		return "", err
+	}
+
+	qrCodeImage, err := GenerateQRCode(url)
+	if err != nil {
+		return "", err
+	}
+
+	doc, err := s.uploadDocument(bytes.NewReader(qrCodeImage), acctID, uuid.NewString()+".png", model.DocumentCategoryPrepayQRCodeImage)
+	if err != nil {
+		return "", err
+	}
+
+	return doc.Url, s.store.CustomerPaymentStore.CreatePaymentDocument(payment.ID, doc.ID)
 }
 
 type customerGetContractsRequest struct {

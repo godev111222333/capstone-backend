@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+
 	"github.com/godev111222333/capstone-backend/src/model"
 	"gorm.io/gorm"
 )
@@ -19,5 +20,18 @@ func (s *CustomerPaymentStore) Create(m *model.CustomerPayment) error {
 		fmt.Printf("CustomerPaymentStore: Create %v\n", err)
 		return err
 	}
+	return nil
+}
+
+func (s *CustomerPaymentStore) CreatePaymentDocument(customerPaymentID int, docID int) error {
+	m := &model.CustomerPaymentDocument{
+		CustomerPaymentID: customerPaymentID,
+		DocumentID:        docID,
+	}
+	if err := s.db.Create(m).Error; err != nil {
+		fmt.Printf("CustomerContractStore: CreatePaymentDocument %v\n", err)
+		return err
+	}
+
 	return nil
 }

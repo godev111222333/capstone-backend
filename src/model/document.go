@@ -12,13 +12,14 @@ const (
 )
 
 const (
-	DocumentCategoryCarImages      DocumentCategory = "CAR_IMAGES"
-	DocumentCategoryCaveat         DocumentCategory = "CAR_CAVEAT"
-	DocumentCategoryDrivingLicense DocumentCategory = "DRIVING_LICENSE"
-	DocumentCategoryQRCodeImage    DocumentCategory = "QR_CODE"
-	DocumentCategoryAvatarImage    DocumentCategory = "AVATAR"
-	DocumentStatusActive           DocumentStatus   = "active"
-	DocumentStatusInactive         DocumentStatus   = "inactive"
+	DocumentCategoryCarImages         DocumentCategory = "CAR_IMAGES"
+	DocumentCategoryCaveat            DocumentCategory = "CAR_CAVEAT"
+	DocumentCategoryDrivingLicense    DocumentCategory = "DRIVING_LICENSE"
+	DocumentCategoryQRCodeImage       DocumentCategory = "QR_CODE"
+	DocumentCategoryAvatarImage       DocumentCategory = "AVATAR"
+	DocumentCategoryPrepayQRCodeImage DocumentCategory = "PREPAY_QR_CODE"
+	DocumentStatusActive              DocumentStatus   = "active"
+	DocumentStatusInactive            DocumentStatus   = "inactive"
 )
 
 type Document struct {

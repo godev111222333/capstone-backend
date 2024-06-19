@@ -48,6 +48,7 @@ type VNPayConfig struct {
 	Locale     string `yaml:"locale"`
 	ReturnURL  string `yaml:"return_url"`
 	IpnURL     string `yaml:"ipn_url"`
+	BankCode   string `yaml:"bank_code"`
 }
 
 type GlobalConfig struct {

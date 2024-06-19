@@ -27,6 +27,7 @@ type PayRequest struct {
 	OrderType   string `url:"vnp_OrderType"`
 	ReturnURL   string `url:"vnp_ReturnUrl"`
 	TxnRef      string `url:"vnp_TxnRef"`
+	BankCode    string `url:"vnp_BankCode"`
 }
 
 var _ IPaymentService = (*VnPayService)(nil)
@@ -67,6 +68,7 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, txnRef string) 
 		OrderType:   "other",
 		ReturnURL:   s.cfg.ReturnURL,
 		TxnRef:      txnRef,
+		BankCode:    s.cfg.BankCode,
 	}
 
 	values, err := query.Values(reqBody)
@@ -107,6 +109,8 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		responseError(c, err)
 		return
 	}
+
+	fmt.Println("update database ok")
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 }

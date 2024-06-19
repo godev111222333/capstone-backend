@@ -23,6 +23,7 @@ type PayRequest struct {
 	TmnCode     string `url:"vnp_TmnCode"`
 	Amount      int    `url:"vnp_Amount"`
 	CreatedDate string `url:"vnp_CreateDate"`
+	ExpireDate  string `url:"vnp_ExpireDate"`
 	CurrCode    string `url:"vnp_CurrCode"`
 	IpAddress   string `url:"vnp_IpAddr"`
 	Locale      string `url:"vnp_Locale"`
@@ -64,6 +65,7 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, txnRef string) 
 		TmnCode:     s.cfg.TMNCode,
 		Amount:      amount * 100,
 		CreatedDate: now.Format(layoutyyyyMMddHHmmss),
+		ExpireDate:  now.AddDate(0, 0, 7).Format(layoutyyyyMMddHHmmss),
 		CurrCode:    "VND",
 		IpAddress:   "::1",
 		Locale:      s.cfg.Locale,
@@ -113,6 +115,8 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("request: %+v", req)
+
 	if req.ResponseCode != "00" {
 		c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 		return
@@ -126,6 +130,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
 		return
 	}
+	fmt.Println("update database successfully")
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 }

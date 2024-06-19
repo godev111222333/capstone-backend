@@ -265,7 +265,7 @@ func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContra
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
 		return "", err
 	}
-	url, err := s.paymentService.GeneratePaymentURL(payment.ID, prepayAmt, "")
+	url, err := s.paymentService.GeneratePaymentURL(payment.ID, prepayAmt, time.Now().Format("02150405"))
 	if err != nil {
 		return "", err
 	}

@@ -13,14 +13,15 @@ import (
 const DefaultHost = "0.0.0.0"
 
 type Server struct {
-	cfg          *misc.ApiServerConfig
-	route        *gin.Engine
-	store        *store.DbStore
-	s3store      *store.S3Store
-	tokenMaker   token.Maker
-	hashVerifier *misc.HashVerifier
-	otpService   *OTPService
-	pdfService   IPDFService
+	cfg            *misc.ApiServerConfig
+	route          *gin.Engine
+	store          *store.DbStore
+	s3store        *store.S3Store
+	tokenMaker     token.Maker
+	hashVerifier   *misc.HashVerifier
+	otpService     *OTPService
+	pdfService     IPDFService
+	paymentService IPaymentService
 
 	bankMetadata []string
 }
@@ -32,6 +33,7 @@ func NewServer(
 	otpService *OTPService,
 	bankMetadata []string,
 	pdfService IPDFService,
+	paymentService IPaymentService,
 ) *Server {
 	route := gin.New()
 	tokenMaker, err := token.NewJWTMaker("12345678901234567890123456789012")
@@ -48,6 +50,7 @@ func NewServer(
 		misc.NewHashVerifier(),
 		otpService,
 		pdfService,
+		paymentService,
 		bankMetadata,
 	}
 	server.setUp()

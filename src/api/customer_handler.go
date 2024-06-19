@@ -231,6 +231,17 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
+	//payment := &model.CustomerPayment{
+	//	CustomerContractID: contract.ID,
+	//	PaymentType:        model.PaymentTypePrePay,
+	//	Amount:             0,
+	//	Note:               "",
+	//	Status:             "",
+	//	CreatedAt:          time.Time{},
+	//	UpdatedAt:          time.Time{},
+	//}
+	//url, err := s.paymentService.GeneratePaymentURL()
+
 	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully"})
 }
 

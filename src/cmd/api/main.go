@@ -29,8 +29,9 @@ func main() {
 	}
 
 	pdfService := api.NewPDFService(cfg.PDFService)
+	paymentService := api.NewVnPayService(cfg.VNPay)
 
-	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService, bankMetadata, pdfService)
+	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService, bankMetadata, pdfService, paymentService)
 	go func() {
 		if err := server.Run(); err != nil {
 			panic(err)

@@ -45,7 +45,6 @@ type VNPayConfig struct {
 	Version    string `yaml:"version"`
 	Command    string `yaml:"command"`
 	TMNCode    string `yaml:"tmn_code"`
-	BankCode   string `yaml:"bank_code"`
 	Locale     string `yaml:"locale"`
 	ReturnURL  string `yaml:"return_url"`
 	IpnURL     string `yaml:"ipn_url"`

@@ -26,9 +26,7 @@ type PayRequest struct {
 	OrderInfo   string `url:"vnp_OrderInfo"`
 	OrderType   string `url:"vnp_OrderType"`
 	ReturnURL   string `url:"vnp_ReturnUrl"`
-	ExpireDate  string `url:"vnp_ExpireDate"`
 	TxnRef      string `url:"vnp_TxnRef"`
-	SecureHash  string `url:"vnp_SecureHash"`
 }
 
 var _ IPaymentService = (*VnPayService)(nil)
@@ -47,7 +45,7 @@ func NewVnPayService(cfg *misc.VNPayConfig) *VnPayService {
 	return &VnPayService{cfg: cfg, signer: signer}
 }
 
-func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, data string) (string, error) {
+func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, txnRef string) (string, error) {
 	req, err := http.NewRequest(http.MethodGet, s.cfg.PayURL, nil)
 	if err != nil {
 		fmt.Printf("error when generating payment url %v\n", err)
@@ -55,7 +53,7 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, data string) (s
 	}
 
 	now := time.Now()
-	layoutyyyyMMddHHmmss := "20060201150405"
+	layoutyyyyMMddHHmmss := "20060102150405"
 	reqBody := PayRequest{
 		Version:     s.cfg.Version,
 		Command:     s.cfg.Command,
@@ -63,13 +61,12 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, data string) (s
 		Amount:      amount * 100,
 		CreatedDate: now.Format(layoutyyyyMMddHHmmss),
 		CurrCode:    "VND",
-		IpAddress:   "123.123.123.123",
+		IpAddress:   "::1",
 		Locale:      s.cfg.Locale,
-		OrderInfo:   fmt.Sprintf("Thanh toan cho payment #%d tai MinhHungCar. Tong so tien %d", paymentID, amount),
+		OrderInfo:   fmt.Sprintf("Thanh toan cho payment #%d. So Tien: %d", paymentID, amount),
 		OrderType:   "other",
 		ReturnURL:   s.cfg.ReturnURL,
-		ExpireDate:  now.AddDate(0, 0, 1).Format(layoutyyyyMMddHHmmss),
-		TxnRef:      data,
+		TxnRef:      txnRef,
 	}
 
 	values, err := query.Values(reqBody)
@@ -78,12 +75,13 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, data string) (s
 		return "", err
 	}
 
+	signData := values.Encode()
+
 	s.signer.Reset()
-	s.signer.Write([]byte(values.Encode()))
+	s.signer.Write([]byte(signData))
 	secureHash := hex.EncodeToString(s.signer.Sum(nil))
 
-	req.URL.RawQuery = values.Encode() + "&vnp_SecureHash=" + secureHash
-	fmt.Println(secureHash)
+	req.URL.RawQuery = signData + "&vnp_SecureHash=" + secureHash
 	return req.URL.String(), nil
 }
 
@@ -116,6 +114,3 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 func (s *Server) HandleVnPayReturnURL(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
-
-//https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=1806000&vnp_Command=pay&vnp_CreateDate=20210801153333&vnp_CurrCode=VND&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+%3A5&vnp_OrderType=other&vnp_ReturnUrl=https%3A%2F%2Fdomainmerchant.vn%2FReturnUrl&vnp_TmnCode=DEMOV210&vnp_TxnRef=5&vnp_Version=2.1.0&vnp_SecureHash=3e0d61a0c0534b2e36680b3f7277743e8784cc4e1d68fa7d276e79c23be7d6318d338b477910a27992f5057bb1582bd44bd82ae8009ffaf6d141219218625c42
-//https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=10000000&vnp_Command=pay&vnp_CreateDate=20241806211631&vnp_CurrCode=VND&vnp_ExpireDate=20241906211631&vnp_IpAddr=123.123.123.123&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+cho+payment+%231+tai+MinhHungCar.+Tong+so+tien+100000&vnp_OrderType=other&vnp_ReturnUrl=https%3A%2F%2Fminhhungcar.xyz%2Fvnpay%2Freturn_url&vnp_SecureHash=&vnp_TmnCode=UPUEB83F&vnp_TxnRef=1&vnp_Version=2.1.0&vnp_SecureHash=3eaab587793416839df5aed76561451c561d80187d95028c29b8261ad27ac0fa8eb1e39903149254f67db59968464e90853994a56ba0f7389e1a55ec1af56d4c

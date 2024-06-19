@@ -245,16 +245,16 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	url, err := s.generatePrepayQRCode(acct.ID, contract)
+	url, rawURL, err := s.generatePrepayQRCode(acct.ID, contract)
 	if err != nil {
 		responseError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "qr_code_image": url})
+	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "qr_code_image": url, "payment_url": rawURL})
 }
 
-func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContract) (string, error) {
+func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContract) (string, string, error) {
 	prepayAmt := (contract.RentPrice + contract.InsuranceAmount) * 30 / 100
 	payment := &model.CustomerPayment{
 		CustomerContractID: contract.ID,
@@ -263,24 +263,24 @@ func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContra
 		Status:             model.PaymentStatusPending,
 	}
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
-		return "", err
+		return "", "", err
 	}
 	url, err := s.paymentService.GeneratePaymentURL(payment.ID, prepayAmt, time.Now().Format("02150405"))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	qrCodeImage, err := GenerateQRCode(url)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	doc, err := s.uploadDocument(bytes.NewReader(qrCodeImage), acctID, uuid.NewString()+".png", model.DocumentCategoryPrepayQRCodeImage)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return doc.Url, s.store.CustomerPaymentStore.CreatePaymentDocument(payment.ID, doc.ID)
+	return doc.Url, url, s.store.CustomerPaymentStore.CreatePaymentDocument(payment.ID, doc.ID)
 }
 
 type customerGetContractsRequest struct {

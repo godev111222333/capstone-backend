@@ -5,8 +5,11 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
+	"github.com/godev111222333/capstone-backend/src/model"
 	"hash"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -64,7 +67,7 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, txnRef string) 
 		CurrCode:    "VND",
 		IpAddress:   "::1",
 		Locale:      s.cfg.Locale,
-		OrderInfo:   fmt.Sprintf("Thanh toan cho payment #%d. So Tien: %d", paymentID, amount),
+		OrderInfo:   encodeOrderInfo(paymentID, amount),
 		OrderType:   "other",
 		ReturnURL:   s.cfg.ReturnURL,
 		TxnRef:      txnRef,
@@ -110,11 +113,42 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("update database ok")
+	if req.ResponseCode != "00" {
+		c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
+		return
+	}
+
+	paymentID, _ := decodeOrderInfo(req.OrderInfo)
+	if err := s.store.CustomerPaymentStore.Update(
+		paymentID,
+		map[string]interface{}{"status": string(model.PaymentStatusPaid)},
+	); err != nil {
+		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 }
 
 func (s *Server) HandleVnPayReturnURL(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func encodeOrderInfo(paymentID, amount int) string {
+	return fmt.Sprintf("%d.%d", paymentID, amount)
+}
+
+// decodeOrderInfo return paymentID, amount
+func decodeOrderInfo(s string) (int, int) {
+	arr := strings.Split(s, ".")
+	paymentID, err := strconv.Atoi(arr[0])
+	if err != nil {
+		return -1, -1
+	}
+	amount, err := strconv.Atoi(arr[1])
+	if err != nil {
+		return -1, -1
+	}
+
+	return paymentID, amount
 }

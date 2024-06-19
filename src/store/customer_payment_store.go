@@ -35,3 +35,11 @@ func (s *CustomerPaymentStore) CreatePaymentDocument(customerPaymentID int, docI
 
 	return nil
 }
+
+func (s *CustomerPaymentStore) Update(id int, values map[string]interface{}) error {
+	if err := s.db.Model(model.CustomerPayment{}).Where("id = ?", id).Updates(values).Error; err != nil {
+		fmt.Printf("CustomerPaymentStore: Update %v\n", err)
+		return err
+	}
+	return nil
+}

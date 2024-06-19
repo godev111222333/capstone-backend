@@ -260,7 +260,7 @@ func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContra
 		CustomerContractID: contract.ID,
 		PaymentType:        model.PaymentTypePrePay,
 		Amount:             prepayAmt,
-		Status:             model.PaymentTypeStatusPending,
+		Status:             model.PaymentStatusPending,
 	}
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
 		return "", err

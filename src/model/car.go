@@ -50,7 +50,7 @@ type Car struct {
 }
 
 type CarJoinCarModel struct {
-	ID            int        `json:"cars.id"`
+	ID            int        `json:"id" gorm:"column:cars.id"`
 	CarModelID    int        `json:"car_model_id"`
 	CarModel      CarModel   `json:"car_model" gorm:"foreignKey:CarModelID"`
 	PartnerID     int        `json:"partner_id"`

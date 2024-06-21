@@ -10,6 +10,8 @@ import (
 	"github.com/godev111222333/capstone-backend/src/model"
 )
 
+const BufferTime = 2 * time.Hour
+
 type CarStore struct {
 	db *gorm.DB
 }
@@ -95,6 +97,8 @@ func (s *CarStore) FindCars(
 	startDate, endDate time.Time,
 	optionParams map[string]interface{},
 ) ([]*model.Car, error) {
+	startDate = startDate.Add(-BufferTime)
+	endDate = endDate.Add(BufferTime)
 	optionsSQL := make([]string, 0, len(optionParams))
 	if values, ok := optionParams["brands"].([]string); ok {
 		optionsSQL = append(optionsSQL, fmt.Sprintf("brand in %s", quoteString(values)))

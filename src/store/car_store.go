@@ -93,6 +93,39 @@ func (s *CarStore) Update(id int, values map[string]interface{}) error {
 	return nil
 }
 
+func (s *CarStore) CountByStatus(status model.CarStatus) (int, error) {
+	var count *int64
+	var err error
+	if status == model.CarStatusNoFilter {
+		err = s.db.Count(count).Error
+	} else {
+		err = s.db.Where("status = ?", string(status)).Count(count).Error
+	}
+
+	if err != nil {
+		fmt.Printf("CarStore: CountByStatus %v\n", err)
+		return -1, err
+	}
+
+	return int(*count), nil
+}
+
+func (s *CarStore) CountBySeats(seatType int) (int, error) {
+	res := struct {
+		Count int `json:"count"`
+	}{}
+	raw := `select count(*)
+				from cars inner join car_models cm on cars.car_model_id = cm.id
+				where cm.number_of_seats = ? and cars.status = 'active'`
+
+	if err := s.db.Raw(raw, seatType).Scan(&res).Error; err != nil {
+		fmt.Printf("CarStore: CountBySeats %v\n", err)
+		return -1, err
+	}
+
+	return res.Count, nil
+}
+
 func (s *CarStore) FindCars(
 	startDate, endDate time.Time,
 	optionParams map[string]interface{},

@@ -118,6 +118,25 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 		return
 	}
 
+	checkValidOfSeats := func(seatType, maxSeat int) bool {
+		counter, err := s.store.CarStore.CountBySeats(seatType)
+		if err != nil {
+			responseInternalServerError(c, err)
+			return false
+		}
+
+		if counter > maxSeat {
+			c.JSON(http.StatusBadRequest, errorResponse(errors.New(fmt.Sprintf("invalid type %d seat. Must at least %d", seatType, counter))))
+			return false
+		}
+
+		return true
+	}
+
+	if !checkValidOfSeats(4, req.Max4Seats) || !checkValidOfSeats(7, req.Max7Seats) || !checkValidOfSeats(15, req.Max15Seats) {
+		return
+	}
+
 	updateParams := map[model.GarageConfigType]int{
 		model.GarageConfigTypeMax4Seats:  req.Max4Seats,
 		model.GarageConfigTypeMax7Seats:  req.Max7Seats,

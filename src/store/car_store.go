@@ -121,7 +121,7 @@ func (s *CarStore) FindCars(
 	rawSql := `select *
 				from cars inner join car_models cm on cars.car_model_id = cm.id
 				where ` + opt + ` status = ? and cars.id not in (select car_id from customer_contracts where start_date >= ? and ? >= start_date and (status = 'ordered' or status = 'renting' or status = 'completed'))`
-	if err := s.db.Raw(rawSql, string(model.CarStatusActive), startDate, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
+	if err := s.db.Debug().Raw(rawSql, string(model.CarStatusActive), startDate, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
 		fmt.Printf("CarStore: FindCars %v\n", err)
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (s *CarStore) FindCars(
 	rawSql = `select *
 				from cars inner join car_models cm on cars.car_model_id = cm.id
 				where ` + opt + ` status = ? and cars.id not in (select car_id from customer_contracts where ? >= start_date and end_date >= ? and (status = 'ordered' or status = 'renting' or status = 'completed'))`
-	if err := s.db.Raw(rawSql, string(model.CarStatusActive), startDate, startDate).Preload("CarModel").Find(&cars2).Error; err != nil {
+	if err := s.db.Debug().Raw(rawSql, string(model.CarStatusActive), startDate, startDate).Preload("CarModel").Find(&cars2).Error; err != nil {
 		fmt.Printf("CarStore: FindCars %v\n", err)
 		return nil, err
 	}

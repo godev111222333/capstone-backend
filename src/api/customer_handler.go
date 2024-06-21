@@ -178,7 +178,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	rentPrice := car.Price * int(((req.EndDate.Sub(req.StartDate)).Hours()+2)/24.0)
+	rentPrice := car.Price * int(((req.EndDate.Sub(req.StartDate)).Hours())/24.0)
 	insuranceAmount := rentPrice / 10
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,

@@ -309,7 +309,7 @@ func (s *Server) RenderCustomerContractPDF(
 		"license_plate":          car.LicensePlate,
 		"number_of_seats":        strconv.Itoa(car.CarModel.NumberOfSeats),
 		"car_year":               strconv.Itoa(car.CarModel.Year),
-		"price":                  strconv.Itoa(car.Price*endDay - startDay),
+		"price":                  strconv.Itoa(contract.RentPrice),
 		"start_hour":             strconv.Itoa(startHour),
 		"start_date":             strconv.Itoa(startDay),
 		"start_month":            strconv.Itoa(startMonth),

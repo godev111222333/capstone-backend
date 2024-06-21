@@ -194,22 +194,22 @@ func TestCarStore(t *testing.T) {
 			{
 				CustomerID: customer.ID,
 				CarID:      cars[0].CarModelID,
-				StartDate:  now.Add(time.Hour),
-				EndDate:    now.Add(time.Hour * time.Duration(3)),
+				StartDate:  now.Add(10 * time.Hour),
+				EndDate:    now.Add(10 * time.Hour * time.Duration(3)),
 				Status:     model.CustomerContractStatusOrdered,
 			},
 			{
 				CustomerID: customer.ID,
 				CarID:      cars[0].CarModelID,
-				StartDate:  now.Add(time.Hour * time.Duration(7)),
-				EndDate:    now.Add(time.Hour * time.Duration(9)),
+				StartDate:  now.Add(10 * time.Hour * time.Duration(7)),
+				EndDate:    now.Add(10 * time.Hour * time.Duration(9)),
 				Status:     model.CustomerContractStatusOrdered,
 			},
 			{
 				CustomerID: customer.ID,
 				CarID:      cars[0].CarModelID,
-				StartDate:  now.Add(time.Hour * time.Duration(15)),
-				EndDate:    now.Add(time.Hour * time.Duration(20)),
+				StartDate:  now.Add(10 * time.Hour * time.Duration(15)),
+				EndDate:    now.Add(10 * time.Hour * time.Duration(20)),
 				Status:     model.CustomerContractStatusWaitingContractPayment,
 			},
 		}
@@ -236,7 +236,7 @@ func TestCarStore(t *testing.T) {
 		}
 
 		toTime := func(hour int) time.Time {
-			return now.Add(time.Hour * time.Duration(hour))
+			return now.Add(10 * time.Hour * time.Duration(hour))
 		}
 
 		for _, tc := range testCases {

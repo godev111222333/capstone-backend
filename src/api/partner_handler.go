@@ -187,12 +187,12 @@ type carResponse struct {
 }
 
 func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
-	images, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCarImages)
+	images, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCarImages, 5)
 	if err != nil {
 		return nil, err
 	}
 
-	caveats, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCaveat)
+	caveats, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCaveat, 2)
 	if err != nil {
 		return nil, err
 	}

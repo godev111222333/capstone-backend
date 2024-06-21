@@ -180,13 +180,19 @@ type carResponse struct {
 	Price        int              `json:"price"`
 	Status       model.CarStatus  `json:"status"`
 	Images       []string         `json:"images"`
+	Caveats      []string         `json:"caveats"`
 	Rating       float64          `json:"rating"`
 	TotalTrip    int              `json:"total_trip"`
 	PeriodCode   int              `json:"period_code"`
 }
 
 func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
-	images, err := s.store.CarDocumentStore.GetCarImages(car.ID)
+	images, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCarImages)
+	if err != nil {
+		return nil, err
+	}
+
+	caveats, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCaveat)
 	if err != nil {
 		return nil, err
 	}
@@ -203,6 +209,7 @@ func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
 		Price:        car.Price,
 		Status:       car.Status,
 		Images:       images,
+		Caveats:      caveats,
 		Rating:       5.0,
 		TotalTrip:    1000,
 		PeriodCode:   car.Period,

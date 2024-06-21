@@ -32,11 +32,11 @@ func (s *CarDocumentStore) Create(carID int, document *model.Document) error {
 	return nil
 }
 
-func (s *CarDocumentStore) GetCarImages(carID int) ([]string, error) {
+func (s *CarDocumentStore) GetCarDocuments(carID int, category model.DocumentCategory) ([]string, error) {
 	rawSQL := `select * from documents where status = ? and category = ? and id in (select id from car_documents where car_id = ?) order by id desc limit 5;`
 	images := []*model.Document{}
-	if err := s.db.Raw(rawSQL, model.DocumentStatusActive, model.DocumentCategoryCarImages, carID).Scan(&images).Error; err != nil {
-		fmt.Printf("CarDocumentStore: GetCarImages %v\n", err)
+	if err := s.db.Raw(rawSQL, model.DocumentStatusActive, string(category), carID).Scan(&images).Error; err != nil {
+		fmt.Printf("CarDocumentStore: GetCarDocuments %v\n", err)
 		return nil, err
 	}
 

@@ -118,19 +118,19 @@ func (s *CarStore) FindCars(
 	}
 
 	cars := make([]*model.CarJoinCarModel, 0)
-	rawSql := `select *
+	rawSql := `select cars.*, cars.id as car_id, cm.*
 				from cars inner join car_models cm on cars.car_model_id = cm.id
 				where ` + opt + ` status = ? and cars.id not in (select car_id from customer_contracts where start_date >= ? and ? >= start_date and (status = 'ordered' or status = 'renting' or status = 'completed'))`
-	if err := s.db.Debug().Raw(rawSql, string(model.CarStatusActive), startDate, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
+	if err := s.db.Raw(rawSql, string(model.CarStatusActive), startDate, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
 		fmt.Printf("CarStore: FindCars %v\n", err)
 		return nil, err
 	}
 
 	cars2 := make([]*model.CarJoinCarModel, 0)
-	rawSql = `select *
+	rawSql = `select cars.*, cars.id as car_id, cm.*
 				from cars inner join car_models cm on cars.car_model_id = cm.id
 				where ` + opt + ` status = ? and cars.id not in (select car_id from customer_contracts where ? >= start_date and end_date >= ? and (status = 'ordered' or status = 'renting' or status = 'completed'))`
-	if err := s.db.Debug().Raw(rawSql, string(model.CarStatusActive), startDate, startDate).Preload("CarModel").Find(&cars2).Error; err != nil {
+	if err := s.db.Raw(rawSql, string(model.CarStatusActive), startDate, startDate).Preload("CarModel").Find(&cars2).Error; err != nil {
 		fmt.Printf("CarStore: FindCars %v\n", err)
 		return nil, err
 	}
@@ -147,27 +147,27 @@ func (s *CarStore) FindCars(
 func takeDuplicatedCars(cars1, cars2 []*model.CarJoinCarModel) []*model.CarJoinCarModel {
 	m1, m2, checkedID := make(map[int]struct{}, 0), make(map[int]struct{}, 0), make(map[int]struct{}, 0)
 	for _, c := range cars1 {
-		m1[c.ID] = struct{}{}
+		m1[c.CarID] = struct{}{}
 	}
 	for _, c := range cars2 {
-		m2[c.ID] = struct{}{}
+		m2[c.CarID] = struct{}{}
 	}
 
 	res := []*model.CarJoinCarModel{}
 	cars := append(cars1, cars2...)
 	for _, c := range cars {
-		if _, ok := m1[c.ID]; !ok {
+		if _, ok := m1[c.CarID]; !ok {
 			continue
 		}
-		if _, ok := m2[c.ID]; !ok {
+		if _, ok := m2[c.CarID]; !ok {
 			continue
 		}
 
-		if _, ok := checkedID[c.ID]; ok {
+		if _, ok := checkedID[c.CarID]; ok {
 			continue
 		}
 		res = append(res, c)
-		checkedID[c.ID] = struct{}{}
+		checkedID[c.CarID] = struct{}{}
 	}
 
 	return res

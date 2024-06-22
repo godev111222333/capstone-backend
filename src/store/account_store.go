@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type AccountStore struct {
@@ -61,6 +62,49 @@ func (s *AccountStore) GetByID(id int) (*model.Account, error) {
 		}
 
 		fmt.Printf("AccountStore: GetByID %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (s *AccountStore) Get(status model.AccountStatus, role string, searchParam string, offset, limit int) ([]*model.Account, error) {
+	if limit == 0 {
+		limit = 1000
+	}
+
+	rawSql := `select accounts.id as id, accounts.*, r.* from accounts join roles r on accounts.role_id = r.id where role_name != 'admin'`
+
+	statusQuery, roleQuery, searchQuery := "", "", ""
+	if status != model.AccountStatusNoFilter {
+		statusQuery = fmt.Sprintf(`status = '%s'`, string(status))
+	}
+
+	if len(role) > 0 {
+		roleQuery = fmt.Sprintf(`role_name = '%s'`, role)
+	}
+
+	if len(searchParam) > 0 {
+		searchQuery = fmt.Sprintf(` (first_name like '%s' or last_name like '%s' or CONCAT(last_name, ' ', first_name) like '%s' or phone_number = '%s' or email = '%s')`, "%"+searchParam+"%", "%"+searchParam+"%", "%"+searchParam+"%", searchParam, searchParam)
+	}
+
+	if len(statusQuery)+len(roleQuery)+len(searchQuery) > 0 {
+		rawSql = rawSql + ` and `
+	}
+
+	combinedQuery := []string{}
+	for _, str := range []string{statusQuery, roleQuery, searchQuery} {
+		if len(str) > 0 {
+			combinedQuery = append(combinedQuery, str)
+		}
+	}
+
+	combined := strings.Join(combinedQuery, " and ")
+	combined += fmt.Sprintf(` ORDER BY accounts.id OFFSET %d LIMIT %d`, offset, limit)
+
+	var res []*model.Account
+	if err := s.db.Raw(rawSql + combined).Scan(&res).Error; err != nil {
+		fmt.Printf("AccountStore: Get %v\n", err)
 		return nil, err
 	}
 

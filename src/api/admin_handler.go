@@ -446,3 +446,19 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "approve/reject customer contract successfully"})
 }
+
+type adminGetAccountsRequest struct {
+	Pagination
+	Role   string `form:"role"`
+	Status string `form:"status"`
+}
+
+func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
+	req := adminGetAccountsRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	return
+}

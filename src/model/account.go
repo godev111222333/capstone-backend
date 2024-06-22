@@ -8,6 +8,7 @@ const (
 	AccountStatusWaitingConfirmEmail AccountStatus = "waiting_confirm_email"
 	AccountStatusActive              AccountStatus = "active"
 	AccountStatusInactive            AccountStatus = "inactive"
+	AccountStatusNoFilter            AccountStatus = "no_filter"
 )
 
 type Account struct {

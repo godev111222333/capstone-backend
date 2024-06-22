@@ -43,7 +43,16 @@ func (s *Server) HandleAdminGetCars(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, cars)
+	total, err := s.store.CarStore.CountByStatus(model.CarStatusNoFilter)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"cars":  cars,
+		"total": total,
+	})
 }
 
 func (s *Server) HandleGetCarDetail(c *gin.Context) {

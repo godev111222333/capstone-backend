@@ -34,6 +34,7 @@ const (
 	RouteAdminApproveCar                    = "admin_approve_car"
 	RouteAdminGetContracts                  = "admin_get_contracts"
 	RouteAdminApproveRejectCustomerContract = "admin_approve_reject_customer_contract"
+	RouteAdminGetAccounts                   = "admin_get_accounts"
 	RoutePartnerAgreeContract               = "partner_agree_contract"
 	RouteGetPartnerContractDetails          = "get_partner_contract_detail"
 	RouteCustomerFindCars                   = "customer_find_cars"
@@ -310,6 +311,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleVnPayReturnURL,
 			RequireAuth: false,
+		},
+		RouteAdminGetAccounts: {
+			Path:        "/admin/accounts",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetAccounts,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 	}
 }

@@ -449,8 +449,9 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 
 type adminGetAccountsRequest struct {
 	Pagination
-	Role   string `form:"role"`
-	Status string `form:"status"`
+	Role        string `form:"role"`
+	Status      string `form:"status"`
+	SearchParam string `json:"search_param"`
 }
 
 func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
@@ -460,5 +461,21 @@ func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
 		return
 	}
 
-	return
+	status := model.AccountStatusNoFilter
+	if len(req.Status) > 0 {
+		status = model.AccountStatus(req.Status)
+	}
+
+	accounts, err := s.store.AccountStore.Get(status, req.Role, req.SearchParam, req.Offset, req.Limit)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	respAccts := make([]*accountResponse, len(accounts))
+	for i, acct := range accounts {
+		respAccts[i] = newAccountResponse(acct)
+	}
+
+	c.JSON(http.StatusOK, respAccts)
 }

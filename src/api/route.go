@@ -226,7 +226,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 		RouteAdminApproveRejectCustomerContract: {
 			Path:        "/admin/contract",
 			Method:      http.MethodPut,
-			Handler:     s.HandleAdminApproveOrRejectCar,
+			Handler:     s.HandleAdminApproveOrRejectCustomerContract,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

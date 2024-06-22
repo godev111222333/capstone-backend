@@ -109,3 +109,20 @@ func (s *CustomerContractStore) GetByStatus(status model.CustomerContractStatus,
 
 	return res, nil
 }
+
+func (s *CustomerContractStore) CountByStatus(status model.CustomerContractStatus) (int, error) {
+	var count int64
+	var err error
+	if status == model.CustomerContractStatusNoFilter {
+		err = s.db.Model(model.CustomerContract{}).Count(&count).Error
+	} else {
+		err = s.db.Model(model.CustomerContract{}).Where("status = ?", string(status)).Count(&count).Error
+	}
+
+	if err != nil {
+		fmt.Printf("CustomerContractStore: CountByStatus %v\n", err)
+		return -1, err
+	}
+
+	return int(count), nil
+}

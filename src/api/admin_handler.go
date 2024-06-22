@@ -499,3 +499,20 @@ func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "update account status successfully"})
 }
+
+func (s *Server) HandleAdminGetAccountDetail(c *gin.Context) {
+	id := c.Param("account_id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	acct, err := s.store.AccountStore.GetByID(idInt)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, s.newAccountResponse(acct))
+}

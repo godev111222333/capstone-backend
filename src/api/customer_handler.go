@@ -284,7 +284,7 @@ func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContra
 }
 
 type customerGetContractsRequest struct {
-	*Pagination
+	Pagination
 	ContractStatus string `form:"contract_status"`
 }
 

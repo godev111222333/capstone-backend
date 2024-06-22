@@ -94,12 +94,12 @@ func (s *CarStore) Update(id int, values map[string]interface{}) error {
 }
 
 func (s *CarStore) CountByStatus(status model.CarStatus) (int, error) {
-	var count *int64
+	var count int64
 	var err error
 	if status == model.CarStatusNoFilter {
-		err = s.db.Count(count).Error
+		err = s.db.Count(&count).Error
 	} else {
-		err = s.db.Where("status = ?", string(status)).Count(count).Error
+		err = s.db.Where("status = ?", string(status)).Count(&count).Error
 	}
 
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *CarStore) CountByStatus(status model.CarStatus) (int, error) {
 		return -1, err
 	}
 
-	return int(*count), nil
+	return int(count), nil
 }
 
 func (s *CarStore) CountBySeats(seatType int) (int, error) {

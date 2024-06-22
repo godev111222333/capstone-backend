@@ -451,7 +451,7 @@ type adminGetAccountsRequest struct {
 	Pagination
 	Role        string `form:"role"`
 	Status      string `form:"status"`
-	SearchParam string `json:"search_param"`
+	SearchParam string `form:"search_param"`
 }
 
 func (s *Server) HandleAdminGetAccounts(c *gin.Context) {

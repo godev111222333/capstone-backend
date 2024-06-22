@@ -85,6 +85,12 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		return
 	}
 
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
 		responseError(c, err)
@@ -125,27 +131,10 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		}
 		defer body.Close()
 
-		extension := strings.Split(f.Filename, ".")[1]
-		key := strings.Join([]string{uuid.NewString(), extension}, ".")
-		_, err = s.s3store.Client.PutObject(context.Background(), &s3.PutObjectInput{
-			Bucket: aws.String(s.s3store.Config.Bucket),
-			Body:   body,
-			Key:    aws.String(key),
-			ACL:    types.ObjectCannedACLPublicRead,
-		})
+		document, err := s.uploadDocument(body, acct.ID, f.Filename, req.DocumentCategory)
 		if err != nil {
-			responseError(c, err)
+			responseInternalServerError(c, err)
 			return
-		}
-
-		url := s.s3store.Config.BaseURL + key
-
-		document := &model.Document{
-			AccountID: car.Account.ID,
-			Url:       url,
-			Extension: extension,
-			Category:  req.DocumentCategory,
-			Status:    model.DocumentStatusActive,
 		}
 
 		if err := s.store.CarDocumentStore.Create(car.ID, document); err != nil {

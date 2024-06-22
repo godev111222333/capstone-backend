@@ -32,6 +32,8 @@ const (
 	RouteAdminGetCars                       = "admin_get_cars"
 	RouteGetCarDetail                       = "admin_get_car_details"
 	RouteAdminApproveCar                    = "admin_approve_car"
+	RouteAdminGetContracts                  = "admin_get_contracts"
+	RouteAdminApproveRejectCustomerContract = "admin_approve_reject_customer_contract"
 	RoutePartnerAgreeContract               = "partner_agree_contract"
 	RouteGetPartnerContractDetails          = "get_partner_contract_detail"
 	RouteCustomerFindCars                   = "customer_find_cars"
@@ -39,16 +41,17 @@ const (
 	RouteCustomerUploadDrivingLicenseImages = "customer_upload_driving_license_images"
 	RouteCustomerGetDrivingLicenseImages    = "customer_get_driving_license_images"
 	RouteCustomerGetContracts               = "customer_get_contracts"
-	RouteCustomerGetContractDetails         = "customer_get_contract_details"
+	RouteCustomerAdminGetContractDetails    = "customer_get_contract_details"
 	RouteCustomerAgreeContract              = "customer_agree_contract"
 	RouteVNPayIPNURL                        = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                     = "vn_pay_return_url"
 )
 
 var (
-	AuthRolePartner  = []string{model.RoleNamePartner}
-	AuthRoleAdmin    = []string{model.RoleNameAdmin}
-	AuthRoleCustomer = []string{model.RoleNameCustomer}
+	AuthRolePartner       = []string{model.RoleNamePartner}
+	AuthRoleAdmin         = []string{model.RoleNameAdmin}
+	AuthRoleCustomer      = []string{model.RoleNameCustomer}
+	AuthRoleCustomerAdmin = []string{model.RoleNameCustomer, model.RoleNameAdmin}
 )
 
 type RouteInfo = struct {
@@ -213,6 +216,20 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
+		RouteAdminGetContracts: {
+			Path:        "/admin/contracts",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetContracts,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminApproveRejectCustomerContract: {
+			Path:        "/admin/contract",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminApproveOrRejectCar,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
 		RoutePartnerAgreeContract: {
 			Path:        "/partner/contract/agree",
 			Method:      http.MethodPut,
@@ -268,12 +285,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomer,
 		},
-		RouteCustomerGetContractDetails: {
-			Path:        "/customer/contract/:customer_contract_id",
+		RouteCustomerAdminGetContractDetails: {
+			Path:        "/contract/:customer_contract_id",
 			Method:      http.MethodGet,
-			Handler:     s.HandleCustomerGetContractDetails,
+			Handler:     s.HandleCustomerAdminGetContractDetails,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleCustomer,
+			AuthRoles:   AuthRoleCustomerAdmin,
 		},
 		RouteCustomerAgreeContract: {
 			Path:        "/customer/contract/agree",

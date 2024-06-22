@@ -316,7 +316,7 @@ func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
 	c.JSON(http.StatusOK, contracts)
 }
 
-func (s *Server) HandleCustomerGetContractDetails(c *gin.Context) {
+func (s *Server) HandleCustomerAdminGetContractDetails(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
 	if err != nil {
@@ -337,7 +337,7 @@ func (s *Server) HandleCustomerGetContractDetails(c *gin.Context) {
 		return
 	}
 
-	if contract.CustomerID != acct.ID {
+	if authPayload.Role == model.RoleNameCustomer && contract.CustomerID != acct.ID {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}

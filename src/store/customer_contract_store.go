@@ -88,3 +88,24 @@ func (s *CustomerContractStore) GetByCustomerID(cusID int, status model.Customer
 
 	return res, nil
 }
+
+func (s *CustomerContractStore) GetByStatus(status model.CustomerContractStatus, offset, limit int) ([]*model.CustomerContract, error) {
+	res := []*model.CustomerContract{}
+	var err error
+	if limit == 0 {
+		limit = 1000
+	}
+
+	if status == model.CustomerContractStatusNoFilter {
+		err = s.db.Where("status = ?", string(status)).Preload("Account").Preload("Car").Offset(offset).Limit(limit).Find(&res).Error
+	} else {
+		err = s.db.Preload("Account").Preload("Car").Offset(offset).Limit(limit).Find(&res).Error
+	}
+
+	if err != nil {
+		fmt.Printf("CustomerContractStore: GetByStatus %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

@@ -375,3 +375,74 @@ func (s *Server) RenderCustomerContractPDF(
 
 	return nil
 }
+
+type adminGetContractRequest struct {
+	Pagination
+	CustomerContractStatus string `form:"customer_contract_status"`
+}
+
+func (s *Server) HandleAdminGetContracts(c *gin.Context) {
+	req := adminGetContractRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	status := model.CustomerContractStatusNoFilter
+	if reqStatus := req.CustomerContractStatus; len(reqStatus) > 0 {
+		status = model.CustomerContractStatus(reqStatus)
+	}
+
+	contracts, err := s.store.CustomerContractStore.GetByStatus(status, req.Offset, req.Limit)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, contracts)
+}
+
+type CustomerContractAction string
+
+const (
+	CustomerContractActionApprove CustomerContractAction = "approve"
+	CustomerContractActionReject  CustomerContractAction = "reject"
+)
+
+type adminApproveOrRejectCustomerContractRequest struct {
+	CustomerContractID int                    `json:"customer_contract_id" binding:"required"`
+	Action             CustomerContractAction `json:"action" binding:"required"`
+}
+
+func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
+	req := adminApproveOrRejectCustomerContractRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	newStatus := string(model.CustomerContractStatusCancel)
+	if req.Action == CustomerContractActionApprove {
+		if contract.Status != model.CustomerContractStatusOrdered {
+			responseError(c, errors.New(
+				fmt.Sprintf("invalid customer contract status. expect %s, found %s",
+					string(model.CustomerContractStatusOrdered), string(contract.Status))))
+			return
+		}
+
+		newStatus = string(model.CustomerContractStatusRenting)
+	}
+
+	if err := s.store.CustomerContractStore.Update(contract.ID, map[string]interface{}{"status": newStatus}); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "approve/reject customer contract successfully"})
+}

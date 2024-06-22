@@ -97,9 +97,9 @@ func (s *CustomerContractStore) GetByStatus(status model.CustomerContractStatus,
 	}
 
 	if status == model.CustomerContractStatusNoFilter {
-		err = s.db.Preload("Customer").Preload("Car").Preload("CarModel").Offset(offset).Limit(limit).Find(&res).Error
+		err = s.db.Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error
 	} else {
-		err = s.db.Where("status = ?", string(status)).Preload("Customer").Preload("Car").Preload("CarModel").Offset(offset).Limit(limit).Find(&res).Error
+		err = s.db.Where("status = ?", string(status)).Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error
 	}
 
 	if err != nil {

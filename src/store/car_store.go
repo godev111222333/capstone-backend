@@ -97,9 +97,9 @@ func (s *CarStore) CountByStatus(status model.CarStatus) (int, error) {
 	var count int64
 	var err error
 	if status == model.CarStatusNoFilter {
-		err = s.db.Count(&count).Error
+		err = s.db.Model(model.Car{}).Count(&count).Error
 	} else {
-		err = s.db.Where("status = ?", string(status)).Count(&count).Error
+		err = s.db.Model(model.Car{}).Where("status = ?", string(status)).Count(&count).Error
 	}
 
 	if err != nil {

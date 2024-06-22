@@ -474,7 +474,7 @@ func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
 
 	respAccts := make([]*accountResponse, len(accounts))
 	for i, acct := range accounts {
-		respAccts[i] = newAccountResponse(acct)
+		respAccts[i] = s.newAccountResponse(acct)
 	}
 
 	c.JSON(http.StatusOK, respAccts)

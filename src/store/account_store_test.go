@@ -13,7 +13,6 @@ func TestAccountStore_Get(t *testing.T) {
 		{Email: "acc1@gmail.com", FirstName: "First 1", LastName: "Last 1", PhoneNumber: "phone1", RoleID: model.RoleIDCustomer, Status: model.AccountStatusActive},
 		{Email: "acc2@gmail.com", FirstName: "First 2", LastName: "Last 2", PhoneNumber: "phone2", RoleID: model.RoleIDPartner, Status: model.AccountStatusActive},
 		{Email: "acc3@gmail.com", FirstName: "First 2", LastName: "Last 3", PhoneNumber: "phone3", RoleID: model.RoleIDCustomer, Status: model.AccountStatusActive},
-		{Email: "acc4@gmail.com", FirstName: "First 4", LastName: "Last 4", PhoneNumber: "phone4", RoleID: model.RoleIDCustomer, Status: model.AccountStatusActive},
 	}
 
 	for _, acct := range accounts {
@@ -58,7 +57,7 @@ func TestAccountStore_Get(t *testing.T) {
 	})
 
 	t.Run("get by email", func(t *testing.T) {
-		accts, err := TestDb.AccountStore.Get(model.AccountStatusActive, "", "acc4@gmail.com", 0, 10)
+		accts, err := TestDb.AccountStore.Get(model.AccountStatusActive, "", "acc3@gmail.com", 0, 10)
 		require.NoError(t, err)
 		require.Len(t, accts, 1)
 	})

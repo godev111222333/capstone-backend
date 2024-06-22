@@ -90,10 +90,11 @@ type accountResponse struct {
 	DrivingLicense           string    `json:"driving_license"`
 	DateOfBirth              time.Time `json:"date_of_birth"`
 	Status                   string    `json:"status"`
+	DrivingLicenseImages     []string  `json:"driving_license_images"`
 }
 
-func newAccountResponse(acct *model.Account) *accountResponse {
-	return &accountResponse{
+func (s *Server) newAccountResponse(acct *model.Account) *accountResponse {
+	resp := &accountResponse{
 		ID:                       acct.ID,
 		Role:                     acct.Role.RoleName,
 		FirstName:                acct.FirstName,
@@ -106,6 +107,17 @@ func newAccountResponse(acct *model.Account) *accountResponse {
 		DateOfBirth:              acct.DateOfBirth,
 		Status:                   string(acct.Status),
 	}
+	if acct.RoleID == model.RoleIDCustomer {
+		drivingLicenseImages, err := s.store.DocumentStore.GetByCategory(acct.ID, model.DocumentCategoryDrivingLicense, 2)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			if len(drivingLicenseImages) >= 2 {
+				resp.DrivingLicenseImages = []string{drivingLicenseImages[0].Url, drivingLicenseImages[1].Url}
+			}
+		}
+	}
+	return resp
 }
 
 func (s *Server) HandleRawLogin(c *gin.Context) {
@@ -161,7 +173,7 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
 		RefreshToken:          refreshToken,
 		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
-		User:                  newAccountResponse(acct),
+		User:                  s.newAccountResponse(acct),
 	})
 }
 
@@ -238,7 +250,7 @@ func (s *Server) HandleGetProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, newAccountResponse(acct))
+	c.JSON(http.StatusOK, s.newAccountResponse(acct))
 }
 
 func (s *Server) HandleUpdateProfile(c *gin.Context) {

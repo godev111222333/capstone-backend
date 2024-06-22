@@ -57,7 +57,7 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 
 		// Testing with required authorization route
 		route = TestServer.AllRoutes()[RouteTestAuthorization]
-		req, _ = http.NewRequest(route.Method, route.Path, nil)
+		req, _ = http.NewRequest(route.Method, "/partner"+route.Path, nil)
 		req.Header.Add(authorizationHeaderKey, authorizationTypeBearer+" "+resp.AccessToken)
 		recorder = httptest.NewRecorder()
 		TestServer.route.ServeHTTP(recorder, req)

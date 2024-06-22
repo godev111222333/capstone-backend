@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"github.com/godev111222333/capstone-backend/src/model"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -74,12 +76,31 @@ func (s *Server) registerMiddleware() {
 
 func (s *Server) registerHandlers() {
 	authGroup := s.route.Group("/").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware())
-
+	adminGroup := s.route.Group("/admin").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware(), s.authRole(model.RoleNameAdmin))
+	partnerGroup := s.route.Group("/partner").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware(), s.authRole(model.RoleNamePartner))
+	customerGroup := s.route.Group("/customer").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware(), s.authRole(model.RoleNameCustomer))
 	for _, r := range s.AllRoutes() {
 		if !r.RequireAuth {
 			s.route.Handle(r.Method, r.Path, r.Handler)
 		} else {
-			authGroup.Handle(r.Method, r.Path, r.Handler)
+			if len(r.AuthRoles) == 0 {
+				authGroup.Handle(r.Method, r.Path, r.Handler)
+				continue
+			}
+
+			for _, authRole := range r.AuthRoles {
+				switch authRole {
+				case model.RoleNameAdmin:
+					truncatedPrefix := strings.Replace(r.Path, "/admin", "", 1)
+					adminGroup.Handle(r.Method, truncatedPrefix, r.Handler)
+				case model.RoleNamePartner:
+					truncatedPrefix := strings.Replace(r.Path, "/partner", "", 1)
+					partnerGroup.Handle(r.Method, truncatedPrefix, r.Handler)
+				case model.RoleNameCustomer:
+					truncatedPrefix := strings.Replace(r.Path, "/customer", "", 1)
+					customerGroup.Handle(r.Method, truncatedPrefix, r.Handler)
+				}
+			}
 		}
 	}
 }

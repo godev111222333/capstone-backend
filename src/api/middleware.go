@@ -76,3 +76,24 @@ func (s *Server) activeAccountMiddleware() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+
+func (s *Server) authRole(role string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+		if authPayload.Role != role {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
+func (s *Server) arrayContainsString(arr []string, ele string) bool {
+	for _, str := range arr {
+		if strings.EqualFold(str, ele) {
+			return true
+		}
+	}
+	return false
+}

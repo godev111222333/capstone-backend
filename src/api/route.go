@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/godev111222333/capstone-backend/src/model"
 )
 
 const (
@@ -44,11 +45,18 @@ const (
 	RouteVNPayReturnURL                     = "vn_pay_return_url"
 )
 
+var (
+	AuthRolePartner  = []string{model.RoleNamePartner}
+	AuthRoleAdmin    = []string{model.RoleNameAdmin}
+	AuthRoleCustomer = []string{model.RoleNameCustomer}
+)
+
 type RouteInfo = struct {
 	Path        string
 	Method      string
 	Handler     func(c *gin.Context)
 	RequireAuth bool
+	AuthRoles   []string
 }
 
 func (s *Server) AllRoutes() map[string]RouteInfo {
@@ -70,6 +78,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 				})
 			},
 			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
 		},
 		RouteRegisterPartner: {
 			Path:        "/partner/register",
@@ -120,28 +129,32 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: false,
 		},
 		RouteRegisterCar: {
-			Path:        "/car",
+			Path:        "/partner/car",
 			Method:      http.MethodPost,
 			Handler:     s.HandleRegisterCar,
 			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
 		},
 		RouteUpdateRentalPrice: {
-			Path:        "/car/price",
+			Path:        "/partner/car/price",
 			Method:      http.MethodPut,
 			Handler:     s.HandleUpdateRentalPrice,
 			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
 		},
 		RouteUploadCarDocuments: {
-			Path:        "/car/document",
+			Path:        "/partner/car/document",
 			Method:      http.MethodPost,
 			Handler:     s.HandleUploadCarDocuments,
 			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
 		},
 		RouteGetRegisteredCars: {
-			Path:        "/cars",
+			Path:        "/partner/cars",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetRegisteredCars,
 			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
 		},
 		RouteGetBankMetadata: {
 			Path:        "/banks",
@@ -168,16 +181,18 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 		},
 		RouteGetGarageConfigs: {
-			Path:        "/garage_config",
+			Path:        "/admin/garage_config",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetGarageConfigs,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteUpdateGarageConfigs: {
-			Path:        "/garage_config",
+			Path:        "/admin/garage_config",
 			Method:      http.MethodPut,
 			Handler:     s.HandleUpdateGarageConfigs,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminGetCars: {
 			Path:        "/admin/cars",
@@ -196,30 +211,35 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminApproveOrRejectCar,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 		RoutePartnerAgreeContract: {
 			Path:        "/partner/contract/agree",
 			Method:      http.MethodPut,
 			Handler:     s.HandlePartnerAgreeContract,
 			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
 		},
 		RouteGetPartnerContractDetails: {
 			Path:        "/partner/contract",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetPartnerContractDetails,
 			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
 		},
 		RouteCustomerFindCars: {
 			Path:        "/customer/cars",
 			Method:      http.MethodGet,
 			Handler:     s.HandleCustomerFindCars,
-			RequireAuth: false,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteCustomerRentCar: {
 			Path:        "/customer/rent",
 			Method:      http.MethodPost,
 			Handler:     s.HandleCustomerRentCar,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteRegisterCustomer: {
 			Path:        "/customer/register",
@@ -232,30 +252,35 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodPost,
 			Handler:     s.HandleUploadDrivingLicenseImages,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteCustomerGetDrivingLicenseImages: {
 			Path:        "/customer/driving_license",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetDrivingLicenseImages,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteCustomerGetContracts: {
 			Path:        "/customer/contracts",
 			Method:      http.MethodGet,
 			Handler:     s.HandleCustomerGetContracts,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteCustomerGetContractDetails: {
 			Path:        "/customer/contract/:customer_contract_id",
 			Method:      http.MethodGet,
 			Handler:     s.HandleCustomerGetContractDetails,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteCustomerAgreeContract: {
 			Path:        "/customer/contract/agree",
 			Method:      http.MethodPut,
 			Handler:     s.HandleCustomerAgreeContract,
 			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteVNPayIPNURL: {
 			Path:        "/vnpay/ipn",

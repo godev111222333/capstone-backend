@@ -479,3 +479,23 @@ func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
 
 	c.JSON(http.StatusOK, respAccts)
 }
+
+type adminSetAccountStatusRequest struct {
+	AccountID int                 `json:"account_id"`
+	Status    model.AccountStatus `json:"status"`
+}
+
+func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
+	req := adminSetAccountStatusRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{"status": string(req.Status)}); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "update account status successfully"})
+}

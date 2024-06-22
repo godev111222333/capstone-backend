@@ -35,6 +35,7 @@ const (
 	RouteAdminGetContracts                  = "admin_get_contracts"
 	RouteAdminApproveRejectCustomerContract = "admin_approve_reject_customer_contract"
 	RouteAdminGetAccounts                   = "admin_get_accounts"
+	RouteAdminSetAccountStatus              = "admin_set_account_status"
 	RoutePartnerAgreeContract               = "partner_agree_contract"
 	RouteGetPartnerContractDetails          = "get_partner_contract_detail"
 	RouteCustomerFindCars                   = "customer_find_cars"
@@ -231,6 +232,20 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
+		RouteAdminGetAccounts: {
+			Path:        "/admin/accounts",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetAccounts,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminSetAccountStatus: {
+			Path:        "/admin/account/status",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminSetAccountStatus,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
 		RoutePartnerAgreeContract: {
 			Path:        "/partner/contract/agree",
 			Method:      http.MethodPut,
@@ -311,13 +326,6 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleVnPayReturnURL,
 			RequireAuth: false,
-		},
-		RouteAdminGetAccounts: {
-			Path:        "/admin/accounts",
-			Method:      http.MethodGet,
-			Handler:     s.HandleAdminGetAccounts,
-			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
 		},
 	}
 }

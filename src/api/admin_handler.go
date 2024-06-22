@@ -70,10 +70,14 @@ func (s *Server) HandleGetCarDetail(c *gin.Context) {
 }
 
 type getGarageConfigResponse struct {
-	Max4Seats  int `json:"max_4_seats"`
-	Max7Seats  int `json:"max_7_seats"`
-	Max15Seats int `json:"max_15_seats"`
-	Total      int `json:"total"`
+	Max4Seats      int `json:"max_4_seats"`
+	Max7Seats      int `json:"max_7_seats"`
+	Max15Seats     int `json:"max_15_seats"`
+	Total          int `json:"total"`
+	Current4Seats  int `json:"current_4_seats"`
+	Current7Seats  int `json:"current_7_seats"`
+	Current15Seats int `json:"current_15_seats"`
+	CurrentTotal   int `json:"current_total"`
 }
 
 func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
@@ -89,6 +93,16 @@ func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 		return
 	}
 
+	countCurrentSeats := func(seatType int) int {
+		counter, err := s.store.CarStore.CountBySeats(seatType)
+		if err != nil {
+			responseInternalServerError(c, err)
+			return -1
+		}
+
+		return counter
+	}
+
 	c.JSON(http.StatusOK, getGarageConfigResponse{
 		Max4Seats:  configs[model.GarageConfigTypeMax4Seats],
 		Max7Seats:  configs[model.GarageConfigTypeMax7Seats],
@@ -96,6 +110,9 @@ func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 		Total: configs[model.GarageConfigTypeMax4Seats] +
 			configs[model.GarageConfigTypeMax7Seats] +
 			configs[model.GarageConfigTypeMax15Seats],
+		Current4Seats:  countCurrentSeats(4),
+		Current7Seats:  countCurrentSeats(7),
+		Current15Seats: countCurrentSeats(15),
 	})
 }
 

@@ -73,7 +73,7 @@ func (s *AccountStore) Get(status model.AccountStatus, role string, searchParam 
 		limit = 1000
 	}
 
-	rawSql := `select accounts.id as id, accounts.*, r.* from accounts join roles r on accounts.role_id = r.id where role_name != 'admin'`
+	rawSql := `select accounts.*, r.* from accounts join roles r on accounts.role_id = r.id where role_name != 'admin'`
 
 	statusQuery, roleQuery, searchQuery := "", "", ""
 	if status != model.AccountStatusNoFilter {
@@ -102,10 +102,18 @@ func (s *AccountStore) Get(status model.AccountStatus, role string, searchParam 
 	combined := strings.Join(combinedQuery, " and ")
 	combined += fmt.Sprintf(` ORDER BY accounts.id OFFSET %d LIMIT %d`, offset, limit)
 
-	var res []*model.Account
-	if err := s.db.Raw(rawSql + combined).Scan(&res).Error; err != nil {
+	var joinModel []struct {
+		Account *model.Account `gorm:"embedded"`
+		Role    *model.Role    `gorm:"embedded"`
+	}
+	if err := s.db.Raw(rawSql + combined).Scan(&joinModel).Error; err != nil {
 		fmt.Printf("AccountStore: Get %v\n", err)
 		return nil, err
+	}
+
+	var res []*model.Account
+	for _, acct := range joinModel {
+		res = append(res, acct.Account)
 	}
 
 	return res, nil

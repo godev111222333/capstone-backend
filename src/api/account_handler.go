@@ -89,6 +89,7 @@ type accountResponse struct {
 	AvatarUrl                string    `json:"avatar_url"`
 	DrivingLicense           string    `json:"driving_license"`
 	DateOfBirth              time.Time `json:"date_of_birth"`
+	Status                   string    `json:"status"`
 }
 
 func newAccountResponse(acct *model.Account) *accountResponse {
@@ -103,6 +104,7 @@ func newAccountResponse(acct *model.Account) *accountResponse {
 		AvatarUrl:                acct.AvatarURL,
 		DrivingLicense:           acct.DrivingLicense,
 		DateOfBirth:              acct.DateOfBirth,
+		Status:                   string(acct.Status),
 	}
 }
 

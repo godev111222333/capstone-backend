@@ -12,7 +12,7 @@ const (
 )
 
 type Account struct {
-	ID                       int           `json:"id"`
+	ID                       int           `json:"id" gorm:"column:id"`
 	RoleID                   RoleID        `json:"role_id"`
 	Role                     Role          `json:"role,omitempty"`
 	FirstName                string        `json:"first_name"`

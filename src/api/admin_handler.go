@@ -103,6 +103,10 @@ func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 		return counter
 	}
 
+	cur4Seats := countCurrentSeats(4)
+	cur7Seats := countCurrentSeats(7)
+	cur15Seats := countCurrentSeats(15)
+
 	c.JSON(http.StatusOK, getGarageConfigResponse{
 		Max4Seats:  configs[model.GarageConfigTypeMax4Seats],
 		Max7Seats:  configs[model.GarageConfigTypeMax7Seats],
@@ -110,9 +114,10 @@ func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 		Total: configs[model.GarageConfigTypeMax4Seats] +
 			configs[model.GarageConfigTypeMax7Seats] +
 			configs[model.GarageConfigTypeMax15Seats],
-		Current4Seats:  countCurrentSeats(4),
-		Current7Seats:  countCurrentSeats(7),
-		Current15Seats: countCurrentSeats(15),
+		Current4Seats:  cur4Seats,
+		Current7Seats:  cur7Seats,
+		Current15Seats: cur15Seats,
+		CurrentTotal:   cur4Seats + cur7Seats + cur15Seats,
 	})
 }
 

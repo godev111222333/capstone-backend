@@ -137,10 +137,16 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "email not found",
 		})
+		return
 	}
 
 	if s.hashVerifier.Compare(acct.Password, req.Password) != nil {
 		responseError(c, errors.New("invalid email or password"))
+		return
+	}
+
+	if acct.Status != model.AccountStatusActive {
+		responseError(c, errors.New("active is not active"))
 		return
 	}
 

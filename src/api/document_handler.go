@@ -256,7 +256,7 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 	req := struct {
 		CustomerContractID int                     `form:"customer_contract_id"`
 		DocumentCategory   model.DocumentCategory  `form:"document_category"`
-		Files              []*multipart.FileHeader `form:"file"`
+		Files              []*multipart.FileHeader `form:"files"`
 	}{}
 
 	if err := c.Bind(&req); err != nil {

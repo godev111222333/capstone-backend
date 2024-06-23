@@ -38,6 +38,7 @@ const (
 	RouteAdminGetAccounts                    = "admin_get_accounts"
 	RouteAdminGetAccountDetail               = "admin_get_account_detail"
 	RouteAdminSetAccountStatus               = "admin_set_account_status"
+	RouteAdminGetPartnerContractDetail       = "admin_get_partner_contract_detail"
 	RoutePartnerAgreeContract                = "partner_agree_contract"
 	RouteGetPartnerContractDetails           = "get_partner_contract_detail"
 	RouteCustomerFindCars                    = "customer_find_cars"
@@ -259,6 +260,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/contract/document",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminUploadCustomerContractDocument,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminGetPartnerContractDetail: {
+			Path:        "/admin/partner_contract",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetPartnerContractDetails,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

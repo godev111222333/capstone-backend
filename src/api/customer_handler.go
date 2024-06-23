@@ -142,6 +142,11 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
+	if time.Now().After(req.StartDate) {
+		responseError(c, errors.New("start_date must be greater than now"))
+		return
+	}
+
 	if req.StartDate.After(req.EndDate) {
 		responseError(c, errors.New("start_date must be less than end_date"))
 		return

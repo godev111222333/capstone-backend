@@ -8,47 +8,47 @@ import (
 )
 
 const (
-	RoutePing                               = "ping"
-	RouteTestAuthorization                  = "test_authorization"
-	RouteRegisterPartner                    = "register_partner"
-	RouteRegisterCustomer                   = "register_customer"
-	RouteVerifyOTP                          = "verify_otp"
-	RouteUploadAvatar                       = "upload_avatar"
-	RouteRawLogin                           = "login"
-	RouteRenewAccessToken                   = "renew_access_token"
-	RouteUpdateProfile                      = "update_profile"
-	RouteGetRegisterCarMetadata             = "register_car_metadata"
-	RouteRegisterCar                        = "register_car"
-	RouteUpdateRentalPrice                  = "update_rental_price"
-	RouteUploadCarDocuments                 = "upload_car_images"
-	RouteGetRegisteredCars                  = "get_registered_cars"
-	RouteGetBankMetadata                    = "get_bank_metadata"
-	RouteUpdatePaymentInformation           = "update_payment_information"
-	RouteGetPaymentInformation              = "get_payment_information"
-	RouteGetProfile                         = "get_profile"
-	RouteUploadQRCode                       = "upload_qr_code"
-	RouteGetGarageConfigs                   = "get_garage_configs"
-	RouteUpdateGarageConfigs                = "update_garage_configs"
-	RouteAdminGetCars                       = "admin_get_cars"
-	RouteGetCarDetail                       = "admin_get_car_details"
-	RouteAdminApproveCar                    = "admin_approve_car"
-	RouteAdminGetCustomerContracts          = "admin_get_customer_contracts"
-	RouteAdminGetCustomerContractDetail     = "admin_get_customer_contract_detail"
-	RouteAdminApproveRejectCustomerContract = "admin_approve_reject_customer_contract"
-	RouteAdminGetAccounts                   = "admin_get_accounts"
-	RouteAdminGetAccountDetail              = "admin_get_account_detail"
-	RouteAdminSetAccountStatus              = "admin_set_account_status"
-	RoutePartnerAgreeContract               = "partner_agree_contract"
-	RouteGetPartnerContractDetails          = "get_partner_contract_detail"
-	RouteCustomerFindCars                   = "customer_find_cars"
-	RouteCustomerRentCar                    = "customer_rent_car"
-	RouteCustomerUploadDrivingLicenseImages = "customer_upload_driving_license_images"
-	RouteCustomerGetDrivingLicenseImages    = "customer_get_driving_license_images"
-	RouteCustomerGetContracts               = "customer_get_contracts"
-	RouteCustomerAdminGetContractDetails    = "customer_get_contract_details"
-	RouteCustomerAgreeContract              = "customer_agree_contract"
-	RouteVNPayIPNURL                        = "vn_pay_ipn_url"
-	RouteVNPayReturnURL                     = "vn_pay_return_url"
+	RoutePing                                = "ping"
+	RouteTestAuthorization                   = "test_authorization"
+	RouteRegisterPartner                     = "register_partner"
+	RouteRegisterCustomer                    = "register_customer"
+	RouteVerifyOTP                           = "verify_otp"
+	RouteUploadAvatar                        = "upload_avatar"
+	RouteRawLogin                            = "login"
+	RouteRenewAccessToken                    = "renew_access_token"
+	RouteUpdateProfile                       = "update_profile"
+	RouteGetRegisterCarMetadata              = "register_car_metadata"
+	RouteRegisterCar                         = "register_car"
+	RouteUpdateRentalPrice                   = "update_rental_price"
+	RouteUploadCarDocuments                  = "upload_car_images"
+	RouteGetRegisteredCars                   = "get_registered_cars"
+	RouteGetBankMetadata                     = "get_bank_metadata"
+	RouteUpdatePaymentInformation            = "update_payment_information"
+	RouteGetPaymentInformation               = "get_payment_information"
+	RouteGetProfile                          = "get_profile"
+	RouteUploadQRCode                        = "upload_qr_code"
+	RouteGetGarageConfigs                    = "get_garage_configs"
+	RouteUpdateGarageConfigs                 = "update_garage_configs"
+	RouteAdminGetCars                        = "admin_get_cars"
+	RouteGetCarDetail                        = "admin_get_car_details"
+	RouteAdminApproveCar                     = "admin_approve_car"
+	RouteAdminGetCustomerContracts           = "admin_get_customer_contracts"
+	RouteAdminUploadCustomerContractDocument = "admin_upload_customer_contract_document"
+	RouteAdminApproveRejectCustomerContract  = "admin_approve_reject_customer_contract"
+	RouteAdminGetAccounts                    = "admin_get_accounts"
+	RouteAdminGetAccountDetail               = "admin_get_account_detail"
+	RouteAdminSetAccountStatus               = "admin_set_account_status"
+	RoutePartnerAgreeContract                = "partner_agree_contract"
+	RouteGetPartnerContractDetails           = "get_partner_contract_detail"
+	RouteCustomerFindCars                    = "customer_find_cars"
+	RouteCustomerRentCar                     = "customer_rent_car"
+	RouteCustomerUploadDrivingLicenseImages  = "customer_upload_driving_license_images"
+	RouteCustomerGetDrivingLicenseImages     = "customer_get_driving_license_images"
+	RouteCustomerGetContracts                = "customer_get_contracts"
+	RouteCustomerAdminGetContractDetails     = "customer_get_contract_details"
+	RouteCustomerAgreeContract               = "customer_agree_contract"
+	RouteVNPayIPNURL                         = "vn_pay_ipn_url"
+	RouteVNPayReturnURL                      = "vn_pay_return_url"
 )
 
 var (
@@ -252,6 +252,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/account/status",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminSetAccountStatus,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminUploadCustomerContractDocument: {
+			Path:        "/admin/contract/document",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminUploadCustomerContractDocument,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

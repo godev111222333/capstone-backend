@@ -20,9 +20,11 @@ import (
 )
 
 const (
-	MaxUploadFileSize            = 5 * 1 << 20
-	MaxNumberFiles               = 5
-	MaxNumberDrivingLicenseFiles = 2
+	MaxUploadFileSize             = 5 * 1 << 20
+	MaxNumberFiles                = 5
+	MaxNumberDrivingLicenseFiles  = 2
+	MaxNumberCollateralAssetFiles = 6
+	MaxNumberReceivingCarImages   = 6
 )
 
 func (s *Server) HandleUploadAvatar(c *gin.Context) {
@@ -227,6 +229,76 @@ func (s *Server) HandleGetDrivingLicenseImages(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, urls)
+}
+
+func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	req := struct {
+		CustomerContractID int                     `form:"customer_contract_id"`
+		DocumentCategory   model.DocumentCategory  `form:"document_category"`
+		Files              []*multipart.FileHeader `form:"file"`
+	}{}
+
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if req.DocumentCategory != model.DocumentCategoryCollateralAssets && req.DocumentCategory != model.DocumentCategoryReceivingCarImages {
+		responseError(c, errors.New("invalid document category"))
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusOrdered {
+		responseError(c, errors.New(
+			fmt.Sprintf("invalid customer contract status, required %s, found %s",
+				string(model.CustomerContractStatusOrdered), string(contract.Status))),
+		)
+		return
+	}
+
+	maxFile := MaxNumberCollateralAssetFiles
+	if req.DocumentCategory == model.DocumentCategoryReceivingCarImages {
+		maxFile = MaxNumberReceivingCarImages
+	}
+
+	if len(req.Files) > maxFile {
+		responseError(c, fmt.Errorf("exceed maximum number of files, max %d, has %d", maxFile, len(req.Files)))
+		return
+	}
+
+	for _, f := range req.Files {
+		if f.Size > MaxUploadFileSize {
+			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
+			return
+		}
+
+		body, err := f.Open()
+		if err != nil {
+			responseError(c, err)
+			return
+		}
+		defer body.Close()
+
+		if _, err := s.uploadDocument(body, acct.ID, f.Filename, req.DocumentCategory); err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "upload customer contract document successfully"})
 }
 
 func (s *Server) uploadDocument(

@@ -37,3 +37,19 @@ func (s *CustomerContractDocumentStore) Create(cusContractID int, docs []*model.
 
 	return nil
 }
+
+func (s *CustomerContractDocumentStore) GetByCategory(
+	cusContractID int,
+	category model.DocumentCategory,
+	limit int,
+	status model.DocumentStatus,
+) ([]*model.Document, error) {
+	var res []*model.Document
+	rawSql := `select * from documents where category = ? and status = ? and id in (select document_id from customer_contract_documents where customer_contract_id = ?) limit ?`
+	if err := s.db.Raw(rawSql, string(category), string(status), cusContractID, limit).Scan(&res).Error; err != nil {
+		fmt.Printf("CustomerContractDocumentStore: GetByCategory %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

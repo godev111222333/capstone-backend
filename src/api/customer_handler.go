@@ -346,5 +346,10 @@ func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
 		return
 	}
 
+	if acct.Role.RoleName == model.RoleNameAdmin {
+		c.JSON(http.StatusOK, s.newCustomerContractResponse(contract))
+		return
+	}
+
 	c.JSON(http.StatusOK, contract)
 }

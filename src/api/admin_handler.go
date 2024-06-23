@@ -390,6 +390,48 @@ type adminGetContractRequest struct {
 	CustomerContractStatus string `form:"customer_contract_status"`
 }
 
+type customerContractResponse struct {
+	*model.CustomerContract
+	ReceivingCarImages    []string `json:"receiving_car_images"`
+	CollateralAssetImages []string `json:"collateral_asset_images"`
+}
+
+func docsToURLs(docs []*model.Document) []string {
+	res := make([]string, len(docs))
+	for i, doc := range docs {
+		res[i] = doc.Url
+	}
+
+	return res
+}
+
+func (s *Server) newCustomerContractResponse(contract *model.CustomerContract) *customerContractResponse {
+	resp := &customerContractResponse{
+		CustomerContract: contract,
+	}
+	collaterals, err := s.store.CustomerContractDocumentStore.GetByCategory(
+		contract.ID,
+		model.DocumentCategoryCollateralAssets,
+		MaxNumberCollateralAssetFiles,
+		model.DocumentStatusActive,
+	)
+	if err == nil {
+		resp.CollateralAssetImages = docsToURLs(collaterals)
+	}
+
+	receivingImages, err := s.store.CustomerContractDocumentStore.GetByCategory(
+		contract.ID,
+		model.DocumentCategoryReceivingCarImages,
+		MaxNumberReceivingCarImages,
+		model.DocumentStatusActive,
+	)
+	if err == nil {
+		resp.ReceivingCarImages = docsToURLs(receivingImages)
+	}
+
+	return resp
+}
+
 func (s *Server) HandleAdminGetCustomerContracts(c *gin.Context) {
 	req := adminGetContractRequest{}
 	if err := c.Bind(&req); err != nil {
@@ -414,7 +456,12 @@ func (s *Server) HandleAdminGetCustomerContracts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"contracts": contracts, "total": total})
+	contractResp := make([]*customerContractResponse, len(contracts))
+	for i, contract := range contracts {
+		contractResp[i] = s.newCustomerContractResponse(contract)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"contracts": contractResp, "total": total})
 }
 
 type CustomerContractAction string

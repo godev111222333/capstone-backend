@@ -33,7 +33,16 @@ func (s *AccountStore) Create(acct *model.Account) error {
 
 func (s *AccountStore) Update(accountID int, values map[string]interface{}) error {
 	if err := s.db.Model(&model.Account{ID: accountID}).Updates(values).Error; err != nil {
-		fmt.Printf("AccountStore: %v\n", err)
+		fmt.Printf("AccountStore: Update %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *AccountStore) UpdateTx(tx *gorm.DB, accountID int, values map[string]interface{}) error {
+	if err := tx.Model(&model.Account{ID: accountID}).Updates(values).Error; err != nil {
+		fmt.Printf("AccountStore: UpdateTx %v\n", err)
 		return err
 	}
 

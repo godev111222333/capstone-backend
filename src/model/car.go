@@ -27,6 +27,7 @@ const (
 	CarStatusApproved                           CarStatus = "approved"
 	CarStatusRejected                           CarStatus = "rejected"
 	CarStatusActive                             CarStatus = "active"
+	CarStatusInactive                           CarStatus = "inactive"
 	CarStatusWaitingDelivery                    CarStatus = "waiting_car_delivery"
 	CarStatusNoFilter                           CarStatus = "no_filter"
 )

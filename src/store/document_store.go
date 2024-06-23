@@ -34,6 +34,15 @@ func (s *DocumentStore) CreateBatch(docs []*model.Document) error {
 	return nil
 }
 
+func (s *DocumentStore) UpdateByAccountID(tx *gorm.DB, acctID int, values map[string]interface{}) error {
+	if err := tx.Model(model.Document{}).Where("account_id = ?", acctID).Updates(values).Error; err != nil {
+		fmt.Printf("DocumentStore: UpdateByAccountID %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *DocumentStore) GetByCategory(
 	accID int,
 	category model.DocumentCategory,

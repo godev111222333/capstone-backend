@@ -93,6 +93,15 @@ func (s *CarStore) Update(id int, values map[string]interface{}) error {
 	return nil
 }
 
+func (s *CarStore) UpdateByPartnerID(tx *gorm.DB, partnerID int, values map[string]interface{}) error {
+	if err := tx.Model(&model.Car{}).Where("partner_id = ?", partnerID).Updates(values).Error; err != nil {
+		fmt.Printf("CarStore: UpdateByPartnerID %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *CarStore) CountByStatus(status model.CarStatus) (int, error) {
 	var count int64
 	var err error

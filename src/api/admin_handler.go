@@ -390,7 +390,7 @@ type adminGetContractRequest struct {
 	CustomerContractStatus string `form:"customer_contract_status"`
 }
 
-func (s *Server) HandleAdminGetContracts(c *gin.Context) {
+func (s *Server) HandleAdminGetCustomerContracts(c *gin.Context) {
 	req := adminGetContractRequest{}
 	if err := c.Bind(&req); err != nil {
 		responseError(c, err)
@@ -415,6 +415,23 @@ func (s *Server) HandleAdminGetContracts(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"contracts": contracts, "total": total})
+}
+
+func (s *Server) HandleAdminGetCustomerContractDetail(c *gin.Context) {
+	id := c.Param("customer_contract_id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(idInt)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, contract)
 }
 
 type CustomerContractAction string

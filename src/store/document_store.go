@@ -25,6 +25,15 @@ func (s *DocumentStore) Create(m *model.Document) error {
 	return nil
 }
 
+func (s *DocumentStore) CreateBatch(docs []*model.Document) error {
+	if err := s.db.Create(docs).Error; err != nil {
+		fmt.Printf("DocumentStore: Create Batch %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *DocumentStore) GetByCategory(
 	accID int,
 	category model.DocumentCategory,

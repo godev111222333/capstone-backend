@@ -63,6 +63,11 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 		return
 	}
 
+	if err := s.store.DocumentStore.Create(doc); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
 	if err := s.store.AccountStore.Update(acct.ID, map[string]interface{}{
 		"avatar_url": doc.Url,
 	}); err != nil {
@@ -187,6 +192,7 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 		return
 	}
 
+	docs := make([]*model.Document, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
 			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
@@ -200,10 +206,18 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 		}
 		defer body.Close()
 
-		if _, err := s.uploadDocument(body, acct.ID, f.Filename, model.DocumentCategoryDrivingLicense); err != nil {
+		doc, err := s.uploadDocument(body, acct.ID, f.Filename, model.DocumentCategoryDrivingLicense)
+		if err != nil {
 			responseInternalServerError(c, err)
 			return
 		}
+
+		docs = append(docs, doc)
+	}
+
+	if err := s.store.DocumentStore.CreateBatch(docs); err != nil {
+		responseInternalServerError(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "upload driving license images successfully"})
@@ -279,6 +293,7 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 		return
 	}
 
+	docs := make([]*model.Document, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
 			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
@@ -292,10 +307,18 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 		}
 		defer body.Close()
 
-		if _, err := s.uploadDocument(body, acct.ID, f.Filename, req.DocumentCategory); err != nil {
+		doc, err := s.uploadDocument(body, acct.ID, f.Filename, req.DocumentCategory)
+		if err != nil {
 			responseInternalServerError(c, err)
 			return
 		}
+
+		docs = append(docs, doc)
+	}
+
+	if err := s.store.CustomerContractDocumentStore.Create(req.CustomerContractID, docs); err != nil {
+		responseInternalServerError(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "upload customer contract document successfully"})
@@ -329,5 +352,5 @@ func (s *Server) uploadDocument(
 		Status:    model.DocumentStatusActive,
 	}
 
-	return doc, s.store.DB.Create(doc).Error
+	return doc, nil
 }

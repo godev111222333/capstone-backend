@@ -280,6 +280,10 @@ func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContra
 		return "", "", err
 	}
 
+	if err := s.store.DocumentStore.Create(doc); err != nil {
+		return "", "", err
+	}
+
 	return doc.Url, url, s.store.CustomerPaymentStore.CreatePaymentDocument(payment.ID, doc.ID)
 }
 

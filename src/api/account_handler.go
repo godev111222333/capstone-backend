@@ -401,6 +401,11 @@ func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 		return
 	}
 
+	if err := s.store.DocumentStore.Create(doc); err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
 	if err := s.store.PaymentInformationStore.Update(acct.ID, map[string]interface{}{
 		"qr_code_url": doc.Url,
 	}); err != nil {

@@ -316,7 +316,7 @@ func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
 	c.JSON(http.StatusOK, contracts)
 }
 
-func (s *Server) HandleCustomerAdminGetContractDetails(c *gin.Context) {
+func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
 	if err != nil {

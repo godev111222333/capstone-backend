@@ -227,13 +227,6 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
-		//RouteAdminGetCustomerContractDetail: {
-		//	Path:        "/admin/contract/:customer_contract_id",
-		//	Method:      http.MethodGet,
-		//	Handler:     s.HandleAdminGetCustomerContractDetail,
-		//	RequireAuth: true,
-		//	AuthRoles:   AuthRoleAdmin,
-		//},
 		RouteAdminApproveRejectCustomerContract: {
 			Path:        "/admin/contract",
 			Method:      http.MethodPut,
@@ -320,7 +313,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 		RouteCustomerAdminGetContractDetails: {
 			Path:        "/contract/:customer_contract_id",
 			Method:      http.MethodGet,
-			Handler:     s.HandleCustomerAdminGetContractDetails,
+			Handler:     s.HandleCustomerAdminGetCustomerContractDetails,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomerAdmin,
 		},

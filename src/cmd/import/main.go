@@ -23,13 +23,16 @@ func main() {
 		panic(err)
 	}
 
-	models, err := importFromFile("etc/car_models/2024.csv")
-	if err != nil {
-		panic(err)
-	}
+	filePath := []string{"etc/car_models/2023.csv", "etc/car_models/2022.csv"}
+	for _, path := range filePath {
+		models, err := importFromFile(path)
+		if err != nil {
+			panic(err)
+		}
 
-	if err := dbStore.CarModelStore.Create(models); err != nil {
-		panic(err)
+		if err := dbStore.CarModelStore.Create(models); err != nil {
+			panic(err)
+		}
 	}
 
 	fmt.Println("imported car models data successfully")

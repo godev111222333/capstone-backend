@@ -27,6 +27,7 @@ func (s *AccountStore) Create(acct *model.Account) error {
 		}).Error
 	}); err != nil {
 		fmt.Printf("AccountStore: Create %v\n", err)
+		return err
 	}
 	return nil
 }

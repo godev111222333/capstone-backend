@@ -302,6 +302,11 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		return
 	}
 
+	if contract == nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
+		return
+	}
+
 	if contract.Status != model.PartnerContractStatusWaitingForAgreement {
 		responseError(c, errors.New("invalid contract status"))
 		return
@@ -355,6 +360,11 @@ func (s *Server) HandleGetPartnerContractDetails(c *gin.Context) {
 	contract, err := s.store.PartnerContractStore.GetByCarID(req.CarID)
 	if err != nil {
 		responseError(c, err)
+		return
+	}
+
+	if contract == nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
 		return
 	}
 

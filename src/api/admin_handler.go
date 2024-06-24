@@ -273,6 +273,11 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 			return
 		}
 
+		if contract == nil {
+			c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
+			return
+		}
+
 		if contract.Status != model.PartnerContractStatusAgreed {
 			responseError(c, errors.New("partner must agree the contract first"))
 			return

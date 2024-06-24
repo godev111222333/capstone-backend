@@ -90,3 +90,46 @@ func (s *Server) HandleGetRegisterCarMetadata(c *gin.Context) {
 		ParkingLot: ParkingLotMetadata,
 	})
 }
+
+type getParkingLotMetadataRequest struct {
+	SeatType int `form:"seat_type"`
+}
+
+func (s *Server) HandleGetParkingLotMetadata(c *gin.Context) {
+	req := getParkingLotMetadataRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	totalCarInGarage, err := s.store.CarStore.CountBySeats(req.SeatType)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	garageConfig, err := s.store.GarageConfigStore.Get()
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	typeCode := model.GarageConfigTypeMax4Seats
+	if req.SeatType == 7 {
+		typeCode = model.GarageConfigTypeMax7Seats
+	} else if req.SeatType == 15 {
+		typeCode = model.GarageConfigTypeMax15Seats
+	}
+
+	if totalCarInGarage >= garageConfig[typeCode] {
+		c.JSON(http.StatusOK, []OptionResponse{
+			{
+				Code: string(model.ParkingLotHome),
+				Text: "Tại nhà",
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, ParkingLotMetadata)
+}

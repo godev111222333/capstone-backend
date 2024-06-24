@@ -18,6 +18,7 @@ const (
 	RouteRenewAccessToken                    = "renew_access_token"
 	RouteUpdateProfile                       = "update_profile"
 	RouteGetRegisterCarMetadata              = "register_car_metadata"
+	RouteGetParkingLotMetadata               = "get_parking_lot_metadata"
 	RouteRegisterCar                         = "register_car"
 	RouteUpdateRentalPrice                   = "update_rental_price"
 	RouteUploadCarDocuments                  = "upload_car_images"
@@ -134,6 +135,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/register_car_metadata",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetRegisterCarMetadata,
+			RequireAuth: false,
+		},
+		RouteGetParkingLotMetadata: {
+			Path:        "/register_car_metadata/parking_lot",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetParkingLotMetadata,
 			RequireAuth: false,
 		},
 		RouteRegisterCar: {

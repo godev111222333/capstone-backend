@@ -319,8 +319,13 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		return
 	}
 
+	status := string(model.CarStatusWaitingDelivery)
+	if car.ParkingLot == model.ParkingLotHome {
+		status = string(model.CarStatusActive)
+	}
+
 	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
-		"status": string(model.CarStatusWaitingDelivery),
+		"status": status,
 	}); err != nil {
 		responseInternalServerError(c, err)
 		return

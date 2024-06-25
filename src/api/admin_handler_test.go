@@ -133,7 +133,7 @@ func TestHandleApproveCar(t *testing.T) {
 		car := &model.Car{
 			PartnerID:    partner.ID,
 			CarModelID:   carModel.ID,
-			LicensePlate: "69A1",
+			LicensePlate: "69A12",
 			Status:       model.CarStatusPendingApproval,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
@@ -166,7 +166,7 @@ func TestHandleApproveCar(t *testing.T) {
 		car := &model.Car{
 			PartnerID:    partner.ID,
 			CarModelID:   carModel.ID,
-			LicensePlate: "69A1",
+			LicensePlate: "69A11111",
 			Status:       model.CarStatusWaitingDelivery,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))

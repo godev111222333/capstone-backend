@@ -10,28 +10,28 @@ import (
 	"github.com/godev111222333/capstone-backend/src/model"
 )
 
-func seedAccountAndLogin(email, password string, role model.RoleID) (*model.Account, *rawLoginResponse) {
+func seedAccountAndLogin(phoneNumber, password string, role model.RoleID) (*model.Account, *rawLoginResponse) {
 	h, _ := TestServer.hashVerifier.Hash(password)
 	acct := &model.Account{
-		Email:    email,
-		Password: h,
-		RoleID:   role,
-		Status:   model.AccountStatusActive,
+		PhoneNumber: phoneNumber,
+		Password:    h,
+		RoleID:      role,
+		Status:      model.AccountStatusActive,
 	}
 	_ = TestDb.AccountStore.Create(acct)
 
-	return acct, login(email, password)
+	return acct, login(phoneNumber, password)
 }
 
 func loginAdmin() *rawLoginResponse {
 	return login("admin", "admin")
 }
 
-func login(email, password string) *rawLoginResponse {
+func login(phoneNumber, password string) *rawLoginResponse {
 	route := TestServer.AllRoutes()[RouteRawLogin]
 	body := rawLoginRequest{
-		Email:    email,
-		Password: password,
+		PhoneNumber: phoneNumber,
+		Password:    password,
 	}
 	bz, _ := json.Marshal(body)
 	recorder := httptest.NewRecorder()

@@ -144,7 +144,7 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 		return
 	}
 
-	if car.Account.Email != authPayload.PhoneNumber {
+	if car.Account.PhoneNumber != authPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}

@@ -243,8 +243,8 @@ type updateProfileRequest struct {
 	LastName                 string    `json:"last_name"`
 	Email                    string    `json:"email"`
 	DateOfBirth              time.Time `json:"date_of_birth"`
-	IdentificationCardNumber string    `json:"identification_card_number"`
-	DrivingLicense           string    `json:"driving_license"`
+	IdentificationCardNumber string    `json:"identification_card_number" binding:"id_card"`
+	DrivingLicense           string    `json:"driving_license" binding:"driving_license"`
 	Password                 string    `json:"password"`
 }
 
@@ -271,7 +271,7 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 		responseError(c, err)
 		return
 	}
-	if acct == nil || acct.Email != authPayload.PhoneNumber {
+	if acct == nil || acct.PhoneNumber != authPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("mismatch token or account not found")))
 		return
 	}

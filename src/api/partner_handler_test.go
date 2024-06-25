@@ -64,14 +64,14 @@ func TestRegisterCarHandler(t *testing.T) {
 
 		hashedPassword, _ := TestServer.hashVerifier.Hash("0000000")
 		partner := &model.Account{
-			RoleID:    model.RoleIDPartner,
-			Email:     "bill@gmail.com",
-			FirstName: "Bill Gate",
-			Status:    model.AccountStatusActive,
-			Password:  hashedPassword,
+			RoleID:      model.RoleIDPartner,
+			PhoneNumber: "bill@gmail.com",
+			FirstName:   "Bill Gate",
+			Status:      model.AccountStatusActive,
+			Password:    hashedPassword,
 		}
 		require.NoError(t, TestDb.AccountStore.Create(partner))
-		accessToken := login(partner.Email, "0000000").AccessToken
+		accessToken := login(partner.PhoneNumber, "0000000").AccessToken
 
 		req.Header.Add(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken)
 
@@ -102,7 +102,7 @@ func TestRegisterCarHandler(t *testing.T) {
 
 func TestUpdateRentalPriceHandler(t *testing.T) {
 	t.Run("update rental price", func(t *testing.T) {
-		acct, accessPayload := seedAccountAndLogin("minh@gmail.com", "xxx", model.RoleIDPartner)
+		acct, accessPayload := seedAccountAndLogin("8989989", "xxx", model.RoleIDPartner)
 		carModel := &model.CarModel{
 			Brand: "Lambo",
 		}

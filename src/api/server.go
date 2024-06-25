@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"strings"
 
@@ -41,6 +43,14 @@ func NewServer(
 	tokenMaker, err := token.NewJWTMaker("12345678901234567890123456789012")
 	if err != nil {
 		panic(err)
+	}
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		for tagName, valFunc := range CustomValidations {
+			if err := v.RegisterValidation(tagName, valFunc); err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	server := &Server{

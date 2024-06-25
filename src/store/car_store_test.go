@@ -42,10 +42,10 @@ func TestCarStore(t *testing.T) {
 
 	t.Run("get owned car successfully", func(t *testing.T) {
 		partner := &model.Account{
-			RoleID:    model.RoleIDPartner,
-			Email:     "cuongdola@gmail.com",
-			FirstName: "Cuong dola",
-			Status:    model.AccountStatusActive,
+			RoleID:      model.RoleIDPartner,
+			PhoneNumber: "1111",
+			FirstName:   "Cuong dola",
+			Status:      model.AccountStatusActive,
 		}
 		require.NoError(t, TestDb.AccountStore.Create(partner))
 		carModel := &model.CarModel{
@@ -66,13 +66,13 @@ func TestCarStore(t *testing.T) {
 			{
 				PartnerID:    partner.ID,
 				CarModelID:   carModel.ID,
-				LicensePlate: "86AX",
+				LicensePlate: "86AX1",
 				Status:       model.CarStatusPendingApproval,
 			},
 			{
 				PartnerID:    partner.ID,
 				CarModelID:   carModel.ID,
-				LicensePlate: "86AX",
+				LicensePlate: "86AX2",
 				Status:       model.CarStatusPendingApplicationPendingCarImages,
 			},
 		}
@@ -93,10 +93,10 @@ func TestCarStore(t *testing.T) {
 
 	t.Run("get all", func(t *testing.T) {
 		partner := &model.Account{
-			RoleID:    model.RoleIDPartner,
-			Email:     "cuongdola2@gmail.com",
-			FirstName: "Cuong dola 2",
-			Status:    model.AccountStatusActive,
+			RoleID:      model.RoleIDPartner,
+			PhoneNumber: "222222",
+			FirstName:   "Cuong dola 2",
+			Status:      model.AccountStatusActive,
 		}
 		require.NoError(t, TestDb.AccountStore.Create(partner))
 		carModel := &model.CarModel{
@@ -145,8 +145,8 @@ func TestCarStore(t *testing.T) {
 			{Brand: "audi", Model: "G9", Year: 2024, NumberOfSeats: 15},
 		}
 		require.NoError(t, TestDb.CarModelStore.Create(carModels))
-		partner1 := &model.Account{Email: "p1@gmail.com", Password: "p1", RoleID: model.RoleIDPartner}
-		partner2 := &model.Account{Email: "p2@gmail.com", Password: "p2", RoleID: model.RoleIDPartner}
+		partner1 := &model.Account{PhoneNumber: "3333", Password: "p1", RoleID: model.RoleIDPartner}
+		partner2 := &model.Account{PhoneNumber: "4444", Password: "p2", RoleID: model.RoleIDPartner}
 		require.NoError(t, TestDb.AccountStore.Create(partner1))
 		require.NoError(t, TestDb.AccountStore.Create(partner2))
 

@@ -24,11 +24,11 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 	partner := &model.Account{RoleID: model.RoleIDPartner, Email: "pn1@gmail@gmail.com", Status: model.AccountStatusActive}
 	require.NoError(t, TestDb.AccountStore.Create(partner))
 	cars := []*model.Car{
-		{PartnerID: partner.ID, CarModelID: carModels[0].ID, Status: model.CarStatusActive},
-		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusActive},
-		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusActive},
-		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusRejected},
-		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusWaitingDelivery},
+		{PartnerID: partner.ID, CarModelID: carModels[0].ID, Status: model.CarStatusActive, LicensePlate: "232222"},
+		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusActive, LicensePlate: "242222"},
+		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusActive, LicensePlate: "252222"},
+		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusRejected, LicensePlate: "262222"},
+		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusWaitingDelivery, LicensePlate: "272222"},
 	}
 	for _, c := range cars {
 		require.NoError(t, TestDb.CarStore.Create(c))

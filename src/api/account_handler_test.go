@@ -32,7 +32,7 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 
 		route := TestServer.AllRoutes()[RouteRawLogin]
 		body := `{
-			"email": "nguyenvancuong@gmail.com",
+			"phone_number": "4324",
 			"password": "password"
 		}`
 		recorder := httptest.NewRecorder()
@@ -76,6 +76,7 @@ func TestRenewAccessToken(t *testing.T) {
 			FirstName:                "ABCDE",
 			LastName:                 "Nguyen Van",
 			Email:                    "abcde@gmail.com",
+			PhoneNumber:              "99999",
 			Password:                 hashedPassword,
 			Status:                   model.AccountStatusActive,
 			IdentificationCardNumber: "asdasd",
@@ -85,7 +86,7 @@ func TestRenewAccessToken(t *testing.T) {
 
 		route := TestServer.AllRoutes()[RouteRawLogin]
 		body := `{
-			"email": "abcde@gmail.com",
+			"phone_number": "99999",
 			"password": "password"
 		}`
 		recorder := httptest.NewRecorder()
@@ -148,14 +149,14 @@ func TestUpdateProfile(t *testing.T) {
 		route := TestServer.AllRoutes()[RouteUpdateProfile]
 		dob, err := time.Parse(time.RFC3339, "1998-06-20T20:30:00Z")
 		require.NoError(t, err)
-		accessToken := login(acct.Email, "3333").AccessToken
+		accessToken := login(acct.PhoneNumber, "3333").AccessToken
 		body := updateProfileRequest{
 			FirstName:                "Son",
 			LastName:                 "Le Thanh",
-			PhoneNumber:              "0123456",
+			Email:                    "new_email@gmail.com",
 			DateOfBirth:              dob,
-			IdentificationCardNumber: "1111",
-			DrivingLicense:           "2222",
+			IdentificationCardNumber: "111111111",
+			DrivingLicense:           "111111111111",
 			Password:                 "new_password",
 		}
 		bz, _ := json.Marshal(body)
@@ -169,9 +170,9 @@ func TestUpdateProfile(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "Son", updatedAcct.FirstName)
 		require.Equal(t, "Le Thanh", updatedAcct.LastName)
-		require.Equal(t, "0123456", updatedAcct.PhoneNumber)
-		require.Equal(t, "1111", updatedAcct.IdentificationCardNumber)
-		require.Equal(t, "2222", updatedAcct.DrivingLicense)
+		require.Equal(t, "new_email@gmail.com", updatedAcct.Email)
+		require.Equal(t, "111111111", updatedAcct.IdentificationCardNumber)
+		require.Equal(t, "111111111111", updatedAcct.DrivingLicense)
 		require.NoError(t, TestServer.hashVerifier.Compare(updatedAcct.Password, "new_password"))
 	})
 }

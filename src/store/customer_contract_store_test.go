@@ -12,9 +12,9 @@ import (
 func TestCustomerContractStore(t *testing.T) {
 	carModel := &model.CarModel{Brand: "AudiVIP"}
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
-	partner := &model.Account{Email: "chipu@gmail.com", Status: model.AccountStatusActive, RoleID: model.RoleIDPartner}
+	partner := &model.Account{PhoneNumber: "0001", Status: model.AccountStatusActive, RoleID: model.RoleIDPartner}
 	require.NoError(t, TestDb.AccountStore.Create(partner))
-	customer := &model.Account{Email: "amee@gmail.com", Status: model.AccountStatusActive, RoleID: model.RoleIDCustomer}
+	customer := &model.Account{PhoneNumber: "0002", Status: model.AccountStatusActive, RoleID: model.RoleIDCustomer}
 	require.NoError(t, TestDb.AccountStore.Create(customer))
 	car := &model.Car{PartnerID: partner.ID, CarModelID: carModel.ID, LicensePlate: "8xxx", Status: model.CarStatusActive}
 	require.NoError(t, TestDb.CarStore.Create(car))

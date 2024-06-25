@@ -16,12 +16,12 @@ const (
 )
 
 type OTP struct {
-	ID           int
-	AccountEmail string
-	OTP          string
-	Status       OTPStatus
-	OtpType      OTPType
-	ExpiresAt    time.Time
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID          int
+	PhoneNumber string
+	OTP         string
+	Status      OTPStatus
+	OtpType     OTPType
+	ExpiresAt   time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }

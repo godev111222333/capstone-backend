@@ -19,8 +19,8 @@ create table accounts
     "role_id"                    bigint references roles (id),
     "first_name"                 varchar(255) not null default '',
     "last_name"                  varchar(255) not null default '',
-    "phone_number"               varchar(255) not null default '',
-    "email"                      varchar(255) not null unique,
+    "phone_number"               varchar(255) not null unique,
+    "email"                      varchar(255) not null default '',
     "identification_card_number" varchar(255) not null default '',
     "password"                   varchar(255) not null default '',
     "avatar_url"                 varchar(255) not null default '',
@@ -31,10 +31,10 @@ create table accounts
     "updated_at"                 timestamptz           DEFAULT (now())
 );
 
-insert into accounts(role_id, email, password, status)
+insert into accounts(role_id, phone_number, password, status)
 values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
 
-create unique index unique_phone_number on accounts (phone_number) where phone_number != '';
+create unique index unique_email on accounts (email) where email != '';
 create unique index unique_identification_card_number on accounts (identification_card_number) where identification_card_number != '';
 
 create table car_models
@@ -54,7 +54,7 @@ create table cars
     "id"            serial primary key,
     "partner_id"    bigint references accounts (id),
     "car_model_id"  bigint references car_models (id),
-    "license_plate" varchar(255)  not null default '',
+    "license_plate" varchar(255)  not null default '' unique,
     "parking_lot"   varchar(255)  not null default '',
     "description"   varchar(1023) not null default '',
     "fuel"          varchar(255)  not null default '',
@@ -80,14 +80,14 @@ create table documents
 
 create table otps
 (
-    "id"            serial primary key,
-    "account_email" varchar(255) references accounts (email),
-    "otp"           varchar(20)  not null default '',
-    "status"        varchar(255) not null default '',
-    "otp_type"      varchar(255) not null default '',
-    "expires_at"    timestamptz           DEFAULT (now()),
-    "created_at"    timestamptz           DEFAULT (now()),
-    "updated_at"    timestamptz           DEFAULT (now())
+    "id"           serial primary key,
+    "phone_number" varchar(255) references accounts (phone_number),
+    "otp"          varchar(20)  not null default '',
+    "status"       varchar(255) not null default '',
+    "otp_type"     varchar(255) not null default '',
+    "expires_at"   timestamptz           DEFAULT (now()),
+    "created_at"   timestamptz           DEFAULT (now()),
+    "updated_at"   timestamptz           DEFAULT (now())
 );
 
 create table "notifications"

@@ -1,65 +1,59 @@
 package api
 
 import (
-	"crypto/tls"
 	"fmt"
+	"strings"
 	"time"
-
-	gomail "gopkg.in/mail.v2"
 
 	"github.com/godev111222333/capstone-backend/src/misc"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/store"
+	"github.com/twilio/twilio-go"
+	twilioApi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
 type OTPService struct {
+	cfg    *misc.OTPConfig
 	db     *store.DbStore
-	dialer *gomail.Dialer
-	sender string
+	client *twilio.RestClient
 }
 
 func NewOTPService(
+	cfg *misc.OTPConfig,
 	db *store.DbStore,
-	sender, senderPassword string,
 ) *OTPService {
-
-	dialer := gomail.NewDialer("smtp.gmail.com", 587, sender, senderPassword)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-	return &OTPService{
-		db:     db,
-		sender: sender,
-		dialer: dialer,
-	}
+	client := twilio.NewRestClientWithParams(twilio.ClientParams{
+		AccountSid: cfg.AccountSID,
+		Username:   cfg.ApiKey,
+		Password:   cfg.ApiSecret,
+	})
+	return &OTPService{cfg, db, client}
 }
 
-func (s *OTPService) SendOTP(otpType model.OTPType, email string) error {
-	m := gomail.NewMessage()
-	m.SetHeader("From", s.sender)
-	m.SetHeader("To", email)
-
-	subject := "MinhHungCar OTP"
-	if otpType == model.OTPTypeRegister {
-		subject = "MinhHungCar verify registration"
-	}
-	m.SetHeader("Subject", subject)
-
+func (s *OTPService) SendOTP(otpType model.OTPType, phoneNumber string) error {
+	phoneWithPrefix := addPhoneCountryPrefix(phoneNumber)
 	code := misc.RandomOTP(6)
-	m.SetBody("text/plain", fmt.Sprintf("Your %s OTP: %s (expires in 30 minutes)", subject, code))
+	msgBody := fmt.Sprintf("MinhHungCar verification code: %s. Do not share this code with anyone", code)
+	param := &twilioApi.CreateMessageParams{}
+	param.SetFrom(s.cfg.FromNumber)
+	param.SetTo(phoneWithPrefix)
+	param.SetBody(msgBody)
 
-	if err := s.dialer.DialAndSend(m); err != nil {
-		fmt.Printf("error when sending OTP, err=%v\n", err)
+	_, err := s.client.Api.CreateMessage(param)
+	if err != nil {
+		fmt.Printf("OTPService: SentOTP %v\n", err)
 		return err
 	}
 
-	now := time.Now().UTC()
+	now := time.Now()
 	if err := s.db.OTPStore.Create(&model.OTP{
-		OtpType:      otpType,
-		AccountEmail: email,
-		OTP:          code,
-		Status:       model.OTPStatusSent,
-		ExpiresAt:    now.Add(30 * time.Minute),
-		CreatedAt:    now,
-		UpdatedAt:    now,
+		OtpType:     otpType,
+		PhoneNumber: phoneNumber,
+		OTP:         code,
+		Status:      model.OTPStatusSent,
+		ExpiresAt:   now.Add(30 * time.Minute),
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}); err != nil {
 		return err
 	}
@@ -67,8 +61,8 @@ func (s *OTPService) SendOTP(otpType model.OTPType, email string) error {
 	return nil
 }
 
-func (s *OTPService) VerifyOTP(otpType model.OTPType, email string, otp string) (bool, error) {
-	sentOTP, err := s.db.OTPStore.GetLastByOTPType(email, otpType)
+func (s *OTPService) VerifyOTP(otpType model.OTPType, phone string, otp string) (bool, error) {
+	sentOTP, err := s.db.OTPStore.GetLastByOTPType(phone, otpType)
 	if err != nil {
 		return false, err
 	}
@@ -78,4 +72,12 @@ func (s *OTPService) VerifyOTP(otpType model.OTPType, email string, otp string) 
 	}
 
 	return false, nil
+}
+
+func addPhoneCountryPrefix(phoneNumber string) string {
+	if len(phoneNumber) < 1 {
+		return ""
+	}
+
+	return strings.Replace(phoneNumber, "0", "+84", 1)
 }

@@ -25,10 +25,10 @@ func (s *OTPStore) Create(otp *model.OTP) error {
 	return nil
 }
 
-func (s *OTPStore) GetLastByOTPType(email string, otpType model.OTPType) (*model.OTP, error) {
+func (s *OTPStore) GetLastByOTPType(phoneNumber string, otpType model.OTPType) (*model.OTP, error) {
 	r := &model.OTP{}
 
-	if err := s.Db.Where("account_email = ? AND otp_type = ?", email, string(otpType)).Order("updated_at desc").First(&r).Error; err != nil {
+	if err := s.Db.Where("phone_number = ? AND otp_type = ?", phoneNumber, string(otpType)).Order("updated_at desc").First(&r).Error; err != nil {
 		fmt.Printf("error when get last otp, err=%v\n", err)
 		return nil, err
 	}
@@ -36,8 +36,8 @@ func (s *OTPStore) GetLastByOTPType(email string, otpType model.OTPType) (*model
 	return r, nil
 }
 
-func (s *OTPStore) UpdateStatus(email string, otpType model.OTPType, newStatus model.OTPStatus) error {
-	otp, err := s.GetLastByOTPType(email, otpType)
+func (s *OTPStore) UpdateStatus(phoneNumber string, otpType model.OTPType, newStatus model.OTPStatus) error {
+	otp, err := s.GetLastByOTPType(phoneNumber, otpType)
 	if err != nil {
 		return err
 	}

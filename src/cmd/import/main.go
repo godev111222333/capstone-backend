@@ -23,7 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	filePath := []string{"etc/car_models/2023.csv", "etc/car_models/2022.csv"}
+	filePath := []string{"etc/car_models/2024.csv", "etc/car_models/2023.csv", "etc/car_models/2022.csv"}
 	for _, path := range filePath {
 		models, err := importFromFile(path)
 		if err != nil {

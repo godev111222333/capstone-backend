@@ -30,8 +30,10 @@ type AWSConfig struct {
 }
 
 type OTPConfig struct {
-	Email    string `yaml:"email"`
-	Password string `yaml:"password"`
+	AccountSID string `yaml:"account_sid"`
+	ApiKey     string `yaml:"api_key"`
+	ApiSecret  string `yaml:"api_secret"`
+	FromNumber string `yaml:"from_number"`
 }
 
 type PDFServiceConfig struct {

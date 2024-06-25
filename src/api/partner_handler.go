@@ -51,7 +51,7 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "register partner successfully. please confirm OTP sent to your email",
+		"status": "register partner successfully. please confirm OTP sent to your phone",
 	})
 }
 

@@ -56,7 +56,7 @@ func (s *Server) HandleRegisterCustomer(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": "register customer successfully. please confirm OTP sent to your email",
+		"status": "register customer successfully. please confirm OTP sent to your phone",
 	})
 }
 

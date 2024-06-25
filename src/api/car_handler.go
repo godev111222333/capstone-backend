@@ -102,7 +102,7 @@ func (s *Server) HandleGetParkingLotMetadata(c *gin.Context) {
 		return
 	}
 
-	totalCarInGarage, err := s.store.CarStore.CountBySeats(req.SeatType)
+	totalCarInGarage, err := s.store.CarStore.CountBySeats(req.SeatType, model.ParkingLotGarage)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return

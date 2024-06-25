@@ -104,7 +104,7 @@ func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 	}
 
 	countCurrentSeats := func(seatType int) int {
-		counter, err := s.store.CarStore.CountBySeats(seatType)
+		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage)
 		if err != nil {
 			responseInternalServerError(c, err)
 			return -1
@@ -151,7 +151,7 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 	}
 
 	checkValidOfSeats := func(seatType, maxSeat int) bool {
-		counter, err := s.store.CarStore.CountBySeats(seatType)
+		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage)
 		if err != nil {
 			responseInternalServerError(c, err)
 			return false
@@ -213,6 +213,19 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	if err != nil {
 		responseError(c, err)
 		return
+	}
+
+	if car.ParkingLot == model.ParkingLotGarage && (req.Action == ApplicationActionApproveRegister || req.Action == ApplicationActionApproveDelivery) {
+		validSeat, err := s.checkIfInsertableNewSeat(car.CarModel.NumberOfSeats)
+		if err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
+
+		if !validSeat {
+			responseError(c, errors.New("not enough slot at garage"))
+			return
+		}
 	}
 
 	newStatus := string(model.CarStatusRejected)
@@ -612,4 +625,29 @@ func (s *Server) HandleAdminGetAccountDetail(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, s.newAccountResponse(acct))
+}
+
+func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
+	seatCode := model.GarageConfigTypeMax4Seats
+	if seatNumber == 7 {
+		seatCode = model.GarageConfigTypeMax7Seats
+	} else if seatNumber == 15 {
+		seatCode = model.GarageConfigTypeMax15Seats
+	}
+
+	return seatCode
+}
+
+func (s *Server) checkIfInsertableNewSeat(seatNumber int) (bool, error) {
+	garageCfg, err := s.store.GarageConfigStore.Get()
+	if err != nil {
+		return false, err
+	}
+
+	cur, err := s.store.CarStore.CountBySeats(seatNumber, model.ParkingLotGarage)
+	if err != nil {
+		return false, err
+	}
+
+	return cur < garageCfg[seatNumberToGarageConfigType(seatNumber)], nil
 }

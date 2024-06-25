@@ -22,12 +22,6 @@ type getCarsRequest struct {
 }
 
 func (s *Server) HandleAdminGetCars(c *gin.Context) {
-	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNameAdmin {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
-		return
-	}
-
 	req := getCarsRequest{}
 	if err := c.Bind(&req); err != nil {
 		responseError(c, err)

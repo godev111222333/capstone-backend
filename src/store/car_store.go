@@ -28,29 +28,72 @@ func (s *CarStore) Create(car *model.Car) error {
 	return nil
 }
 
-func (s *CarStore) GetAll(offset, limit int, status model.CarStatus) ([]*model.Car, error) {
+func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchParam string) ([]*model.Car, error) {
 	if limit == 0 {
 		limit = 1000
 	}
 
 	res := make([]*model.Car, 0)
-	if status == model.CarStatusNoFilter {
-		if err := s.db.
-			Offset(offset).Limit(limit).
-			Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
-			fmt.Printf("CarStore: GetAll %v\n", err)
-			return nil, err
+
+	if len(searchParam) == 0 {
+		if status == model.CarStatusNoFilter {
+			if err := s.db.
+				Offset(offset).Limit(limit).
+				Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
+				fmt.Printf("CarStore: SearchCars %v\n", err)
+				return nil, err
+			}
+		} else {
+			if err := s.db.Where("status like ?", "%"+string(status)+"%").
+				Offset(offset).Limit(limit).
+				Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
+				fmt.Printf("CarStore: SearchCars %v\n", err)
+				return nil, err
+			}
 		}
-	} else {
-		if err := s.db.Where("status like ?", "%"+string(status)+"%").
-			Offset(offset).Limit(limit).
-			Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
-			fmt.Printf("CarStore: GetAll %v\n", err)
-			return nil, err
-		}
+
+		return res, nil
 	}
 
-	return res, nil
+	joinModel := []struct {
+		Car      *model.Car      `gorm:"embedded"`
+		CarModel *model.CarModel `gorm:"embedded"`
+		Account  *model.Account  `gorm:"embedded"`
+	}{}
+	var err error
+
+	likeQuery := func(param string) string {
+		return "%" + param + "%"
+	}
+
+	if status != model.CarStatusNoFilter {
+		rawSql := `select *
+from cars
+         join accounts on cars.partner_id = accounts.id join car_models on cars.car_model_id = car_models.id
+where cars.status like ?
+  and (car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or concat(accounts.last_name, ' ', accounts.first_name) like ?)`
+		err = s.db.Raw(rawSql, likeQuery(string(status)), searchParam, searchParam, searchParam, likeQuery(searchParam)).Scan(&joinModel).Error
+	} else {
+		rawSql := `select *
+from cars
+         join accounts on cars.partner_id = accounts.id join car_models on cars.car_model_id = car_models.id
+where car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or concat(accounts.last_name, ' ', accounts.first_name) like ?`
+		err = s.db.Raw(rawSql, searchParam, searchParam, searchParam, likeQuery(searchParam)).Scan(&joinModel).Error
+	}
+
+	if err != nil {
+		fmt.Printf("CarStore: SearchCars %v\n", err)
+		return nil, err
+	}
+
+	searchRes := make([]*model.Car, len(joinModel))
+	for i, record := range joinModel {
+		searchRes[i] = record.Car
+		searchRes[i].CarModel = *record.CarModel
+		searchRes[i].Account = *record.Account
+	}
+
+	return searchRes, nil
 }
 
 func (s *CarStore) GetByID(id int) (*model.Car, error) {

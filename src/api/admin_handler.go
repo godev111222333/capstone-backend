@@ -17,7 +17,8 @@ const layoutDateMonthYear = "01/02/2006"
 
 type getCarsRequest struct {
 	Pagination
-	CarStatus string `form:"car_status"`
+	CarStatus   string `form:"car_status"`
+	SearchParam string `form:"search_param"`
 }
 
 func (s *Server) HandleAdminGetCars(c *gin.Context) {
@@ -38,7 +39,7 @@ func (s *Server) HandleAdminGetCars(c *gin.Context) {
 		status = model.CarStatus(req.CarStatus)
 	}
 
-	cars, err := s.store.CarStore.GetAll(req.Offset, req.Limit, status)
+	cars, err := s.store.CarStore.SearchCars(req.Offset, req.Limit, status, req.SearchParam)
 	if err != nil {
 		responseError(c, err)
 		return

@@ -124,17 +124,22 @@ func TestCarStore(t *testing.T) {
 			require.NoError(t, TestDb.CarStore.Create(car))
 		}
 
-		cars, err := TestDb.CarStore.GetAll(0, 100, model.CarStatusNoFilter)
+		cars, err := TestDb.CarStore.SearchCars(0, 100, model.CarStatusNoFilter, "")
 		require.NoError(t, err)
 		require.GreaterOrEqual(t, len(cars), 8)
 
-		cars, err = TestDb.CarStore.GetAll(0, 100, model.CarStatusPendingApproval)
+		cars, err = TestDb.CarStore.SearchCars(0, 100, model.CarStatusPendingApproval, "")
 		require.NoError(t, err)
 		require.GreaterOrEqual(t, len(cars), 3)
 
-		cars, err = TestDb.CarStore.GetAll(0, 1, model.CarStatusPendingApproval)
+		cars, err = TestDb.CarStore.SearchCars(0, 1, model.CarStatusPendingApproval, "")
 		require.NoError(t, err)
 		require.Len(t, cars, 1)
+
+		cars, err = TestDb.CarStore.SearchCars(0, 1, model.CarStatusPendingApproval, "Cuong dola 2")
+		require.NoError(t, err)
+		require.Len(t, cars, 3)
+		require.NotEmpty(t, cars[0].CarModel.Brand)
 	})
 
 	t.Run("find cars", func(t *testing.T) {

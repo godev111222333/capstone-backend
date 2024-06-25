@@ -31,7 +31,7 @@ func (s *CarModelStore) GetAll() ([]*model.CarModel, error) {
 			return nil, nil
 		}
 
-		fmt.Printf("CarModelStore: GetAll %v\n", err)
+		fmt.Printf("CarModelStore: SearchCars %v\n", err)
 		return nil, err
 	}
 

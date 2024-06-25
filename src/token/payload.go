@@ -14,11 +14,11 @@ var (
 )
 
 type Payload struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
-	IssuedAt  time.Time `json:"issued_at"`
-	ExpiredAt time.Time `json:"expired_at"`
+	ID          uuid.UUID `json:"id"`
+	PhoneNumber string    `json:"phone_number"`
+	Role        string    `json:"role"`
+	IssuedAt    time.Time `json:"issued_at"`
+	ExpiredAt   time.Time `json:"expired_at"`
 }
 
 // NewPayload creates a new token payload with a specific username and duration
@@ -29,11 +29,11 @@ func NewPayload(username string, role string, duration time.Duration) (*Payload,
 	}
 
 	payload := &Payload{
-		ID:        tokenID,
-		Email:     username,
-		Role:      role,
-		IssuedAt:  time.Now(),
-		ExpiredAt: time.Now().Add(duration),
+		ID:          tokenID,
+		PhoneNumber: username,
+		Role:        role,
+		IssuedAt:    time.Now(),
+		ExpiredAt:   time.Now().Add(duration),
 	}
 	return payload, nil
 }

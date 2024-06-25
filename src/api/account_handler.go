@@ -13,8 +13,8 @@ import (
 )
 
 type verifyOTPRequest struct {
-	Email string `json:"email"`
-	OTP   string `json:"otp"`
+	PhoneNumber string `json:"phone_number"`
+	OTP         string `json:"otp"`
 }
 
 func (s *Server) HandleVerifyOTP(c *gin.Context) {
@@ -24,7 +24,7 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 		return
 	}
 
-	account, err := s.store.AccountStore.GetByEmail(req.Email)
+	account, err := s.store.AccountStore.GetByPhoneNumber(req.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -35,7 +35,7 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 		return
 	}
 
-	isValidOTP, err := s.otpService.VerifyOTP(model.OTPTypeRegister, req.Email, req.OTP)
+	isValidOTP, err := s.otpService.VerifyOTP(model.OTPTypeRegister, req.PhoneNumber, req.OTP)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -48,7 +48,7 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 		return
 	}
 
-	if err := s.store.OTPStore.UpdateStatus(req.Email, model.OTPTypeRegister, model.OTPStatusVerified); err != nil {
+	if err := s.store.OTPStore.UpdateStatus(req.PhoneNumber, model.OTPTypeRegister, model.OTPStatusVerified); err != nil {
 		responseError(c, err)
 		return
 	}
@@ -66,8 +66,8 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 }
 
 type rawLoginRequest struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
+	Password    string `json:"password" binding:"required"`
 }
 
 type rawLoginResponse struct {
@@ -127,7 +127,7 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 		return
 	}
 
-	acct, err := s.store.AccountStore.GetByEmail(req.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(req.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -150,13 +150,13 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 		return
 	}
 
-	accessToken, accessTokenPayload, err := s.tokenMaker.CreateToken(req.Email, acct.Role.RoleName, s.cfg.AccessTokenDuration)
+	accessToken, accessTokenPayload, err := s.tokenMaker.CreateToken(req.PhoneNumber, acct.Role.RoleName, s.cfg.AccessTokenDuration)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
 
-	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(req.Email, acct.Role.RoleName, s.cfg.RefreshTokenDuration)
+	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(req.PhoneNumber, acct.Role.RoleName, s.cfg.RefreshTokenDuration)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -164,7 +164,7 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 
 	if err := s.store.SessionStore.Create(&model.Session{
 		ID:           refreshTokenPayload.ID,
-		Email:        req.Email,
+		PhoneNumber:  req.PhoneNumber,
 		RefreshToken: refreshToken,
 		UserAgent:    c.Request.UserAgent(),
 		ClientIP:     c.ClientIP(),
@@ -211,7 +211,7 @@ func (s *Server) HandleRenewAccessToken(c *gin.Context) {
 		return
 	}
 
-	if session.Email != refreshPayload.Email {
+	if session.PhoneNumber != refreshPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("incorrect session email")))
 		return
 	}
@@ -226,7 +226,7 @@ func (s *Server) HandleRenewAccessToken(c *gin.Context) {
 		return
 	}
 
-	accessToken, accessPayload, err := s.tokenMaker.CreateToken(refreshPayload.Email, refreshPayload.Role, s.cfg.AccessTokenDuration)
+	accessToken, accessPayload, err := s.tokenMaker.CreateToken(refreshPayload.PhoneNumber, refreshPayload.Role, s.cfg.AccessTokenDuration)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -241,7 +241,7 @@ func (s *Server) HandleRenewAccessToken(c *gin.Context) {
 type updateProfileRequest struct {
 	FirstName                string    `json:"first_name"`
 	LastName                 string    `json:"last_name"`
-	PhoneNumber              string    `json:"phone_number"`
+	Email                    string    `json:"email"`
 	DateOfBirth              time.Time `json:"date_of_birth"`
 	IdentificationCardNumber string    `json:"identification_card_number"`
 	DrivingLicense           string    `json:"driving_license"`
@@ -250,7 +250,7 @@ type updateProfileRequest struct {
 
 func (s *Server) HandleGetProfile(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -266,12 +266,12 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 		return
 	}
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return
 	}
-	if acct == nil || acct.Email != authPayload.Email {
+	if acct == nil || acct.Email != authPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("mismatch token or account not found")))
 		return
 	}
@@ -279,7 +279,7 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 	updateParams := map[string]interface{}{
 		"first_name":                 req.FirstName,
 		"last_name":                  req.LastName,
-		"phone_number":               req.PhoneNumber,
+		"email":                      req.Email,
 		"identification_card_number": req.IdentificationCardNumber,
 		"driving_license":            req.DrivingLicense,
 		"date_of_birth":              req.DateOfBirth,
@@ -330,7 +330,7 @@ func (s *Server) HandleUpdatePaymentInformation(c *gin.Context) {
 		return
 	}
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -352,7 +352,7 @@ func (s *Server) HandleUpdatePaymentInformation(c *gin.Context) {
 
 func (s *Server) HandleGetPaymentInformation(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -369,7 +369,7 @@ func (s *Server) HandleGetPaymentInformation(c *gin.Context) {
 
 func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return

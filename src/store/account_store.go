@@ -50,14 +50,14 @@ func (s *AccountStore) UpdateTx(tx *gorm.DB, accountID int, values map[string]in
 	return nil
 }
 
-func (s *AccountStore) GetByEmail(email string) (*model.Account, error) {
+func (s *AccountStore) GetByPhoneNumber(phoneNumber string) (*model.Account, error) {
 	res := &model.Account{}
-	if err := s.db.Where("email = ?", email).Preload("Role").Find(res).Error; err != nil {
+	if err := s.db.Where("phone_number = ?", phoneNumber).Preload("Role").Find(res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 
-		fmt.Printf("AccountStore: GetByEmail %v\n", err)
+		fmt.Printf("AccountStore: GetByPhoneNumber %v\n", err)
 		return nil, err
 	}
 

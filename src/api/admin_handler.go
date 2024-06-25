@@ -244,7 +244,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}
 
 		go func() {
-			partner, err := s.store.AccountStore.GetByEmail(car.Account.Email)
+			partner, err := s.store.AccountStore.GetByPhoneNumber(car.Account.PhoneNumber)
 			if err != nil {
 				fmt.Println(err)
 				return

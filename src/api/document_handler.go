@@ -51,7 +51,7 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 	}
 	defer body.Close()
 
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -109,7 +109,7 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		return
 	}
 
-	if car.Account.Email != authPayload.Email {
+	if car.Account.Email != authPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}
@@ -181,7 +181,7 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 		return
 	}
 
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -225,7 +225,7 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 
 func (s *Server) HandleGetDrivingLicenseImages(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -247,7 +247,7 @@ func (s *Server) HandleGetDrivingLicenseImages(c *gin.Context) {
 
 func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return

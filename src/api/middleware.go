@@ -62,7 +62,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 func (s *Server) activeAccountMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-		acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+		acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, errorResponse(err))
 			return

@@ -8,7 +8,7 @@ import (
 
 type Session struct {
 	ID           uuid.UUID `json:"id"`
-	Email        string    `json:"email"`
+	PhoneNumber  string    `json:"phone_number"`
 	RefreshToken string    `json:"refresh_token"`
 	UserAgent    string    `json:"user_agent"`
 	ClientIP     string    `json:"client_ip"`

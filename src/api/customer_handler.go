@@ -166,7 +166,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	customer, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	customer, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -214,7 +214,7 @@ type customerAgreeContractRequest struct {
 
 func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -305,7 +305,7 @@ func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
 		return
 	}
 
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -327,7 +327,7 @@ func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
 
 func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return

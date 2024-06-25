@@ -72,7 +72,7 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		return
 	}
 
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -144,7 +144,7 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 		return
 	}
 
-	if car.Account.Email != authPayload.Email {
+	if car.Account.Email != authPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}
@@ -232,7 +232,7 @@ func (s *Server) HandleGetRegisteredCars(c *gin.Context) {
 		return
 	}
 
-	acct, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -285,7 +285,7 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	partner, err := s.store.AccountStore.GetByEmail(authPayload.Email)
+	partner, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -357,7 +357,7 @@ func (s *Server) HandleGetPartnerContractDetails(c *gin.Context) {
 		return
 	}
 
-	if authPayload.Role == model.RoleNamePartner && car.Account.Email != authPayload.Email {
+	if authPayload.Role == model.RoleNamePartner && car.Account.Email != authPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}

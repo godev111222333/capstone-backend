@@ -50,7 +50,7 @@ func (s *Server) HandleRegisterCustomer(c *gin.Context) {
 		return
 	}
 
-	if err := s.otpService.SendOTP(model.OTPTypeRegister, req.Email); err != nil {
+	if err := s.otpService.SendOTP(model.OTPTypeRegister, req.PhoneNumber); err != nil {
 		responseError(c, err)
 		return
 	}

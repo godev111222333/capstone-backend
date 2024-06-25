@@ -56,9 +56,9 @@ func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchP
 	}
 
 	joinModel := []struct {
+		Account  *model.Account  `gorm:"embedded"`
 		Car      *model.Car      `gorm:"embedded"`
 		CarModel *model.CarModel `gorm:"embedded"`
-		Account  *model.Account  `gorm:"embedded"`
 	}{}
 	var err error
 

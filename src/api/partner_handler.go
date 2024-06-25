@@ -56,7 +56,7 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 }
 
 type registerCarRequest struct {
-	LicensePlate string           `json:"license_plate" binding:"required"`
+	LicensePlate string           `json:"license_plate" binding:"required,license_plate"`
 	CarModelID   int              `json:"car_model_id" binding:"required"`
 	Motion       model.Motion     `json:"motion_code" binding:"required"`
 	Fuel         model.Fuel       `json:"fuel_code" binding:"required"`

@@ -8,6 +8,7 @@ var CustomValidations = map[string]validator.Func{
 	"id_card":         validationFuncIDCard,
 	"phone_number":    validationFuncPhoneNumber,
 	"driving_license": validationFuncDrivingLicense,
+	"license_plate":   validationFuncLicensePlate,
 }
 
 var validationFuncIDCard validator.Func = func(fl validator.FieldLevel) bool {
@@ -43,6 +44,20 @@ var validationFuncDrivingLicense validator.Func = func(fl validator.FieldLevel) 
 	if ok {
 		l := len(drivingLicense)
 		if l == 0 || l == 12 {
+			return true
+		}
+
+		return false
+	}
+
+	return true
+}
+
+var validationFuncLicensePlate validator.Func = func(fl validator.FieldLevel) bool {
+	drivingLicense, ok := fl.Field().Interface().(string)
+	if ok {
+		l := len(drivingLicense)
+		if l == 0 || l == 7 || l == 8 {
 			return true
 		}
 

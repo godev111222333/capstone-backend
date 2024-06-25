@@ -136,7 +136,7 @@ func TestCarStore(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, cars, 1)
 
-		cars, err = TestDb.CarStore.SearchCars(0, 1, model.CarStatusPendingApproval, "Cuong dola 2")
+		cars, err = TestDb.CarStore.SearchCars(0, 3, model.CarStatusPendingApproval, "Cuong dola 2")
 		require.NoError(t, err)
 		require.Len(t, cars, 3)
 		require.NotEmpty(t, cars[0].CarModel.Brand)

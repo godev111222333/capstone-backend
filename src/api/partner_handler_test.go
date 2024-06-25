@@ -51,7 +51,7 @@ func TestRegisterCarHandler(t *testing.T) {
 		}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		body := registerCarRequest{
-			LicensePlate: "51A3",
+			LicensePlate: "59F1234",
 			CarModelID:   carModel.ID,
 			Motion:       model.MotionManualTransmission,
 			Fuel:         model.FuelGas,

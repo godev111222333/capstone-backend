@@ -268,11 +268,6 @@ type partnerSignContractRequest struct {
 
 func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNamePartner {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
-		return
-	}
-
 	req := partnerSignContractRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		responseError(c, err)
@@ -310,6 +305,19 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 	if contract.Status != model.PartnerContractStatusWaitingForAgreement {
 		responseError(c, errors.New("invalid contract status"))
 		return
+	}
+
+	if contract.Car.ParkingLot == model.ParkingLotGarage {
+		isValid, err := s.checkIfInsertableNewSeat(car.CarModel.NumberOfSeats)
+		if err != nil {
+			responseInternalServerError(c, err)
+			return
+		}
+
+		if !isValid {
+			responseError(c, errors.New("not enough slot at garage"))
+			return
+		}
 	}
 
 	if err := s.store.PartnerContractStore.Update(contract.ID, map[string]interface{}{

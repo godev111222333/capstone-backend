@@ -99,7 +99,7 @@ func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 	}
 
 	countCurrentSeats := func(seatType int) int {
-		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage)
+		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
 		if err != nil {
 			responseInternalServerError(c, err)
 			return -1
@@ -146,7 +146,7 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 	}
 
 	checkValidOfSeats := func(seatType, maxSeat int) bool {
-		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage)
+		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
 		if err != nil {
 			responseInternalServerError(c, err)
 			return false
@@ -639,7 +639,7 @@ func (s *Server) checkIfInsertableNewSeat(seatNumber int) (bool, error) {
 		return false, err
 	}
 
-	cur, err := s.store.CarStore.CountBySeats(seatNumber, model.ParkingLotGarage)
+	cur, err := s.store.CarStore.CountBySeats(seatNumber, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
 	if err != nil {
 		return false, err
 	}

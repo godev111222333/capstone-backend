@@ -233,3 +233,22 @@ insert into garage_configs(type, maximum)
 values ('MAX_7_SEATS', 5);
 insert into garage_configs(type, maximum)
 values ('MAX_15_SEATS', 3);
+
+create table conversations
+(
+    "id"         serial primary key,
+    "account_id" bigint references accounts (id),
+    "status"     varchar(255) not null default '',
+    "created_at" timestamptz           DEFAULT (now()),
+    "updated_at" timestamptz           DEFAULT (now())
+);
+
+create table messages
+(
+    "id"              serial primary key,
+    "conversation_id" bigint references conversations (id),
+    "sender"          bigint references accounts (id),
+    "content"         varchar(1023) not null default '',
+    "created_at"      timestamptz            DEFAULT (now()),
+    "updated_at"      timestamptz            DEFAULT (now())
+);

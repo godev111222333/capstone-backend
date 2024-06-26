@@ -130,9 +130,9 @@ func (s *CustomerContractStore) GetByStatus(
 	}
 
 	joinModel := []struct {
-		CustomerContract *model.CustomerContract
-		Account          *model.Account
-		Car              *model.Car
+		CustomerContract *model.CustomerContract `gorm:"embedded"`
+		Account          *model.Account          `gorm:"embedded"`
+		Car              *model.Car              `gorm:"embedded"`
 	}{}
 	counter := struct {
 		Count int

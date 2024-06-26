@@ -162,20 +162,20 @@ select *
 from customer_contracts
          join accounts on customer_contracts.customer_id = accounts.id
          join cars on customer_contracts.car_id = cars.id
-where cars.status = ?
+where customer_contracts.status = ?
   and (concat(accounts.last_name, ' ', accounts.first_name) like ? or cars.license_plate = ?) order by customer_contracts.id desc offset ? limit ?
 `
-		err = s.db.Debug().Raw(rawSql, string(status), likeQuery(searchParam), searchParam, offset, limit).Scan(&joinModel).Error
+		err = s.db.Raw(rawSql, string(status), likeQuery(searchParam), searchParam, offset, limit).Scan(&joinModel).Error
 		if err == nil {
 			countSql := `
 select count(*) as count
 from customer_contracts
          join accounts on customer_contracts.customer_id = accounts.id
          join cars on customer_contracts.car_id = cars.id
-where cars.status = ?
+where customer_contracts.status = ?
   and (concat(accounts.last_name, ' ', accounts.first_name) like ? or cars.license_plate = ?) group by customer_contracts.id
 `
-			err = s.db.Debug().Raw(countSql, string(status), likeQuery(searchParam), searchParam).Scan(&counter).Error
+			err = s.db.Raw(countSql, string(status), likeQuery(searchParam), searchParam).Scan(&counter).Error
 		}
 	}
 

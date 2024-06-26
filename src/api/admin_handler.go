@@ -617,6 +617,82 @@ func (s *Server) HandleAdminGetAccountDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, s.newAccountResponse(acct))
 }
 
+type adminAdminGetCustomerPaymentsRequest struct {
+	Pagination
+	CustomerContractID int    `form:"customer_contract_id"`
+	PaymentStatus      string `form:"payment_status"`
+}
+
+type customerPaymentResponse struct {
+	*model.CustomerPayment
+	Payer string `json:"payer"`
+}
+
+func newCustomerPaymentResponse(p *model.CustomerPayment) *customerPaymentResponse {
+	r := &customerPaymentResponse{CustomerPayment: p}
+	payer := model.RoleNameCustomer
+	if p.PaymentType == model.PaymentTypeReturnCollateralCash {
+		payer = model.RoleNameAdmin
+	}
+	r.Payer = payer
+	return r
+}
+
+func (s *Server) HandleAdminGetCustomerPayments(c *gin.Context) {
+	req := adminAdminGetCustomerPaymentsRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	status := model.PaymentStatusNoFilter
+	if len(req.PaymentStatus) > 0 {
+		status = model.PaymentStatus(req.PaymentStatus)
+	}
+	payments, err := s.store.CustomerPaymentStore.GetByCustomerContractID(req.CustomerContractID, status, req.Offset, req.Limit)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	resp := make([]*customerPaymentResponse, len(payments))
+	for index, p := range payments {
+		resp[index] = newCustomerPaymentResponse(p)
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
+type adminCreateCustomerPaymentRequest struct {
+	CustomerContractID int               `json:"customer_contract_id"`
+	PaymentType        model.PaymentType `json:"payment_type"`
+	Amount             int               `json:"amount"`
+	Note               string            `json:"note"`
+}
+
+func (s *Server) HandleAdminCreateCustomerPayment(c *gin.Context) {
+	req := adminCreateCustomerPaymentRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	payment := &model.CustomerPayment{
+		CustomerContractID: req.CustomerContractID,
+		PaymentType:        req.PaymentType,
+		Amount:             req.Amount,
+		Note:               req.Note,
+		Status:             model.PaymentStatusPending,
+	}
+
+	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "create payment successfully", "payment": payment})
+}
+
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats
 	if seatNumber == 7 {

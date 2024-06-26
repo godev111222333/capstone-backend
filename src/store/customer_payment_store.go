@@ -53,3 +53,26 @@ func (s *CustomerPaymentStore) GetByID(id int) (*model.CustomerPayment, error) {
 
 	return res, nil
 }
+
+func (s *CustomerPaymentStore) GetByCustomerContractID(
+	cusContractID int, status model.PaymentStatus, offset, limit int,
+) ([]*model.CustomerPayment, error) {
+	if limit == 0 {
+		limit = 1000
+	}
+	res := []*model.CustomerPayment{}
+
+	if status == model.PaymentStatusNoFilter {
+		if err := s.db.Where("customer_contract_id = ?", cusContractID).Preload("CustomerContract").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			fmt.Printf("CustomerPaymentStore: GetByCustomerContractID %v\n", err)
+			return nil, err
+		}
+	} else {
+		if err := s.db.Where("customer_contract_id = ? and status = ?", cusContractID, string(status)).Preload("CustomerContract").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			fmt.Printf("CustomerPaymentStore: GetByCustomerContractID %v\n", err)
+			return nil, err
+		}
+	}
+
+	return res, nil
+}

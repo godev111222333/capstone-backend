@@ -8,10 +8,13 @@ type (
 )
 
 const (
-	PaymentTypePrePay       PaymentType   = "pre_pay"
-	PaymentTypeRemainingPay PaymentType   = "remaining_pay"
-	PaymentStatusPending    PaymentStatus = "pending"
-	PaymentStatusPaid       PaymentStatus = "paid"
+	PaymentTypePrePay               PaymentType   = "pre_pay"
+	PaymentTypeRemainingPay         PaymentType   = "remaining_pay"
+	PaymentTypeReturnCollateralCash PaymentType   = "return_collateral_cash"
+	PaymentTypeOther                PaymentType   = "other"
+	PaymentStatusPending            PaymentStatus = "pending"
+	PaymentStatusPaid               PaymentStatus = "paid"
+	PaymentStatusNoFilter           PaymentStatus = "no_filter"
 )
 
 type CustomerPayment struct {

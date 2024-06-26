@@ -62,10 +62,6 @@ func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchP
 	}{}
 	var err error
 
-	likeQuery := func(param string) string {
-		return "%" + param + "%"
-	}
-
 	if status != model.CarStatusNoFilter {
 		rawSql := `select *
 from cars
@@ -285,4 +281,8 @@ func quoteInt(src []int) string {
 	}
 
 	return "(" + strings.Join(res, ",") + ")"
+}
+
+func likeQuery(param string) string {
+	return "%" + param + "%"
 }

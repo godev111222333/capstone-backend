@@ -402,6 +402,7 @@ func (s *Server) RenderCustomerContractPDF(
 type adminGetContractRequest struct {
 	Pagination
 	CustomerContractStatus string `form:"customer_contract_status"`
+	SearchParam            string `form:"search_param"`
 }
 
 type customerContractResponse struct {
@@ -458,13 +459,7 @@ func (s *Server) HandleAdminGetCustomerContracts(c *gin.Context) {
 		status = model.CustomerContractStatus(reqStatus)
 	}
 
-	contracts, err := s.store.CustomerContractStore.GetByStatus(status, req.Offset, req.Limit)
-	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	total, err := s.store.CustomerContractStore.CountByStatus(status)
+	contracts, counter, err := s.store.CustomerContractStore.GetByStatus(status, req.Offset, req.Limit, req.SearchParam)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
@@ -475,7 +470,7 @@ func (s *Server) HandleAdminGetCustomerContracts(c *gin.Context) {
 		contractResp[i] = s.newCustomerContractResponse(contract)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"contracts": contractResp, "total": total})
+	c.JSON(http.StatusOK, gin.H{"contracts": contractResp, "total": counter})
 }
 
 type CustomerContractAction string

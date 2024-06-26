@@ -106,7 +106,7 @@ func (s *CustomerContractStore) GetByStatus(
 		if status == model.CustomerContractStatusNoFilter {
 			err = s.db.Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error
 			if err == nil {
-				if err := s.db.Count(&count).Error; err != nil {
+				if err := s.db.Model(model.CustomerContract{}).Count(&count).Error; err != nil {
 					fmt.Printf("CustomerContractStore: GetByStatus %v\n", err)
 					return nil, -1, err
 				}
@@ -114,7 +114,7 @@ func (s *CustomerContractStore) GetByStatus(
 		} else {
 			err = s.db.Where("status = ?", string(status)).Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error
 			if err == nil {
-				if err := s.db.Where("status = ?", string(status)).Count(&count).Error; err != nil {
+				if err := s.db.Model(model.CustomerContract{}).Where("status = ?", string(status)).Count(&count).Error; err != nil {
 					fmt.Printf("CustomerContractStore: GetByStatus %v\n", err)
 					return nil, -1, err
 				}

@@ -365,7 +365,7 @@ func (s *Server) HandleGetPartnerContractDetails(c *gin.Context) {
 		return
 	}
 
-	if authPayload.Role == model.RoleNamePartner && car.Account.Email != authPayload.PhoneNumber {
+	if authPayload.Role == model.RoleNamePartner && car.Account.PhoneNumber != authPayload.PhoneNumber {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return
 	}

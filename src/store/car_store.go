@@ -168,7 +168,7 @@ func (s *CarStore) CountBySeats(seatType int, parkingLot model.ParkingLot, statu
 	}{}
 	raw := `select count(*)
 				from cars inner join car_models cm on cars.car_model_id = cm.id
-				where cm.number_of_seats = ? and cars.status in ? and cars.parking_lot = ?`
+				where cm.number_of_seats = ? and cars.status in ? and cars.parking_lot in ?`
 
 	if err := s.db.Raw(raw, seatType, string(parkingLot), statuses).Scan(&res).Error; err != nil {
 		fmt.Printf("CarStore: CountBySeats %v\n", err)

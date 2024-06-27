@@ -211,7 +211,8 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 }
 
 type customerAgreeContractRequest struct {
-	CustomerContractID int `json:"customer_contract_id"`
+	CustomerContractID int    `json:"customer_contract_id" binding:"required"`
+	ReturnURL          string `json:"return_url" binding:"required"`
 }
 
 func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
@@ -253,7 +254,13 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	}
 
 	pricing := calculateRentPrice(&contract.Car, contract.StartDate, contract.EndDate)
-	url, rawURL, err := s.generatePrepayQRCode(acct.ID, contract, pricing.PrepaidAmount)
+	url, rawURL, err := s.generateCustomerContractPaymentQRCode(
+		acct.ID,
+		contract,
+		pricing.PrepaidAmount,
+		model.PaymentTypePrePay,
+		req.ReturnURL,
+	)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -262,17 +269,23 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "qr_code_image": url, "payment_url": rawURL})
 }
 
-func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContract, prepayAmt int) (string, string, error) {
+func (s *Server) generateCustomerContractPaymentQRCode(
+	acctID int,
+	contract *model.CustomerContract,
+	amount int,
+	paymentType model.PaymentType,
+	returnURL string,
+) (string, string, error) {
 	payment := &model.CustomerPayment{
 		CustomerContractID: contract.ID,
-		PaymentType:        model.PaymentTypePrePay,
-		Amount:             prepayAmt,
+		PaymentType:        paymentType,
+		Amount:             amount,
 		Status:             model.PaymentStatusPending,
 	}
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
 		return "", "", err
 	}
-	url, err := s.paymentService.GeneratePaymentURL(payment.ID, prepayAmt, time.Now().Format("02150405"))
+	url, err := s.paymentService.GeneratePaymentURL(payment.ID, amount, time.Now().Format("02150405"), returnURL)
 	if err != nil {
 		return "", "", err
 	}
@@ -282,7 +295,12 @@ func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContra
 		return "", "", err
 	}
 
-	doc, err := s.uploadDocument(bytes.NewReader(qrCodeImage), acctID, uuid.NewString()+".png", model.DocumentCategoryPrepayQRCodeImage)
+	doc, err := s.uploadDocument(
+		bytes.NewReader(qrCodeImage),
+		acctID,
+		uuid.NewString()+".png",
+		model.DocumentCategoryPaymentQRCodeImage,
+	)
 	if err != nil {
 		return "", "", err
 	}
@@ -291,7 +309,7 @@ func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContra
 		return "", "", err
 	}
 
-	return doc.Url, url, s.store.CustomerPaymentStore.CreatePaymentDocument(payment.ID, doc.ID)
+	return doc.Url, url, s.store.CustomerPaymentStore.CreatePaymentDocument(payment.ID, doc.ID, url)
 }
 
 type customerGetContractsRequest struct {

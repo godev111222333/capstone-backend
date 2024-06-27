@@ -8,6 +8,7 @@ type CustomerPaymentDocument struct {
 	CustomerPayment   CustomerPayment `json:"customer_payment" gorm:"foreignKey:CustomerPaymentID"`
 	DocumentID        int             `json:"document_id"`
 	Document          Document        `json:"document" gorm:"foreignKey:DocumentID"`
+	PaymentURL        string          `json:"payment_url"`
 	CreatedAt         time.Time       `json:"created_at"`
 	UpdatedAt         time.Time       `json:"updated_at"`
 }

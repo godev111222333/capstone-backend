@@ -108,10 +108,11 @@ func TestUpdateRentalPriceHandler(t *testing.T) {
 		}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		car := &model.Car{
-			PartnerID:  acct.ID,
-			CarModelID: carModel.ID,
-			Price:      100_000,
-			Status:     model.CarStatusPendingApplicationPendingPrice,
+			PartnerID:    acct.ID,
+			CarModelID:   carModel.ID,
+			Price:        100_000,
+			Status:       model.CarStatusPendingApplicationPendingPrice,
+			LicensePlate: "123123122",
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
 

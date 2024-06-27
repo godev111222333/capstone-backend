@@ -37,7 +37,7 @@ type PayRequest struct {
 var _ IPaymentService = (*VnPayService)(nil)
 
 type IPaymentService interface {
-	GeneratePaymentURL(paymentID int, amount int, data string) (string, error)
+	GeneratePaymentURL(paymentID, amount int, txnRef, returnURL string) (string, error)
 }
 
 type VnPayService struct {
@@ -50,7 +50,10 @@ func NewVnPayService(cfg *misc.VNPayConfig) *VnPayService {
 	return &VnPayService{cfg: cfg, signer: signer}
 }
 
-func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, txnRef string) (string, error) {
+func (s *VnPayService) GeneratePaymentURL(
+	paymentID, amount int,
+	txnRef, returnURL string,
+) (string, error) {
 	req, err := http.NewRequest(http.MethodGet, s.cfg.PayURL, nil)
 	if err != nil {
 		fmt.Printf("error when generating payment url %v\n", err)
@@ -71,7 +74,7 @@ func (s *VnPayService) GeneratePaymentURL(paymentID, amount int, txnRef string) 
 		Locale:      s.cfg.Locale,
 		OrderInfo:   encodeOrderInfo(paymentID, amount),
 		OrderType:   "other",
-		ReturnURL:   s.cfg.ReturnURL,
+		ReturnURL:   returnURL,
 		TxnRef:      txnRef,
 		BankCode:    s.cfg.BankCode,
 	}

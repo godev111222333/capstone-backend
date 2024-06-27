@@ -87,7 +87,7 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 func TestServer_HandleCustomerCalculateRentPricing(t *testing.T) {
 	carModel := &model.CarModel{Brand: "xxx"}
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
-	partner := &model.Account{FirstName: "pppppp", RoleID: model.RoleIDPartner, Status: model.AccountStatusActive}
+	partner := &model.Account{FirstName: "pppppp", RoleID: model.RoleIDPartner, Status: model.AccountStatusActive, PhoneNumber: "9123192391239"}
 	require.NoError(t, TestDb.AccountStore.Create(partner))
 	car := &model.Car{CarModelID: carModel.ID, Price: 100_000, PartnerID: partner.ID}
 	require.NoError(t, TestDb.CarStore.Create(car))

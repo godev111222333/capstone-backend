@@ -395,7 +395,7 @@ func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 	}
 	defer file.Close()
 
-	doc, err := s.uploadDocument(file, acct.ID, req.File.Filename, model.DocumentCategoryQRCodeImage)
+	doc, err := s.uploadDocument(file, acct.ID, req.File.Filename, model.DocumentCategoryPersonalQRCodeImage)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return

@@ -118,5 +118,5 @@ func TestServer_HandleCustomerCalculateRentPricing(t *testing.T) {
 	require.Equal(t, 300_000, resp.TotalRentPriceAmount)
 	require.Equal(t, 30_000, resp.TotalInsuranceAmount)
 	require.Equal(t, 330_000, resp.TotalAmount)
-	require.Equal(t, 110_000, resp.PrepaidAmount)
+	require.Equal(t, 99_000, resp.PrepaidAmount)
 }

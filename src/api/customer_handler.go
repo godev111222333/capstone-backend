@@ -399,6 +399,6 @@ func calculateRentPrice(car *model.Car, startDate, endDate time.Time) *RentPrici
 		TotalRentPriceAmount:    totalRentPriceAmount,
 		TotalInsuranceAmount:    totalInsuranceAmount,
 		TotalAmount:             totalRentPriceAmount + totalInsuranceAmount,
-		PrepaidAmount:           (totalRentPriceAmount + totalInsuranceAmount) / 3,
+		PrepaidAmount:           (totalRentPriceAmount + totalInsuranceAmount) * 30 / 100,
 	}
 }

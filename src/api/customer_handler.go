@@ -152,7 +152,10 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	// TODO: check time range between start_date and end_date (at least 1 day?)
+	if req.EndDate.Sub(req.StartDate) < 24*time.Hour {
+		responseError(c, errors.New("rent period must be at least 1 day"))
+		return
+	}
 
 	// Check not overlap with other contracts
 	isOverlap, err := s.store.CustomerContractStore.IsOverlap(req.CarID, req.StartDate, req.EndDate)

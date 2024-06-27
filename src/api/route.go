@@ -43,6 +43,7 @@ const (
 	RouteAdminGetCustomerPayments            = "admin_get_customer_payments"
 	RouteAdminCreateCustomerPayment          = "admin_create_customer_payment"
 	RouteAdminGenerateCustomerPaymentQRCode  = "admin_generate_customer_payment_qr_code"
+	RouteAdminUpdateDocumentStatus           = "admin_update_document_status"
 	RoutePartnerAgreeContract                = "partner_agree_contract"
 	RouteGetPartnerContractDetails           = "get_partner_contract_detail"
 	RouteCustomerFindCars                    = "customer_find_cars"
@@ -300,6 +301,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/customer_payment/generate_qr",
 			Method:      http.MethodPost,
 			Handler:     s.HandleAdminGenerateCustomerPaymentQRCode,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminUpdateDocumentStatus: {
+			Path:        "/admin/document",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminUpdateDocumentStatus,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

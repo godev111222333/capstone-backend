@@ -66,3 +66,12 @@ func (s *DocumentStore) GetByCategory(
 
 	return reverse, nil
 }
+
+func (s *DocumentStore) Update(docID int, values map[string]interface{}) error {
+	if err := s.db.Model(model.Document{}).Where("id = ?", docID).Updates(values).Error; err != nil {
+		fmt.Printf("DocumentStore: Update %v\n", err)
+		return err
+	}
+
+	return nil
+}

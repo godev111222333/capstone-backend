@@ -366,6 +366,11 @@ func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
 		return
 	}
 
+	if contract == nil {
+		c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
+		return
+	}
+
 	if authPayload.Role == model.RoleNameCustomer && contract.CustomerID != acct.ID {
 		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
 		return

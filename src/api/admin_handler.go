@@ -619,7 +619,7 @@ func (s *Server) HandleAdminGetAccountDetail(c *gin.Context) {
 
 type adminAdminGetCustomerPaymentsRequest struct {
 	Pagination
-	CustomerContractID int    `form:"customer_contract_id"`
+	CustomerContractID int    `form:"customer_contract_id" binding:"required"`
 	PaymentStatus      string `form:"payment_status"`
 }
 
@@ -664,9 +664,9 @@ func (s *Server) HandleAdminGetCustomerPayments(c *gin.Context) {
 }
 
 type adminCreateCustomerPaymentRequest struct {
-	CustomerContractID int               `json:"customer_contract_id"`
-	PaymentType        model.PaymentType `json:"payment_type"`
-	Amount             int               `json:"amount"`
+	CustomerContractID int               `json:"customer_contract_id" binding:"required"`
+	PaymentType        model.PaymentType `json:"payment_type" binding:"required"`
+	Amount             int               `json:"amount" binding:"required"`
 	Note               string            `json:"note"`
 }
 

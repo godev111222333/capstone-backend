@@ -249,7 +249,8 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	url, rawURL, err := s.generatePrepayQRCode(acct.ID, contract)
+	pricing := calculateRentPrice(&contract.Car, contract.StartDate, contract.EndDate)
+	url, rawURL, err := s.generatePrepayQRCode(acct.ID, contract, pricing.PrepaidAmount)
 	if err != nil {
 		responseError(c, err)
 		return
@@ -258,8 +259,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "qr_code_image": url, "payment_url": rawURL})
 }
 
-func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContract) (string, string, error) {
-	prepayAmt := (contract.RentPrice + contract.InsuranceAmount) * 30 / 100
+func (s *Server) generatePrepayQRCode(acctID int, contract *model.CustomerContract, prepayAmt int) (string, string, error) {
 	payment := &model.CustomerPayment{
 		CustomerContractID: contract.ID,
 		PaymentType:        model.PaymentTypePrePay,

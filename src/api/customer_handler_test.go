@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -81,4 +82,41 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 		require.NoError(t, json.Unmarshal(bz, &foundCars))
 		require.Len(t, foundCars, 1)
 	})
+}
+
+func TestServer_HandleCustomerCalculateRentPricing(t *testing.T) {
+	carModel := &model.CarModel{Brand: "xxx"}
+	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+	partner := &model.Account{FirstName: "pppppp", RoleID: model.RoleIDPartner, Status: model.AccountStatusActive}
+	require.NoError(t, TestDb.AccountStore.Create(partner))
+	car := &model.Car{CarModelID: carModel.ID, Price: 100_000, PartnerID: partner.ID}
+	require.NoError(t, TestDb.CarStore.Create(car))
+
+	route := TestServer.AllRoutes()[RouteCustomerCalculateRentingPrice]
+	req, err := http.NewRequest(route.Method, route.Path, nil)
+	require.NoError(t, err)
+	query := req.URL.Query()
+	now := time.Now()
+	query.Add("car_id", strconv.Itoa(car.ID))
+	query.Add("start_date", now.Format(time.RFC3339))
+	query.Add("end_date", now.AddDate(0, 0, 3).Format(time.RFC3339))
+	req.URL.RawQuery = query.Encode()
+	_, accessPayload := seedAccountAndLogin("xxxxxxxx", "xxxx", model.RoleIDCustomer)
+	req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessPayload.AccessToken)
+
+	recorder := httptest.NewRecorder()
+	TestServer.route.ServeHTTP(recorder, req)
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	resp := &RentPricing{}
+	bz, err := io.ReadAll(recorder.Body)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(bz, resp))
+
+	require.Equal(t, 100_000, resp.RentPriceQuotation)
+	require.Equal(t, 10_000, resp.InsurancePriceQuotation)
+	require.Equal(t, 300_000, resp.TotalRentPriceAmount)
+	require.Equal(t, 30_000, resp.TotalInsuranceAmount)
+	require.Equal(t, 330_000, resp.TotalAmount)
+	require.Equal(t, 110_000, resp.PrepaidAmount)
 }

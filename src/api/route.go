@@ -51,6 +51,7 @@ const (
 	RouteCustomerGetContracts                = "customer_get_contracts"
 	RouteCustomerAdminGetContractDetails     = "customer_get_contract_details"
 	RouteCustomerAgreeContract               = "customer_agree_contract"
+	RouteCustomerCalculateRentingPrice       = "customer_calculate_renting_price"
 	RouteVNPayIPNURL                         = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                      = "vn_pay_return_url"
 )
@@ -354,6 +355,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleCustomerAdminGetCustomerContractDetails,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomerAdmin,
+		},
+		RouteCustomerCalculateRentingPrice: {
+			Path:        "/customer/calculate_rent_pricing",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCustomerCalculateRentPricing,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteCustomerAgreeContract: {
 			Path:        "/customer/contract/agree",

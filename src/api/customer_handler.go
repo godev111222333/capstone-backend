@@ -183,16 +183,15 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	rentPrice := car.Price * int(((req.EndDate.Sub(req.StartDate)).Hours())/24.0)
-	insuranceAmount := rentPrice / 10
+	pricing := calculateRentPrice(car, req.StartDate, req.EndDate)
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
-		RentPrice:               rentPrice,
+		RentPrice:               pricing.TotalRentPriceAmount,
 		StartDate:               req.StartDate,
 		EndDate:                 req.EndDate,
 		Status:                  model.CustomerContractStatusWaitingContractAgreement,
-		InsuranceAmount:         insuranceAmount,
+		InsuranceAmount:         pricing.TotalInsuranceAmount,
 		CollateralType:          req.CollateralType,
 		IsReturnCollateralAsset: false,
 	}
@@ -357,4 +356,49 @@ func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, contract)
+}
+
+type calculateRentingPricingRequest struct {
+	CarID     int       `form:"car_id" binding:"required"`
+	StartDate time.Time `form:"start_date" binding:"required"`
+	EndDate   time.Time `form:"end_date" binding:"required"`
+}
+
+func (s *Server) HandleCustomerCalculateRentPricing(c *gin.Context) {
+	req := calculateRentingPricingRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, calculateRentPrice(car, req.StartDate, req.EndDate))
+}
+
+type RentPricing struct {
+	RentPriceQuotation      int `json:"rent_price_quotation"`
+	InsurancePriceQuotation int `json:"insurance_price_quotation"`
+
+	TotalRentPriceAmount int `json:"total_rent_price_amount"`
+	TotalInsuranceAmount int `json:"total_insurance_amount"`
+	TotalAmount          int `json:"total_amount"`
+	PrepaidAmount        int `json:"prepaid_amount"`
+}
+
+func calculateRentPrice(car *model.Car, startDate, endDate time.Time) *RentPricing {
+	totalRentPriceAmount := car.Price * int(((endDate.Sub(startDate)).Hours())/24.0)
+	totalInsuranceAmount := totalRentPriceAmount / 10
+	return &RentPricing{
+		RentPriceQuotation:      car.Price,
+		InsurancePriceQuotation: car.Price / 10,
+		TotalRentPriceAmount:    totalRentPriceAmount,
+		TotalInsuranceAmount:    totalInsuranceAmount,
+		TotalAmount:             totalRentPriceAmount + totalInsuranceAmount,
+		PrepaidAmount:           (totalRentPriceAmount + totalInsuranceAmount) / 3,
+	}
 }

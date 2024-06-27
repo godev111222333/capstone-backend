@@ -182,8 +182,9 @@ create table "customer_payment_documents"
     "id"                  serial primary key,
     "customer_payment_id" bigint references customer_payments (id),
     "document_id"         bigint references documents (id),
-    "created_at"          timestamptz DEFAULT (now()),
-    "updated_at"          timestamptz DEFAULT (now())
+    "payment_url"         varchar(1024) not null default '',
+    "created_at"          timestamptz            DEFAULT (now()),
+    "updated_at"          timestamptz            DEFAULT (now())
 );
 
 create table "customer_feedbacks"

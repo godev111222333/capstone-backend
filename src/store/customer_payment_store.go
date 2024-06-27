@@ -81,3 +81,29 @@ func (s *CustomerPaymentStore) GetByCustomerContractID(
 
 	return res, nil
 }
+
+type CustomerPaymentDetail struct {
+	CustomerPayment         *model.CustomerPayment         `gorm:"embedded" json:"customer_payment" `
+	CustomerPaymentDocument *model.CustomerPaymentDocument `gorm:"embedded" json:"customer_payment_document"`
+	Document                *model.Document                `gorm:"embedded" json:"document"`
+}
+
+func (s *CustomerPaymentStore) GetLastByPaymentType(
+	cusContractID int,
+	paymentType model.PaymentType,
+) (*CustomerPaymentDetail, error) {
+	rawSql := `
+select *
+from customer_payments
+         join customer_payment_documents on customer_payments.id = customer_payment_documents.customer_payment_id
+         join documents on customer_payment_documents.document_id = documents.id
+where customer_payments.customer_contract_id = ? and customer_payments.payment_type = ? order by customer_payments.id desc
+`
+	res := &CustomerPaymentDetail{}
+	if err := s.db.Raw(rawSql, cusContractID, string(paymentType)).First(res).Error; err != nil {
+		fmt.Printf("CustomerPaymentStore: GetLastByPaymentType %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

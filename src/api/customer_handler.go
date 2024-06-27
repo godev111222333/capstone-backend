@@ -401,6 +401,27 @@ func (s *Server) HandleCustomerCalculateRentPricing(c *gin.Context) {
 	c.JSON(http.StatusOK, calculateRentPrice(car, req.StartDate, req.EndDate))
 }
 
+type getLastPaymentDetailRequest struct {
+	CustomerContractID int               `form:"customer_contract_id" binding:"required"`
+	PaymentType        model.PaymentType `form:"payment_type" binding:"required"`
+}
+
+func (s *Server) HandleCustomerGetLastPaymentDetail(c *gin.Context) {
+	req := getLastPaymentDetailRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	paymentDetail, err := s.store.CustomerPaymentStore.GetLastByPaymentType(req.CustomerContractID, req.PaymentType)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, paymentDetail)
+}
+
 type RentPricing struct {
 	RentPriceQuotation      int `json:"rent_price_quotation"`
 	InsurancePriceQuotation int `json:"insurance_price_quotation"`

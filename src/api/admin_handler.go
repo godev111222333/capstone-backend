@@ -693,6 +693,40 @@ func (s *Server) HandleAdminCreateCustomerPayment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "create payment successfully", "payment": payment})
 }
 
+type generateCustomerPaymentQRCode struct {
+	CustomerPaymentID int    `json:"customer_payment_id" binding:"required"`
+	ReturnURL         string `json:"return_url" binding:"required"`
+}
+
+func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
+	req := generateCustomerPaymentQRCode{}
+	if err := c.BindJSON(&req); err != nil {
+		responseError(c, err)
+		return
+	}
+
+	customerPayment, err := s.store.CustomerPaymentStore.GetByID(req.CustomerPaymentID)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	contract := customerPayment.CustomerContract
+	qrImageURL, originURL, err := s.generateCustomerContractPaymentQRCode(
+		int(model.RoleIDAdmin),
+		&contract,
+		customerPayment.Amount,
+		customerPayment.PaymentType,
+		req.ReturnURL,
+	)
+	if err != nil {
+		responseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"qr_code_image": qrImageURL, "payment_url": originURL})
+}
+
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats
 	if seatNumber == 7 {

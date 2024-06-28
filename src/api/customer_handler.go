@@ -42,7 +42,7 @@ func (s *Server) HandleRegisterCustomer(c *gin.Context) {
 		PhoneNumber: req.PhoneNumber,
 		Email:       req.Email,
 		Password:    hashedPassword,
-		Status:      model.AccountStatusWaitingConfirmEmail,
+		Status:      model.AccountStatusWaitingConfirmPhoneNumber,
 	}
 
 	if err := s.store.AccountStore.Create(customer); err != nil {

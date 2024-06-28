@@ -20,7 +20,7 @@ func TestOTPService(t *testing.T) {
 			&model.Account{
 				RoleID:      model.RoleIDPartner,
 				PhoneNumber: phoneNumber,
-				Status:      model.AccountStatusWaitingConfirmEmail,
+				Status:      model.AccountStatusWaitingConfirmPhoneNumber,
 			},
 		))
 

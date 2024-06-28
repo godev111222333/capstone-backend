@@ -5,10 +5,10 @@ import "time"
 type AccountStatus string
 
 const (
-	AccountStatusWaitingConfirmEmail AccountStatus = "waiting_confirm_email"
-	AccountStatusActive              AccountStatus = "active"
-	AccountStatusInactive            AccountStatus = "inactive"
-	AccountStatusNoFilter            AccountStatus = "no_filter"
+	AccountStatusWaitingConfirmPhoneNumber AccountStatus = "waiting_confirm_phone_number"
+	AccountStatusActive                    AccountStatus = "active"
+	AccountStatusInactive                  AccountStatus = "inactive"
+	AccountStatusNoFilter                  AccountStatus = "no_filter"
 )
 
 type Account struct {

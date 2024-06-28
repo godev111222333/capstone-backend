@@ -30,7 +30,7 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 		return
 	}
 
-	if account.Status != model.AccountStatusWaitingConfirmEmail {
+	if account.Status != model.AccountStatusWaitingConfirmPhoneNumber {
 		responseError(c, errors.New("invalid account status"))
 		return
 	}

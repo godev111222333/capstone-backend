@@ -71,11 +71,9 @@ type rawLoginRequest struct {
 }
 
 type rawLoginResponse struct {
-	AccessToken           string           `json:"access_token"`
-	AccessTokenExpiresAt  time.Time        `json:"access_token_expires_at"`
-	RefreshToken          string           `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time        `json:"refresh_token_expires_at"`
-	User                  *accountResponse `json:"user"`
+	AccessToken          string           `json:"access_token"`
+	AccessTokenExpiresAt time.Time        `json:"access_token_expires_at"`
+	User                 *accountResponse `json:"user"`
 }
 
 type accountResponse struct {
@@ -156,86 +154,15 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 		return
 	}
 
-	refreshToken, refreshTokenPayload, err := s.tokenMaker.CreateToken(req.PhoneNumber, acct.Role.RoleName, s.cfg.RefreshTokenDuration)
-	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	if err := s.store.SessionStore.Create(&model.Session{
-		ID:           refreshTokenPayload.ID,
-		PhoneNumber:  req.PhoneNumber,
-		RefreshToken: refreshToken,
-		UserAgent:    c.Request.UserAgent(),
-		ClientIP:     c.ClientIP(),
-		ExpiresAt:    refreshTokenPayload.ExpiredAt,
-	}); err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
 	c.JSON(http.StatusOK, rawLoginResponse{
-		AccessToken:           accessToken,
-		AccessTokenExpiresAt:  accessTokenPayload.ExpiredAt,
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: refreshTokenPayload.ExpiredAt,
-		User:                  s.newAccountResponse(acct),
+		AccessToken:          accessToken,
+		AccessTokenExpiresAt: accessTokenPayload.ExpiredAt,
+		User:                 s.newAccountResponse(acct),
 	})
 }
 
 type renewAccessTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
-}
-
-type renewAccessTokenResponse struct {
-	AccessToken          string    `json:"access_token"`
-	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
-}
-
-func (s *Server) HandleRenewAccessToken(c *gin.Context) {
-	req := &renewAccessTokenRequest{}
-	if err := c.BindJSON(req); err != nil {
-		responseError(c, err)
-		return
-	}
-
-	refreshPayload, err := s.tokenMaker.VerifyToken(req.RefreshToken)
-	if err != nil {
-		responseError(c, err)
-		return
-	}
-
-	session, err := s.store.SessionStore.GetSession(refreshPayload.ID)
-	if err != nil {
-		responseError(c, err)
-		return
-	}
-
-	if session.PhoneNumber != refreshPayload.PhoneNumber {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("incorrect session email")))
-		return
-	}
-
-	if session.RefreshToken != req.RefreshToken {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("mismatch session token")))
-		return
-	}
-
-	if time.Now().After(session.ExpiresAt) {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("expired session")))
-		return
-	}
-
-	accessToken, accessPayload, err := s.tokenMaker.CreateToken(refreshPayload.PhoneNumber, refreshPayload.Role, s.cfg.AccessTokenDuration)
-	if err != nil {
-		responseError(c, err)
-		return
-	}
-	resp := renewAccessTokenResponse{
-		AccessToken:          accessToken,
-		AccessTokenExpiresAt: accessPayload.ExpiredAt,
-	}
-	c.JSON(http.StatusOK, resp)
 }
 
 type updateProfileRequest struct {

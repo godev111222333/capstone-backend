@@ -48,8 +48,6 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 
 		require.NotEmpty(t, resp.AccessToken)
 		require.NotEmpty(t, resp.AccessTokenExpiresAt)
-		require.NotEmpty(t, resp.RefreshToken)
-		require.NotEmpty(t, resp.RefreshTokenExpiresAt)
 		require.Equal(t, "Cuong", resp.User.FirstName)
 		require.Equal(t, "Nguyen Van", resp.User.LastName)
 		require.Equal(t, "nguyenvancuong@gmail.com", resp.User.Email)
@@ -100,28 +98,6 @@ func TestRenewAccessToken(t *testing.T) {
 		resp := rawLoginResponse{}
 		require.NoError(t, json.Unmarshal(bz, &resp))
 		require.NotEmpty(t, resp.AccessToken)
-		require.NotEmpty(t, resp.RefreshToken)
-
-		refreshTokenPayload, err := TestServer.tokenMaker.VerifyToken(resp.RefreshToken)
-		require.NoError(t, err)
-		session, err := TestDb.SessionStore.GetSession(refreshTokenPayload.ID)
-		require.NoError(t, err)
-		require.NotEmpty(t, session)
-
-		route = TestServer.AllRoutes()[RouteRenewAccessToken]
-		renewBody := renewAccessTokenRequest{RefreshToken: resp.RefreshToken}
-		bz, err = json.Marshal(renewBody)
-		require.NoError(t, err)
-		req, err = http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))
-		require.NoError(t, err)
-		recorder = httptest.NewRecorder()
-		TestServer.route.ServeHTTP(recorder, req)
-		bz, err = io.ReadAll(recorder.Body)
-		require.NoError(t, err)
-
-		renewResp := renewAccessTokenResponse{}
-		require.NoError(t, json.Unmarshal(bz, &renewResp))
-		require.NotEmpty(t, renewResp.AccessToken)
 	})
 }
 

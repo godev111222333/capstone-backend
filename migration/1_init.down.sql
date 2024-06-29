@@ -1,7 +1,6 @@
 drop table if exists messages;
 drop table if exists conversations;
 drop table if exists garage_configs;
-drop table if exists sessions;
 drop table if exists customer_contract_documents;
 drop table if exists customer_feedbacks;
 drop table if exists customer_payment_documents;

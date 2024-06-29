@@ -13,7 +13,6 @@ type DbStore struct {
 	DB                            *gorm.DB
 	AccountStore                  *AccountStore
 	OTPStore                      *OTPStore
-	SessionStore                  *SessionStore
 	CarModelStore                 *CarModelStore
 	CarStore                      *CarStore
 	CarDocumentStore              *CarDocumentStore
@@ -41,7 +40,6 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 		DB:                            db,
 		AccountStore:                  NewAccountStore(db),
 		OTPStore:                      NewOTPStore(db),
-		SessionStore:                  NewSessionStore(db),
 		CarModelStore:                 NewCarModelStore(db),
 		CarStore:                      NewCarStore(db),
 		CarDocumentStore:              NewCarDocumentStore(db),

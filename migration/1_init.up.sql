@@ -207,18 +207,6 @@ create table "customer_contract_documents"
     "updated_at"           timestamptz DEFAULT (now())
 );
 
-create table "sessions"
-(
-    "id"            uuid primary key,
-    "phone_number"  varchar(255) references accounts (phone_number),
-    "refresh_token" varchar(1023) not null default '',
-    "user_agent"    varchar(255)  not null default '',
-    "client_ip"     varchar(255)  not null default '',
-    "expires_at"    timestamptz   not null,
-    "created_at"    timestamptz            DEFAULT (now()),
-    "updated_at"    timestamptz            DEFAULT (now())
-);
-
 create table garage_configs
 (
     "id"         serial primary key,

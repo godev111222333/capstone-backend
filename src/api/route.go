@@ -15,7 +15,6 @@ const (
 	RouteVerifyOTP                           = "verify_otp"
 	RouteUploadAvatar                        = "upload_avatar"
 	RouteRawLogin                            = "login"
-	RouteRenewAccessToken                    = "renew_access_token"
 	RouteUpdateProfile                       = "update_profile"
 	RouteGetRegisterCarMetadata              = "register_car_metadata"
 	RouteGetParkingLotMetadata               = "get_parking_lot_metadata"
@@ -117,12 +116,6 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/login",
 			Method:      http.MethodPost,
 			Handler:     s.HandleRawLogin,
-			RequireAuth: false,
-		},
-		RouteRenewAccessToken: {
-			Path:        "/renew",
-			Method:      http.MethodPost,
-			Handler:     s.HandleRenewAccessToken,
 			RequireAuth: false,
 		},
 		RouteUpdateProfile: {

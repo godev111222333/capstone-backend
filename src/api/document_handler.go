@@ -57,33 +57,28 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 		return
 	}
 
-	doc, err := s.uploadDocument(body, acct.ID, header.Filename, model.DocumentCategoryAvatarImage)
+	url, err := s.uploadDocument(body, header.Filename)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
 
-	if err := s.store.DocumentStore.Create(doc); err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
 	if err := s.store.AccountStore.Update(acct.ID, map[string]interface{}{
-		"avatar_url": doc.Url,
+		"avatar_url": url,
 	}); err != nil {
 		responseError(c, err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status": "upload avatar successfully",
-		"url":    doc.Url,
+		"url":    url,
 	})
 }
 
 func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := struct {
-		DocumentCategory model.DocumentCategory  `form:"document_category"`
+		CarImageCategory model.CarImageCategory  `form:"document_category"`
 		CarID            int                     `form:"car_id"`
 		Files            []*multipart.FileHeader `form:"files"`
 	}{}
@@ -103,8 +98,8 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		return
 	}
 
-	if (req.DocumentCategory == model.DocumentCategoryCarImages && car.Status != model.CarStatusPendingApplicationPendingCarImages) ||
-		req.DocumentCategory == model.DocumentCategoryCaveat && car.Status != model.CarStatusPendingApplicationPendingCarCaveat {
+	if (req.CarImageCategory == model.CarImageCategoryImages && car.Status != model.CarStatusPendingApplicationPendingCarImages) ||
+		req.CarImageCategory == model.CarImageCategoryCaveat && car.Status != model.CarStatusPendingApplicationPendingCarCaveat {
 		responseError(c, errors.New("invalid document category with current car state"))
 		return
 	}
@@ -119,6 +114,7 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		return
 	}
 
+	images := make([]*model.CarImage, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
 			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
@@ -145,20 +141,18 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 			return
 		}
 
-		url := s.s3store.Config.BaseURL + key
+		images = append(images, &model.CarImage{
+			CarID:    req.CarID,
+			URL:      s.s3store.Config.BaseURL + key,
+			Category: req.CarImageCategory,
+			Status:   model.CarImageStatusActive,
+		})
+	}
 
-		document := &model.Document{
-			AccountID: car.Account.ID,
-			Url:       url,
-			Extension: extension,
-			Category:  req.DocumentCategory,
-			Status:    model.DocumentStatusActive,
-		}
-
-		if err := s.store.CarDocumentStore.Create(car.ID, document); err != nil {
-			responseInternalServerError(c, err)
-			return
-		}
+	// TODO: check enough image
+	if err := s.store.CarImageStore.Create(images); err != nil {
+		responseInternalServerError(c, err)
+		return
 	}
 
 	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{"status": model.MoveNextCarState(car.Status)}); err != nil {
@@ -192,7 +186,7 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 		return
 	}
 
-	docs := make([]*model.Document, 0)
+	images := make([]*model.DrivingLicenseImage, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
 			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
@@ -206,16 +200,21 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 		}
 		defer body.Close()
 
-		doc, err := s.uploadDocument(body, acct.ID, f.Filename, model.DocumentCategoryDrivingLicense)
+		url, err := s.uploadDocument(body, f.Filename)
 		if err != nil {
 			responseInternalServerError(c, err)
 			return
 		}
 
-		docs = append(docs, doc)
+		images = append(images, &model.DrivingLicenseImage{
+			ID:        0,
+			AccountID: acct.ID,
+			URL:       url,
+			Status:    model.DrivingLicenseImageStatusActive,
+		})
 	}
 
-	if err := s.store.DocumentStore.CreateBatch(docs); err != nil {
+	if err := s.store.DrivingLicenseImageStore.Create(images); err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
@@ -231,41 +230,29 @@ func (s *Server) HandleGetDrivingLicenseImages(c *gin.Context) {
 		return
 	}
 
-	docs, err := s.store.DocumentStore.GetByCategory(acct.ID, model.DocumentCategoryDrivingLicense, 2)
+	images, err := s.store.DrivingLicenseImageStore.Get(acct.ID, model.DrivingLicenseImageStatusActive, 2)
 	if err != nil {
 		responseError(c, err)
 		return
 	}
 
-	urls := make([]string, len(docs))
-	for i, d := range docs {
-		urls[i] = d.Url
+	urls := make([]string, len(images))
+	for i, d := range images {
+		urls[i] = d.URL
 	}
 
 	c.JSON(http.StatusOK, urls)
 }
 
 func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
-	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
-	if err != nil {
-		responseError(c, err)
-		return
-	}
-
 	req := struct {
-		CustomerContractID int                     `form:"customer_contract_id"`
-		DocumentCategory   model.DocumentCategory  `form:"document_category"`
-		Files              []*multipart.FileHeader `form:"files"`
+		CustomerContractID            int                                 `form:"customer_contract_id"`
+		CustomerContractImageCategory model.CustomerContractImageCategory `form:"document_category"`
+		Files                         []*multipart.FileHeader             `form:"files"`
 	}{}
 
 	if err := c.Bind(&req); err != nil {
 		responseError(c, err)
-		return
-	}
-
-	if req.DocumentCategory != model.DocumentCategoryCollateralAssets && req.DocumentCategory != model.DocumentCategoryReceivingCarImages {
-		responseError(c, errors.New("invalid document category"))
 		return
 	}
 
@@ -284,7 +271,7 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 	}
 
 	maxFile := MaxNumberCollateralAssetFiles
-	if req.DocumentCategory == model.DocumentCategoryReceivingCarImages {
+	if req.CustomerContractImageCategory == model.CustomerContractImageCategoryReceivingCarImages {
 		maxFile = MaxNumberReceivingCarImages
 	}
 
@@ -293,7 +280,7 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 		return
 	}
 
-	docs := make([]*model.Document, 0)
+	images := make([]*model.CustomerContractImage, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
 			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
@@ -307,16 +294,21 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 		}
 		defer body.Close()
 
-		doc, err := s.uploadDocument(body, acct.ID, f.Filename, req.DocumentCategory)
+		url, err := s.uploadDocument(body, f.Filename)
 		if err != nil {
 			responseInternalServerError(c, err)
 			return
 		}
 
-		docs = append(docs, doc)
+		images = append(images, &model.CustomerContractImage{
+			CustomerContractID: req.CustomerContractID,
+			URL:                url,
+			Category:           req.CustomerContractImageCategory,
+			Status:             model.CustomerContractImageStatusActive,
+		})
 	}
 
-	if err := s.store.CustomerContractDocumentStore.Create(req.CustomerContractID, docs); err != nil {
+	if err := s.store.CustomerContractImageStore.Create(images); err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
@@ -326,10 +318,8 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 
 func (s *Server) uploadDocument(
 	reader io.Reader,
-	accountID int,
 	fileName string,
-	category model.DocumentCategory,
-) (*model.Document, error) {
+) (string, error) {
 	extension := strings.Split(fileName, ".")[1]
 	key := strings.Join([]string{uuid.NewString(), extension}, ".")
 
@@ -340,17 +330,9 @@ func (s *Server) uploadDocument(
 		ACL:    types.ObjectCannedACLPublicRead,
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	url := s.s3store.Config.BaseURL + key
-	doc := &model.Document{
-		AccountID: accountID,
-		Url:       url,
-		Extension: extension,
-		Category:  category,
-		Status:    model.DocumentStatusActive,
-	}
-
-	return doc, nil
+	return url, nil
 }

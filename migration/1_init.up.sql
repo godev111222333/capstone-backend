@@ -66,30 +66,6 @@ create table cars
     "updated_at"    timestamptz            DEFAULT (now())
 );
 
-create table documents
-(
-    "id"         serial primary key,
-    "account_id" bigint references accounts (id),
-    "url"        varchar(1023) not null default '',
-    "extension"  varchar(255)  not null default '',
-    "category"   varchar(255)  not null default '',
-    "status"     varchar(255)  not null default '',
-    "created_at" timestamptz            DEFAULT (now()),
-    "updated_at" timestamptz            DEFAULT (now())
-);
-
-create table otps
-(
-    "id"           serial primary key,
-    "phone_number" varchar(255) references accounts (phone_number),
-    "otp"          varchar(20)  not null default '',
-    "status"       varchar(255) not null default '',
-    "otp_type"     varchar(255) not null default '',
-    "expires_at"   timestamptz           DEFAULT (now()),
-    "created_at"   timestamptz           DEFAULT (now()),
-    "updated_at"   timestamptz           DEFAULT (now())
-);
-
 create table "notifications"
 (
     "id"         serial primary key,
@@ -114,33 +90,39 @@ create table "payment_informations"
     "updated_at"  timestamptz            DEFAULT (now())
 );
 
-create table "car_documents"
+create table "car_images"
 (
-    "id"          serial primary key,
-    "car_id"      bigint references cars (id),
-    "document_id" bigint references documents (id),
-    "created_at"  timestamptz DEFAULT (now()),
-    "updated_at"  timestamptz DEFAULT (now())
+    "id"         serial primary key,
+    "car_id"     bigint references cars (id),
+    "url"        varchar(1023) not null default '',
+    "status"     varchar(255)  not null default '',
+    "category"   varchar(255)  not null default '',
+    "created_at" timestamptz            DEFAULT (now()),
+    "updated_at" timestamptz            DEFAULT (now())
 );
 
 create table "partner_contracts"
 (
-    "id"         serial primary key,
-    "car_id"     bigint references cars (id),
-    "start_date" timestamptz            DEFAULT (now()),
-    "end_date"   timestamptz            DEFAULT (now()),
-    "url"        varchar(1023) not null default '',
-    "status"     varchar(256)  not null default '',
-    "created_at" timestamptz            DEFAULT (now()),
-    "updated_at" timestamptz            DEFAULT (now())
+    "id"                      serial primary key,
+    "car_id"                  bigint references cars (id),
+    "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
+    "bank_name"               varchar(255)  not null default '',
+    "bank_number"             varchar(255)  not null default '',
+    "bank_owner"              varchar(255)  not null default '',
+    "start_date"              timestamptz            DEFAULT (now()),
+    "end_date"                timestamptz            DEFAULT (now()),
+    "url"                     varchar(1023) not null default '',
+    "status"                  varchar(256)  not null default '',
+    "created_at"              timestamptz            DEFAULT (now()),
+    "updated_at"              timestamptz            DEFAULT (now())
 );
 
 create table "partner_payment_histories"
 (
     "id"         serial primary key,
     "partner_id" bigint references accounts (id),
-    "from"       timestamptz           DEFAULT (now()),
-    "to"         timestamptz           DEFAULT (now()),
+    "start_date" timestamptz           DEFAULT (now()),
+    "end_date"   timestamptz           DEFAULT (now()),
     "amount"     bigint       not null default 0,
     "status"     varchar(255) not null default '',
     "created_at" timestamptz           DEFAULT (now()),
@@ -161,8 +143,24 @@ create table "customer_contracts"
     "collateral_type"            varchar(255)  not null default '',
     "is_return_collateral_asset" boolean                default false,
     "url"                        varchar(1023) not null default '',
+    "bank_name"                  varchar(255)  not null default '',
+    "bank_number"                varchar(255)  not null default '',
+    "bank_owner"                 varchar(255)  not null default '',
+    "insurance_percent"          numeric(3, 1) not null default 0.0,
+    "prepay_percent"             numeric(3, 1) not null default 0.0,
     "created_at"                 timestamptz            DEFAULT (now()),
     "updated_at"                 timestamptz            DEFAULT (now())
+);
+
+create table "customer_contract_images"
+(
+    "id"                   serial primary key,
+    "customer_contract_id" bigint references customer_contracts (id),
+    "url"                  varchar(1023) not null default '',
+    "category"             varchar(255)  not null default '',
+    "status"               varchar(255)  not null default '',
+    "created_at"           timestamptz            DEFAULT (now()),
+    "updated_at"           timestamptz            DEFAULT (now())
 );
 
 create table "customer_payments"
@@ -170,21 +168,12 @@ create table "customer_payments"
     "id"                   serial primary key,
     "customer_contract_id" bigint references customer_contracts (id),
     "payment_type"         varchar(255)  not null default '',
+    "payment_url"          varchar(255)  not null default '',
     "amount"               bigint        not null default 0,
     "note"                 varchar(1023) not null default '',
     "status"               varchar(255)  not null default '',
     "created_at"           timestamptz            DEFAULT (now()),
     "updated_at"           timestamptz            DEFAULT (now())
-);
-
-create table "customer_payment_documents"
-(
-    "id"                  serial primary key,
-    "customer_payment_id" bigint references customer_payments (id),
-    "document_id"         bigint references documents (id),
-    "payment_url"         varchar(1024) not null default '',
-    "created_at"          timestamptz            DEFAULT (now()),
-    "updated_at"          timestamptz            DEFAULT (now())
 );
 
 create table "customer_feedbacks"
@@ -196,15 +185,6 @@ create table "customer_feedbacks"
     "status"               bigint        not null default 0,
     "created_at"           timestamptz            DEFAULT (now()),
     "updated_at"           timestamptz            DEFAULT (now())
-);
-
-create table "customer_contract_documents"
-(
-    "id"                   serial primary key,
-    "customer_contract_id" bigint references customer_contracts (id),
-    "document_id"          bigint references documents (id),
-    "created_at"           timestamptz DEFAULT (now()),
-    "updated_at"           timestamptz DEFAULT (now())
 );
 
 create table garage_configs
@@ -240,4 +220,27 @@ create table messages
     "content"         varchar(1023) not null default '',
     "created_at"      timestamptz            DEFAULT (now()),
     "updated_at"      timestamptz            DEFAULT (now())
+);
+
+create table contract_rules
+(
+    "id"                      serial primary key,
+    "insurance_percent"       numeric(3, 1) not null default 0.0,
+    "prepay_percent"          numeric(3, 1) not null default 0.0,
+    "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
+    "created_at"              timestamptz            DEFAULT (now()),
+    "updated_at"              timestamptz            DEFAULT (now())
+);
+
+insert into contract_rules(insurance_percent, prepay_percent, revenue_sharing_percent)
+values (10.0, 30.0, 5);
+
+create table driving_license_images
+(
+    "id"         serial primary key,
+    "account_id" bigint references accounts (id),
+    "url"        varchar(1023) not null default '',
+    "status"     varchar(255)  not null default '',
+    "created_at" timestamptz            DEFAULT (now()),
+    "updated_at" timestamptz            DEFAULT (now())
 );

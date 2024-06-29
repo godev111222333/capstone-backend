@@ -1,9 +1,7 @@
 package api
 
 import (
-	"bytes"
 	"errors"
-	"github.com/google/uuid"
 	"net/http"
 	"strconv"
 	"strings"
@@ -254,9 +252,8 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	}
 
 	pricing := calculateRentPrice(&contract.Car, contract.StartDate, contract.EndDate)
-	url, rawURL, err := s.generateCustomerContractPaymentQRCode(
-		acct.ID,
-		contract,
+	url, err := s.generateCustomerContractPaymentQRCode(
+		contract.ID,
 		pricing.PrepaidAmount,
 		model.PaymentTypePrePay,
 		req.ReturnURL,
@@ -266,50 +263,35 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "qr_code_image": url, "payment_url": rawURL})
+	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "payment_url": url})
 }
 
 func (s *Server) generateCustomerContractPaymentQRCode(
-	acctID int,
-	contract *model.CustomerContract,
+	contractID int,
 	amount int,
 	paymentType model.PaymentType,
 	returnURL string,
-) (string, string, error) {
+) (string, error) {
 	payment := &model.CustomerPayment{
-		CustomerContractID: contract.ID,
+		CustomerContractID: contractID,
 		PaymentType:        paymentType,
 		Amount:             amount,
 		Status:             model.PaymentStatusPending,
 	}
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
-		return "", "", err
+		return "", err
 	}
+
 	url, err := s.paymentService.GeneratePaymentURL(payment.ID, amount, time.Now().Format("02150405"), returnURL)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	qrCodeImage, err := GenerateQRCode(url)
-	if err != nil {
-		return "", "", err
+	if err := s.store.CustomerPaymentStore.Update(payment.ID, map[string]interface{}{"payment_url": url}); err != nil {
+		return "", err
 	}
 
-	doc, err := s.uploadDocument(
-		bytes.NewReader(qrCodeImage),
-		acctID,
-		uuid.NewString()+".png",
-		model.DocumentCategoryPaymentQRCodeImage,
-	)
-	if err != nil {
-		return "", "", err
-	}
-
-	if err := s.store.DocumentStore.Create(doc); err != nil {
-		return "", "", err
-	}
-
-	return doc.Url, url, s.store.CustomerPaymentStore.CreatePaymentDocument(payment.ID, doc.ID, url)
+	return url, nil
 }
 
 type customerGetContractsRequest struct {

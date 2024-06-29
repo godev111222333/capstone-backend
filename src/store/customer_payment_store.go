@@ -23,24 +23,6 @@ func (s *CustomerPaymentStore) Create(m *model.CustomerPayment) error {
 	return nil
 }
 
-func (s *CustomerPaymentStore) CreatePaymentDocument(
-	customerPaymentID,
-	docID int,
-	paymentURL string,
-) error {
-	m := &model.CustomerPaymentDocument{
-		CustomerPaymentID: customerPaymentID,
-		DocumentID:        docID,
-		PaymentURL:        paymentURL,
-	}
-	if err := s.db.Create(m).Error; err != nil {
-		fmt.Printf("CustomerContractStore: CreatePaymentDocument %v\n", err)
-		return err
-	}
-
-	return nil
-}
-
 func (s *CustomerPaymentStore) Update(id int, values map[string]interface{}) error {
 	if err := s.db.Model(model.CustomerPayment{}).Where("id = ?", id).Updates(values).Error; err != nil {
 		fmt.Printf("CustomerPaymentStore: Update %v\n", err)
@@ -83,24 +65,19 @@ func (s *CustomerPaymentStore) GetByCustomerContractID(
 }
 
 type CustomerPaymentDetail struct {
-	CustomerPayment         *model.CustomerPayment         `gorm:"embedded" json:"customer_payment" `
-	CustomerPaymentDocument *model.CustomerPaymentDocument `gorm:"embedded" json:"customer_payment_document"`
-	Document                *model.Document                `gorm:"embedded" json:"document"`
+	CustomerPayment *model.CustomerPayment `gorm:"embedded" json:"customer_payment" `
 }
 
 func (s *CustomerPaymentStore) GetLastByPaymentType(
 	cusContractID int,
 	paymentType model.PaymentType,
-) (*CustomerPaymentDetail, error) {
-	rawSql := `
-select *
-from customer_payments
-         join customer_payment_documents on customer_payments.id = customer_payment_documents.customer_payment_id
-         join documents on customer_payment_documents.document_id = documents.id
-where customer_payments.customer_contract_id = ? and customer_payments.payment_type = ? order by customer_payments.id desc
-`
-	res := &CustomerPaymentDetail{}
-	if err := s.db.Raw(rawSql, cusContractID, string(paymentType)).First(res).Error; err != nil {
+) (*model.CustomerPayment, error) {
+	res := &model.CustomerPayment{}
+	if err := s.db.Where(
+		"customer_contract_id = ? and payment_type = ?",
+		cusContractID,
+		string(paymentType),
+	).Order("id desc").First(res).Error; err != nil {
 		fmt.Printf("CustomerPaymentStore: GetLastByPaymentType %v\n", err)
 		return nil, err
 	}

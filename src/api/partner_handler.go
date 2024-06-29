@@ -2,9 +2,10 @@ package api
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
@@ -187,12 +188,12 @@ type carResponse struct {
 }
 
 func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
-	images, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCarImages, 5)
+	images, err := s.store.CarImageStore.GetByCategory(car.ID, model.CarImageCategoryImages, model.CarImageStatusActive, 5)
 	if err != nil {
 		return nil, err
 	}
 
-	caveats, err := s.store.CarDocumentStore.GetCarDocuments(car.ID, model.DocumentCategoryCaveat, 2)
+	caveats, err := s.store.CarImageStore.GetByCategory(car.ID, model.CarImageCategoryCaveat, model.CarImageStatusActive, 2)
 	if err != nil {
 		return nil, err
 	}

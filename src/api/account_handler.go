@@ -106,12 +106,12 @@ func (s *Server) newAccountResponse(acct *model.Account) *accountResponse {
 		Status:                   string(acct.Status),
 	}
 	if acct.RoleID == model.RoleIDCustomer {
-		drivingLicenseImages, err := s.store.DocumentStore.GetByCategory(acct.ID, model.DocumentCategoryDrivingLicense, 2)
+		drivingLicenseImages, err := s.store.DrivingLicenseImageStore.Get(acct.ID, model.DrivingLicenseImageStatusActive, 2)
 		if err != nil {
 			fmt.Println(err)
 		} else {
 			if len(drivingLicenseImages) >= 2 {
-				resp.DrivingLicenseImages = []string{drivingLicenseImages[0].Url, drivingLicenseImages[1].Url}
+				resp.DrivingLicenseImages = []string{drivingLicenseImages[0].URL, drivingLicenseImages[1].URL}
 			}
 		}
 	}
@@ -322,25 +322,20 @@ func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 	}
 	defer file.Close()
 
-	doc, err := s.uploadDocument(file, acct.ID, req.File.Filename, model.DocumentCategoryPersonalQRCodeImage)
+	url, err := s.uploadDocument(file, req.File.Filename)
 	if err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
 
-	if err := s.store.DocumentStore.Create(doc); err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
 	if err := s.store.PaymentInformationStore.Update(acct.ID, map[string]interface{}{
-		"qr_code_url": doc.Url,
+		"qr_code_url": url,
 	}); err != nil {
 		responseInternalServerError(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"qr_code_url": doc.Url,
+		"qr_code_url": url,
 	})
 }

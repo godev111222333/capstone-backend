@@ -10,19 +10,19 @@ import (
 )
 
 type DbStore struct {
-	DB                            *gorm.DB
-	AccountStore                  *AccountStore
-	OTPStore                      *OTPStore
-	CarModelStore                 *CarModelStore
-	CarStore                      *CarStore
-	CarDocumentStore              *CarDocumentStore
-	PaymentInformationStore       *PaymentInformationStore
-	GarageConfigStore             *GarageConfigStore
-	PartnerContractStore          *PartnerContractStore
-	CustomerContractStore         *CustomerContractStore
-	DocumentStore                 *DocumentStore
-	CustomerPaymentStore          *CustomerPaymentStore
-	CustomerContractDocumentStore *CustomerContractDocumentStore
+	DB                         *gorm.DB
+	AccountStore               *AccountStore
+	OTPStore                   *OTPStore
+	CarModelStore              *CarModelStore
+	CarStore                   *CarStore
+	CarImageStore              *CarImageStore
+	PaymentInformationStore    *PaymentInformationStore
+	GarageConfigStore          *GarageConfigStore
+	PartnerContractStore       *PartnerContractStore
+	CustomerContractStore      *CustomerContractStore
+	CustomerContractImageStore *CustomerContractImageStore
+	CustomerPaymentStore       *CustomerPaymentStore
+	DrivingLicenseImageStore   *DrivingLicenseImageStore
 }
 
 func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
@@ -37,18 +37,18 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 	}
 
 	return &DbStore{
-		DB:                            db,
-		AccountStore:                  NewAccountStore(db),
-		OTPStore:                      NewOTPStore(db),
-		CarModelStore:                 NewCarModelStore(db),
-		CarStore:                      NewCarStore(db),
-		CarDocumentStore:              NewCarDocumentStore(db),
-		PaymentInformationStore:       NewPaymentInformationStore(db),
-		GarageConfigStore:             NewGarageConfigStore(db),
-		PartnerContractStore:          NewPartnerContractStore(db),
-		CustomerContractStore:         NewCustomerContractStore(db),
-		DocumentStore:                 NewDocumentStore(db),
-		CustomerPaymentStore:          NewCustomerPaymentStore(db),
-		CustomerContractDocumentStore: NewCustomerContractDocumentStore(db),
+		DB:                         db,
+		AccountStore:               NewAccountStore(db),
+		OTPStore:                   NewOTPStore(db),
+		CarModelStore:              NewCarModelStore(db),
+		CarStore:                   NewCarStore(db),
+		CarImageStore:              NewCarImageStore(db),
+		PaymentInformationStore:    NewPaymentInformationStore(db),
+		GarageConfigStore:          NewGarageConfigStore(db),
+		PartnerContractStore:       NewPartnerContractStore(db),
+		CustomerContractStore:      NewCustomerContractStore(db),
+		CustomerContractImageStore: NewCustomerContractImageStore(db),
+		CustomerPaymentStore:       NewCustomerPaymentStore(db),
+		DrivingLicenseImageStore:   NewDrivingLicenseImageStore(db),
 	}, nil
 }

@@ -411,37 +411,28 @@ type customerContractResponse struct {
 	CollateralAssetImages []string `json:"collateral_asset_images"`
 }
 
-func docsToURLs(docs []*model.Document) []string {
-	res := make([]string, len(docs))
-	for i, doc := range docs {
-		res[i] = doc.Url
-	}
-
-	return res
-}
-
 func (s *Server) newCustomerContractResponse(contract *model.CustomerContract) *customerContractResponse {
 	resp := &customerContractResponse{
 		CustomerContract: contract,
 	}
-	collaterals, err := s.store.CustomerContractDocumentStore.GetByCategory(
+	collaterals, err := s.store.CustomerContractImageStore.Get(
 		contract.ID,
-		model.DocumentCategoryCollateralAssets,
+		model.CustomerContractImageCategoryCollateralAssets,
 		MaxNumberCollateralAssetFiles,
-		model.DocumentStatusActive,
+		model.CustomerContractImageStatusActive,
 	)
 	if err == nil {
-		resp.CollateralAssetImages = docsToURLs(collaterals)
+		resp.CollateralAssetImages = collaterals
 	}
 
-	receivingImages, err := s.store.CustomerContractDocumentStore.GetByCategory(
+	receivingImages, err := s.store.CustomerContractImageStore.Get(
 		contract.ID,
-		model.DocumentCategoryReceivingCarImages,
+		model.CustomerContractImageCategoryReceivingCarImages,
 		MaxNumberReceivingCarImages,
-		model.DocumentStatusActive,
+		model.CustomerContractImageStatusActive,
 	)
 	if err == nil {
-		resp.ReceivingCarImages = docsToURLs(receivingImages)
+		resp.ReceivingCarImages = receivingImages
 	}
 
 	return resp
@@ -570,18 +561,13 @@ func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
 	}
 
 	if acct.RoleID == model.RoleIDPartner {
-		carStatus, docStatus := model.CarStatusActive, model.DocumentStatusActive
+		carStatus := model.CarStatusActive
 		if req.Status == model.AccountStatusInactive {
 			carStatus = model.CarStatusInactive
-			docStatus = model.DocumentStatusInactive
 		}
 
 		if err := s.store.DB.Transaction(func(tx *gorm.DB) error {
 			if err := s.store.CarStore.UpdateByPartnerID(tx, acct.ID, map[string]interface{}{"status": string(carStatus)}); err != nil {
-				return err
-			}
-
-			if err := s.store.DocumentStore.UpdateByAccountID(tx, acct.ID, map[string]interface{}{"status": string(docStatus)}); err != nil {
 				return err
 			}
 
@@ -712,9 +698,8 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 	}
 
 	contract := customerPayment.CustomerContract
-	qrImageURL, originURL, err := s.generateCustomerContractPaymentQRCode(
-		int(model.RoleIDAdmin),
-		&contract,
+	originURL, err := s.generateCustomerContractPaymentQRCode(
+		contract.ID,
 		customerPayment.Amount,
 		customerPayment.PaymentType,
 		req.ReturnURL,
@@ -724,27 +709,7 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"qr_code_image": qrImageURL, "payment_url": originURL})
-}
-
-type updateDocumentStatusRequest struct {
-	DocumentID int                  `json:"document_id"`
-	NewStatus  model.DocumentStatus `json:"new_status"`
-}
-
-func (s *Server) HandleAdminUpdateDocumentStatus(c *gin.Context) {
-	req := updateDocumentStatusRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
-		return
-	}
-
-	if err := s.store.DocumentStore.Update(req.DocumentID, map[string]interface{}{"status": string(req.NewStatus)}); err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "update document status successfully"})
+	c.JSON(http.StatusOK, gin.H{"payment_url": originURL})
 }
 
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {

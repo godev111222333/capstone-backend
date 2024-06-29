@@ -33,6 +33,11 @@ type CustomerContract struct {
 	CollateralType          CollateralType         `json:"collateral_type"`
 	IsReturnCollateralAsset bool                   `json:"is_return_collateral_asset"`
 	Url                     string                 `json:"url"`
+	BankName                string                 `json:"bank_name"`
+	BankNumber              string                 `json:"bank_number"`
+	BankOwner               string                 `json:"bank_owner"`
+	InsurancePercent        float64                `json:"insurance_percent"`
+	PrepayPercent           float64                `json:"prepay_percent"`
 	CreatedAt               time.Time              `json:"created_at"`
 	UpdatedAt               time.Time              `json:"updated_at"`
 }

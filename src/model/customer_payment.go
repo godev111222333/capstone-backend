@@ -25,6 +25,7 @@ type CustomerPayment struct {
 	Amount             int              `json:"amount"`
 	Note               string           `json:"note"`
 	Status             PaymentStatus    `json:"status"`
+	PaymentURL         string           `json:"payment_url"`
 	CreatedAt          time.Time        `json:"created_at"`
 	UpdatedAt          time.Time        `json:"updated_at"`
 }

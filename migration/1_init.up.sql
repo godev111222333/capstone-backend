@@ -31,6 +31,18 @@ create table accounts
     "updated_at"                 timestamptz           DEFAULT (now())
 );
 
+create table otps
+(
+    "id"           serial primary key,
+    "phone_number" varchar(255) references accounts (phone_number),
+    "otp"          varchar(20)  not null default '',
+    "status"       varchar(255) not null default '',
+    "otp_type"     varchar(255) not null default '',
+    "expires_at"   timestamptz           DEFAULT (now()),
+    "created_at"   timestamptz           DEFAULT (now()),
+    "updated_at"   timestamptz           DEFAULT (now())
+);
+
 insert into accounts(role_id, phone_number, password, status)
 values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
 

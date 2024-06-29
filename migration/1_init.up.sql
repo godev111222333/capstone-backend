@@ -180,7 +180,7 @@ create table "customer_payments"
     "id"                   serial primary key,
     "customer_contract_id" bigint references customer_contracts (id),
     "payment_type"         varchar(255)  not null default '',
-    "payment_url"          varchar(255)  not null default '',
+    "payment_url"          varchar(1023) not null default '',
     "amount"               bigint        not null default 0,
     "note"                 varchar(1023) not null default '',
     "status"               varchar(255)  not null default '',

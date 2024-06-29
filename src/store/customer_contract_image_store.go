@@ -34,7 +34,7 @@ func (s *CustomerContractImageStore) Get(
 	res := make([]model.CustomerContractImage, 0)
 	if err := s.db.Where(
 		"customer_contract_id = ? and category = ? and status = ?",
-		cusContractId, string(category), string(status)).Order("id desc").Limit(limit).Scan(&res).Error; err != nil {
+		cusContractId, string(category), string(status)).Order("id desc").Limit(limit).Find(&res).Error; err != nil {
 		fmt.Printf("CustomerContractImageStore: Get %v\n", err)
 		return nil, err
 	}

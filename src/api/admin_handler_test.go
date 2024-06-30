@@ -43,7 +43,7 @@ func TestAdminHandler_GarageConfigs(t *testing.T) {
 	bz, _ = io.ReadAll(recorder.Body)
 
 	resp := getGarageConfigResponse{}
-	require.NoError(t, json.Unmarshal(bz, &resp))
+	require.NoError(t, unmarshalFromCommResponse(bz, &resp))
 
 	require.Equal(t, 3, resp.Max4Seats)
 	require.Equal(t, 6, resp.Max7Seats)
@@ -84,7 +84,7 @@ func TestAdminHandler_GetCar(t *testing.T) {
 	car = &model.Car{}
 	bz, err := io.ReadAll(recorder.Body)
 	require.NoError(t, err)
-	require.NoError(t, json.Unmarshal(bz, car))
+	require.NoError(t, unmarshalFromCommResponse(bz, car))
 	require.Equal(t, "59A33", car.LicensePlate)
 }
 
@@ -243,6 +243,6 @@ func TestAdminHandler_CustomerPayments(t *testing.T) {
 	require.Equal(t, http.StatusOK, recorder.Code)
 	bz, err = io.ReadAll(recorder.Body)
 	payments := make([]*customerPaymentResponse, 0)
-	require.NoError(t, json.Unmarshal(bz, &payments))
+	require.NoError(t, unmarshalFromCommResponse(bz, &payments))
 	require.Len(t, payments, 1)
 }

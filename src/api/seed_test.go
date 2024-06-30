@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -39,15 +38,19 @@ func login(phoneNumber, password string) *rawLoginResponse {
 	req, _ := http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))
 	TestServer.route.ServeHTTP(recorder, req)
 	bz, _ = io.ReadAll(recorder.Body)
-	fmt.Println(string(bz))
 	res := &rawLoginResponse{}
-	unmarshalResponse(bz, res)
+	_ = unmarshalFromCommResponse(bz, res)
 	return res
 }
 
-func unmarshalResponse(respBody []byte, data any) {
+func unmarshalFromCommResponse(respBody []byte, data any) error {
 	commResponse := &CommResponse{}
-	_ = json.Unmarshal(respBody, commResponse)
-	fmt.Println("data", commResponse.Data)
-	data = commResponse.Data
+	if err := json.Unmarshal(respBody, commResponse); err != nil {
+		return err
+	}
+	bz, err := json.Marshal(commResponse.Data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bz, data)
 }

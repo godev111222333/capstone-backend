@@ -95,7 +95,7 @@ func TestRegisterCarHandler(t *testing.T) {
 
 		resp := &getRegisteredCarsResponse{}
 		bz, _ = io.ReadAll(recorder.Body)
-		require.NoError(t, json.Unmarshal(bz, resp))
+		require.NoError(t, unmarshalFromCommResponse(bz, resp))
 		require.Len(t, resp.Cars, 1)
 	})
 }

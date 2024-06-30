@@ -78,7 +78,7 @@ type registerCarMetadataResponse struct {
 func (s *Server) HandleGetRegisterCarMetadata(c *gin.Context) {
 	models, err := s.store.CarModelStore.GetAll()
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -98,19 +98,19 @@ type getParkingLotMetadataRequest struct {
 func (s *Server) HandleGetParkingLotMetadata(c *gin.Context) {
 	req := getParkingLotMetadataRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetParkingLotRequest, err)
 		return
 	}
 
 	totalCarInGarage, err := s.store.CarStore.CountBySeats(req.SeatType, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	garageConfig, err := s.store.GarageConfigStore.Get()
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -131,5 +131,5 @@ func (s *Server) HandleGetParkingLotMetadata(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, ParkingLotMetadata)
+	responseSuccess(c, ParkingLotMetadata)
 }

@@ -39,6 +39,18 @@ func login(phoneNumber, password string) *rawLoginResponse {
 	TestServer.route.ServeHTTP(recorder, req)
 	bz, _ = io.ReadAll(recorder.Body)
 	res := &rawLoginResponse{}
-	_ = json.Unmarshal(bz, res)
+	_ = unmarshalFromCommResponse(bz, res)
 	return res
+}
+
+func unmarshalFromCommResponse(respBody []byte, data any) error {
+	commResponse := &CommResponse{}
+	if err := json.Unmarshal(respBody, commResponse); err != nil {
+		return err
+	}
+	bz, err := json.Marshal(commResponse.Data)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bz, data)
 }

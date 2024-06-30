@@ -94,7 +94,7 @@ where car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or 
 
 func (s *CarStore) GetByID(id int) (*model.Car, error) {
 	res := &model.Car{}
-	if err := s.db.Where("id = ?", id).Preload("Account").Preload("CarModel").Find(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Preload("Account").Preload("CarModel").First(res).Error; err != nil {
 		return nil, err
 	}
 	return res, nil

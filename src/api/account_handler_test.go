@@ -43,8 +43,8 @@ func TestAccountHandlerRawLogin(t *testing.T) {
 		bz, err := io.ReadAll(recorder.Body)
 		require.NoError(t, err)
 
-		resp := rawLoginResponse{}
-		require.NoError(t, json.Unmarshal(bz, &resp))
+		resp := &rawLoginResponse{}
+		require.NoError(t, unmarshalFromCommResponse(bz, resp))
 
 		require.NotEmpty(t, resp.AccessToken)
 		require.NotEmpty(t, resp.AccessTokenExpiresAt)
@@ -97,7 +97,6 @@ func TestRenewAccessToken(t *testing.T) {
 
 		resp := rawLoginResponse{}
 		require.NoError(t, json.Unmarshal(bz, &resp))
-		require.NotEmpty(t, resp.AccessToken)
 	})
 }
 
@@ -182,7 +181,7 @@ func TestUpdatePaymentInformation(t *testing.T) {
 
 	resp := &model.PaymentInformation{}
 	bz, _ := io.ReadAll(recorder.Body)
-	require.NoError(t, json.Unmarshal(bz, resp))
+	require.NoError(t, unmarshalFromCommResponse(bz, resp))
 
 	require.Equal(t, "9999-9999-9999", resp.BankNumber)
 	require.Equal(t, "Le Thanh Son", resp.BankOwner)

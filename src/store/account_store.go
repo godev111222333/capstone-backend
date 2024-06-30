@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"fmt"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"gorm.io/gorm"
@@ -52,11 +51,7 @@ func (s *AccountStore) UpdateTx(tx *gorm.DB, accountID int, values map[string]in
 
 func (s *AccountStore) GetByPhoneNumber(phoneNumber string) (*model.Account, error) {
 	res := &model.Account{}
-	if err := s.db.Where("phone_number = ?", phoneNumber).Preload("Role").Find(res).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
+	if err := s.db.Where("phone_number = ?", phoneNumber).Preload("Role").First(res).Error; err != nil {
 		fmt.Printf("AccountStore: GetByPhoneNumber %v\n", err)
 		return nil, err
 	}
@@ -66,11 +61,7 @@ func (s *AccountStore) GetByPhoneNumber(phoneNumber string) (*model.Account, err
 
 func (s *AccountStore) GetByID(id int) (*model.Account, error) {
 	res := &model.Account{}
-	if err := s.db.Where("id = ?", id).Preload("Role").Find(res).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
+	if err := s.db.Where("id = ?", id).Preload("Role").First(res).Error; err != nil {
 		fmt.Printf("AccountStore: GetByID %v\n", err)
 		return nil, err
 	}

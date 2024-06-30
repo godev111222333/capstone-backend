@@ -43,7 +43,7 @@ func (s *OTPStore) UpdateStatus(phoneNumber string, otpType model.OTPType, newSt
 	}
 
 	if err := s.Db.Model(otp).Updates(map[string]interface{}{
-		"updated_at": time.Now().UTC(),
+		"updated_at": time.Now(),
 		"status":     string(newStatus),
 	}).Error; err != nil {
 		fmt.Printf("error when update status, err=%v\n", err)

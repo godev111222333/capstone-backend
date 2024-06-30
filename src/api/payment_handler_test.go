@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -15,5 +14,5 @@ func TestPaymentHandler_GeneratePaymentURL(t *testing.T) {
 	paymentService := NewVnPayService(TestConfig.VNPay)
 	url, err := paymentService.GeneratePaymentURL(1, 10_000, strconv.Itoa(rand.Int()%1_000_000), "return_url")
 	require.NoError(t, err)
-	fmt.Println(url)
+	require.NotEmpty(t, url)
 }

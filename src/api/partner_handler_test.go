@@ -95,7 +95,7 @@ func TestRegisterCarHandler(t *testing.T) {
 
 		resp := &getRegisteredCarsResponse{}
 		bz, _ = io.ReadAll(recorder.Body)
-		require.NoError(t, json.Unmarshal(bz, resp))
+		require.NoError(t, unmarshalFromCommResponse(bz, resp))
 		require.Len(t, resp.Cars, 1)
 	})
 }
@@ -156,7 +156,7 @@ func TestSignContract(t *testing.T) {
 	require.NoError(t, TestDb.PartnerContractStore.Create(contract))
 
 	route := TestServer.AllRoutes()[RoutePartnerAgreeContract]
-	r := partnerSignContractRequest{CarID: car.ID}
+	r := partnerAgreeContractRequest{CarID: car.ID}
 	bz, err := json.Marshal(r)
 	require.NoError(t, err)
 	req, err := http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))

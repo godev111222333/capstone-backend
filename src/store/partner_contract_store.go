@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -29,9 +28,6 @@ func (s *PartnerContractStore) Create(c *model.PartnerContract) error {
 func (s *PartnerContractStore) GetByCarID(carID int) (*model.PartnerContract, error) {
 	res := &model.PartnerContract{}
 	if err := s.db.Where("car_id = ?", carID).Preload("Car").Preload("Car.CarModel").First(res).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
 		fmt.Printf("PartnerContractStore: GetByCarID %v\n", err)
 		return nil, err
 	}

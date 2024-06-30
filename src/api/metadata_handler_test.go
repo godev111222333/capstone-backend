@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -25,6 +24,6 @@ func TestMetadataHandler(t *testing.T) {
 	}{}
 	bz, err := io.ReadAll(recorder.Body)
 	require.NoError(t, err)
-	require.NoError(t, json.Unmarshal(bz, &resp))
+	require.NoError(t, unmarshalFromCommResponse(bz, &resp))
 	require.Len(t, resp.Banks, 97)
 }

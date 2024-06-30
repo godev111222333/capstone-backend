@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -23,13 +22,13 @@ func (s *Server) HandleRegisterCustomer(c *gin.Context) {
 	}{}
 
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidRegisterCustomerRequest, err)
 		return
 	}
 
 	hashedPassword, err := s.hashVerifier.Hash(req.Password)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeHashingPassword, err)
 		return
 	}
 
@@ -44,16 +43,16 @@ func (s *Server) HandleRegisterCustomer(c *gin.Context) {
 	}
 
 	if err := s.store.AccountStore.Create(customer); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if err := s.otpService.SendOTP(model.OTPTypeRegister, req.PhoneNumber); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeSendOTP, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	responseSuccess(c, gin.H{
 		"status": "register customer successfully. please confirm OTP sent to your phone",
 	})
 }
@@ -71,7 +70,7 @@ type customerFindCarsRequest struct {
 func (s *Server) HandleCustomerFindCars(c *gin.Context) {
 	req := customerFindCarsRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidFindCarsRequest, err)
 		return
 	}
 
@@ -93,7 +92,7 @@ func (s *Server) HandleCustomerFindCars(c *gin.Context) {
 			var err error
 			arrInt[i], err = strconv.Atoi(s)
 			if err != nil {
-				responseError(c, err)
+				responseCustomErr(c, ErrCodeInvalidFindCarsRequest, err)
 				return
 			}
 		}
@@ -105,19 +104,19 @@ func (s *Server) HandleCustomerFindCars(c *gin.Context) {
 
 	foundCars, err := s.store.CarStore.FindCars(req.StartDate, req.EndDate, findQueries)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 	respCars := make([]*carResponse, len(foundCars))
 	for i, car := range foundCars {
 		respCars[i], err = s.newCarResponse(car)
 		if err != nil {
-			responseInternalServerError(c, err)
+			responseGormErr(c, err)
 			return
 		}
 	}
 
-	c.JSON(http.StatusOK, respCars)
+	responseSuccess(c, respCars)
 }
 
 type customerRentCarRequest struct {
@@ -129,58 +128,53 @@ type customerRentCarRequest struct {
 
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNameCustomer {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
-		return
-	}
-
 	req := customerRentCarRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, err)
 		return
 	}
 
 	if time.Now().After(req.StartDate) {
-		responseError(c, errors.New("start_date must be greater than now"))
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("start_date must be greater than now"))
 		return
 	}
 
 	if req.StartDate.After(req.EndDate) {
-		responseError(c, errors.New("start_date must be less than end_date"))
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("start_date must be less than end_date"))
 		return
 	}
 
 	if req.EndDate.Sub(req.StartDate) < 24*time.Hour {
-		responseError(c, errors.New("rent period must be at least 1 day"))
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("rent period must be at least 1 day"))
 		return
 	}
 
 	// Check not overlap with other contracts
 	isOverlap, err := s.store.CustomerContractStore.IsOverlap(req.CarID, req.StartDate, req.EndDate)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if isOverlap {
-		responseError(c, errors.New("start_date and end_date is overlap with other contracts"))
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("start_date and end_date is overlap with other contracts"))
 		return
 	}
 
 	customer, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if car.Status != model.CarStatusActive {
-		responseError(c, errors.New("invalid car status. require active"))
+		responseCustomErr(c, ErrCodeInvalidCarStatus, errors.New("invalid car status. require active"))
 		return
 	}
 
@@ -197,7 +191,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		IsReturnCollateralAsset: false,
 	}
 	if err := s.store.CustomerContractStore.Create(contract); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -205,7 +199,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		_ = s.RenderCustomerContractPDF(customer, car, contract)
 	}()
 
-	c.JSON(http.StatusOK, gin.H{"status": "create customer contract successfully", "contract": contract})
+	responseSuccess(c, contract)
 }
 
 type customerAgreeContractRequest struct {
@@ -217,29 +211,29 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	req := customerAgreeContractRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidCustomerAgreeContractRequest, err)
 		return
 	}
 
 	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if contract.CustomerID != acct.ID {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		responseCustomErr(c, ErrCodeInvalidOwnership, nil)
 		return
 	}
 
 	if contract.Status != model.CustomerContractStatusWaitingContractAgreement {
-		responseError(c, errors.New("invalid customer contract status"))
+		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, errors.New("invalid customer contract status"))
 		return
 	}
 
@@ -247,7 +241,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		req.CustomerContractID,
 		map[string]interface{}{"status": string(model.CustomerContractStatusWaitingContractPayment)},
 	); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -259,11 +253,11 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		req.ReturnURL,
 	)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeGenerateQRCode, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully", "payment_url": url})
+	responseSuccess(c, gin.H{"payment_url": url})
 }
 
 func (s *Server) generateCustomerContractPaymentQRCode(
@@ -303,13 +297,13 @@ func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := customerGetContractsRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetCustomerContractRequest, err)
 		return
 	}
 
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -320,50 +314,45 @@ func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
 
 	contracts, err := s.store.CustomerContractStore.GetByCustomerID(acct.ID, status, req.Offset, req.Limit)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, contracts)
+	responseSuccess(c, contracts)
 }
 
 func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	id := c.Param("customer_contract_id")
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetCustomerContractDetailRequest, err)
 		return
 	}
 
 	contract, err := s.store.CustomerContractStore.FindByID(idInt)
 	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	if contract == nil {
-		c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
+		responseGormErr(c, err)
 		return
 	}
 
 	if authPayload.Role == model.RoleNameCustomer && contract.CustomerID != acct.ID {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		responseCustomErr(c, ErrCodeInvalidOwnership, err)
 		return
 	}
 
 	if acct.Role.RoleName == model.RoleNameAdmin {
-		c.JSON(http.StatusOK, s.newCustomerContractResponse(contract))
+		responseSuccess(c, s.newCustomerContractResponse(contract))
 		return
 	}
 
-	c.JSON(http.StatusOK, contract)
+	responseSuccess(c, contract)
 }
 
 type calculateRentingPricingRequest struct {
@@ -375,17 +364,17 @@ type calculateRentingPricingRequest struct {
 func (s *Server) HandleCustomerCalculateRentPricing(c *gin.Context) {
 	req := calculateRentingPricingRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidCalculateRentingPriceRequest, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, calculateRentPrice(car, req.StartDate, req.EndDate))
+	responseSuccess(c, calculateRentPrice(car, req.StartDate, req.EndDate))
 }
 
 type getLastPaymentDetailRequest struct {
@@ -396,17 +385,17 @@ type getLastPaymentDetailRequest struct {
 func (s *Server) HandleCustomerGetLastPaymentDetail(c *gin.Context) {
 	req := getLastPaymentDetailRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeGetLastPaymentTypeRequest, err)
 		return
 	}
 
 	paymentDetail, err := s.store.CustomerPaymentStore.GetLastByPaymentType(req.CustomerContractID, req.PaymentType)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, paymentDetail)
+	responseSuccess(c, paymentDetail)
 }
 
 type RentPricing struct {

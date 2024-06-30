@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +54,7 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 		require.NoError(t, err)
 
 		var foundCars []*carResponse
-		require.NoError(t, json.Unmarshal(bz, &foundCars))
+		require.NoError(t, unmarshalFromCommResponse(bz, &foundCars))
 		require.Len(t, foundCars, 3)
 	})
 
@@ -79,7 +78,7 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 		require.NoError(t, err)
 
 		var foundCars []*carResponse
-		require.NoError(t, json.Unmarshal(bz, &foundCars))
+		require.NoError(t, unmarshalFromCommResponse(bz, &foundCars))
 		require.Len(t, foundCars, 1)
 	})
 }
@@ -111,7 +110,7 @@ func TestServer_HandleCustomerCalculateRentPricing(t *testing.T) {
 	resp := &RentPricing{}
 	bz, err := io.ReadAll(recorder.Body)
 	require.NoError(t, err)
-	require.NoError(t, json.Unmarshal(bz, resp))
+	require.NoError(t, unmarshalFromCommResponse(bz, resp))
 
 	require.Equal(t, 100_000, resp.RentPriceQuotation)
 	require.Equal(t, 10_000, resp.InsurancePriceQuotation)

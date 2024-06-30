@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -21,13 +20,13 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 	}{}
 
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidRegisterPartnerRequest, err)
 		return
 	}
 
 	hashedPassword, err := s.hashVerifier.Hash(req.Password)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeHashingPassword, err)
 		return
 	}
 
@@ -42,16 +41,16 @@ func (s *Server) RegisterPartner(c *gin.Context) {
 	}
 
 	if err := s.store.AccountStore.Create(partner); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if err := s.otpService.SendOTP(model.OTPTypeRegister, req.PhoneNumber); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeSendOTP, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	responseSuccess(c, gin.H{
 		"status": "register partner successfully. please confirm OTP sent to your phone",
 	})
 }
@@ -68,26 +67,21 @@ type registerCarRequest struct {
 
 func (s *Server) HandleRegisterCar(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNamePartner {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
-		return
-	}
-
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	req := registerCarRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidRegisterCarRequest, err)
 		return
 	}
 
 	period, err := strconv.Atoi(req.PeriodCode)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidRegisterCarRequest, err)
 		return
 	}
 
@@ -105,19 +99,18 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 	}
 
 	if err := s.store.CarStore.Create(car); err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	insertedCar, err := s.store.CarStore.GetByID(car.ID)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "register car successfully",
-		"car":    insertedCar,
+	responseSuccess(c, gin.H{
+		"car": insertedCar,
 	})
 }
 
@@ -130,23 +123,23 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := updateRentalPriceRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUpdateRentalPriceRequest, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if car.Status != model.CarStatusPendingApplicationPendingPrice {
-		responseError(c, errors.New("invalid state"))
+		responseCustomErr(c, ErrCodeInvalidCarStatus, errors.New("invalid state"))
 		return
 	}
 
 	if car.Account.PhoneNumber != authPayload.PhoneNumber {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		responseCustomErr(c, ErrCodeInvalidOwnership, nil)
 		return
 	}
 
@@ -154,11 +147,11 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 		"price":  req.NewPrice,
 		"status": model.MoveNextCarState(car.Status),
 	}); err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	responseSuccess(c, gin.H{
 		"car_id":    car.ID,
 		"new_price": req.NewPrice,
 	})
@@ -229,13 +222,13 @@ func (s *Server) HandleGetRegisteredCars(c *gin.Context) {
 	}{}
 
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetRegisteredCarsRequest, err)
 		return
 	}
 
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -247,7 +240,7 @@ func (s *Server) HandleGetRegisteredCars(c *gin.Context) {
 	}
 	cars, err := s.store.CarStore.GetByPartner(acct.ID, req.Offset, req.Limit, status)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -255,68 +248,64 @@ func (s *Server) HandleGetRegisteredCars(c *gin.Context) {
 	for _, car := range cars {
 		r, err := s.newCarResponse(car)
 		if err != nil {
-			responseInternalServerError(c, err)
+			responseGormErr(c, err)
 			return
 		}
 		carResp = append(carResp, r)
 	}
-	c.JSON(http.StatusOK, getRegisteredCarsResponse{Cars: carResp})
+
+	responseSuccess(c, getRegisteredCarsResponse{Cars: carResp})
 }
 
-type partnerSignContractRequest struct {
+type partnerAgreeContractRequest struct {
 	CarID int `json:"car_id"`
 }
 
 func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	req := partnerSignContractRequest{}
+	req := partnerAgreeContractRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidPartnerAgreeContractRequest, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	partner, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if car.PartnerID != partner.ID {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		responseCustomErr(c, ErrCodeInvalidOwnership, nil)
 		return
 	}
 
 	contract, err := s.store.PartnerContractStore.GetByCarID(req.CarID)
 	if err != nil {
-		responseError(c, err)
-		return
-	}
-
-	if contract == nil {
-		c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
+		responseGormErr(c, err)
 		return
 	}
 
 	if contract.Status != model.PartnerContractStatusWaitingForAgreement {
-		responseError(c, errors.New("invalid contract status"))
+		responseCustomErr(c, ErrCodeInvalidPartnerContractStatus, errors.New("invalid contract status"))
 		return
 	}
 
 	if contract.Car.ParkingLot == model.ParkingLotGarage {
 		isValid, err := s.checkIfInsertableNewSeat(car.CarModel.NumberOfSeats)
 		if err != nil {
-			responseInternalServerError(c, err)
+			responseGormErr(c, err)
 			return
 		}
 
 		if !isValid {
-			responseError(c, errors.New("not enough slot at garage"))
+			responseCustomErr(c, ErrCodeNotEnoughSlotAtGarage, errors.New("not enough slot at garage"))
 			return
 		}
 	}
@@ -324,7 +313,7 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 	if err := s.store.PartnerContractStore.Update(contract.ID, map[string]interface{}{
 		"status": string(model.PartnerContractStatusAgreed),
 	}); err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -336,11 +325,11 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
 		"status": status,
 	}); err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "agree contract successfully"})
+	responseSuccess(c, gin.H{"status": "agree contract successfully"})
 }
 
 type getContractRequest struct {
@@ -349,40 +338,30 @@ type getContractRequest struct {
 
 func (s *Server) HandleGetPartnerContractDetails(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNameAdmin && authPayload.Role != model.RoleNamePartner {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
-		return
-	}
-
 	req := getContractRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetPartnerContractDetailRequest, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if authPayload.Role == model.RoleNamePartner && car.Account.PhoneNumber != authPayload.PhoneNumber {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		responseCustomErr(c, ErrCodeInvalidOwnership, nil)
 		return
 	}
 
 	contract, err := s.store.PartnerContractStore.GetByCarID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	if contract == nil {
-		c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, contract)
+	responseSuccess(c, contract)
 }
 
 func (s *Server) fromUUIDToURL(uuid, extension string) string {

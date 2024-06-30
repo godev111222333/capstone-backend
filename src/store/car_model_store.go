@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"fmt"
 	"gorm.io/gorm"
 
@@ -27,10 +26,6 @@ func (s *CarModelStore) Create(models []*model.CarModel) error {
 func (s *CarModelStore) GetAll() ([]*model.CarModel, error) {
 	var models []*model.CarModel
 	if err := s.db.Find(&models).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
 		fmt.Printf("CarModelStore: SearchCars %v\n", err)
 		return nil, err
 	}

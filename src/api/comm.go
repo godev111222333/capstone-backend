@@ -105,7 +105,10 @@ func responseGormErr(c *gin.Context, err error) {
 		respCode = http.StatusNotFound
 	}
 
-	c.AbortWithStatusJSON(respCode, gormErrMapping[err])
+	c.AbortWithStatusJSON(respCode, CommResponse{
+		ErrorCode: gormErrMapping[err].ErrorCode,
+		Message:   err.Error(),
+	})
 	return
 }
 
@@ -134,10 +137,6 @@ func responseSuccess(c *gin.Context, data interface{}) {
 		Data:      data,
 	})
 }
-
-//func responseError(ctx *gin.Context, err error) {
-//	gorm.Er
-//}
 
 func responseInternalServerError(ctx *gin.Context, err error) {
 	ctx.AbortWithStatusJSON(http.StatusInternalServerError, CommResponse{

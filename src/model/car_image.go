@@ -8,7 +8,7 @@ type (
 )
 
 const (
-	ExtensionPDF = ".pdf"
+	ExtensionPDF = "pdf"
 )
 
 const (

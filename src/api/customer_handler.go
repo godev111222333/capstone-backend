@@ -178,7 +178,13 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	pricing := calculateRentPrice(car, req.StartDate, req.EndDate)
+	rule, err := s.store.ContractRuleStore.GetLast()
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	pricing := calculateRentPrice(car, rule, req.StartDate, req.EndDate)
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
@@ -245,7 +251,13 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	pricing := calculateRentPrice(&contract.Car, contract.StartDate, contract.EndDate)
+	rule, err := s.store.ContractRuleStore.GetLast()
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	pricing := calculateRentPrice(&contract.Car, rule, contract.StartDate, contract.EndDate)
 	url, err := s.generateCustomerContractPaymentQRCode(
 		contract.ID,
 		pricing.PrepaidAmount,
@@ -374,7 +386,13 @@ func (s *Server) HandleCustomerCalculateRentPricing(c *gin.Context) {
 		return
 	}
 
-	responseSuccess(c, calculateRentPrice(car, req.StartDate, req.EndDate))
+	rule, err := s.store.ContractRuleStore.GetLast()
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, calculateRentPrice(car, rule, req.StartDate, req.EndDate))
 }
 
 type getLastPaymentDetailRequest struct {
@@ -408,15 +426,15 @@ type RentPricing struct {
 	PrepaidAmount        int `json:"prepaid_amount"`
 }
 
-func calculateRentPrice(car *model.Car, startDate, endDate time.Time) *RentPricing {
+func calculateRentPrice(car *model.Car, rule *model.ContractRule, startDate, endDate time.Time) *RentPricing {
 	totalRentPriceAmount := car.Price * int(((endDate.Sub(startDate)).Hours())/24.0)
-	totalInsuranceAmount := totalRentPriceAmount / 10
+	totalInsuranceAmount := float64(totalRentPriceAmount) * rule.InsurancePercent / 100.0
 	return &RentPricing{
 		RentPriceQuotation:      car.Price,
-		InsurancePriceQuotation: car.Price / 10,
+		InsurancePriceQuotation: int(float64(car.Price) * rule.InsurancePercent / 100.0),
 		TotalRentPriceAmount:    totalRentPriceAmount,
-		TotalInsuranceAmount:    totalInsuranceAmount,
-		TotalAmount:             totalRentPriceAmount + totalInsuranceAmount,
-		PrepaidAmount:           (totalRentPriceAmount + totalInsuranceAmount) * 30 / 100,
+		TotalInsuranceAmount:    int(totalInsuranceAmount),
+		TotalAmount:             totalRentPriceAmount + int(totalInsuranceAmount),
+		PrepaidAmount:           int((float64(totalRentPriceAmount) + totalInsuranceAmount) * rule.PrepayPercent / 100.0),
 	}
 }

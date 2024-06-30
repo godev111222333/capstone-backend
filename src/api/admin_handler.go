@@ -321,7 +321,7 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 		"license_plate":         car.LicensePlate,
 		"number_of_seats":       strconv.Itoa(car.CarModel.NumberOfSeats),
 		"car_year":              strconv.Itoa(car.CarModel.Year),
-		"price":                 strconv.Itoa(car.Price * car.Period * 30),
+		"price":                 strconv.Itoa(car.Price),
 		"period":                strconv.Itoa(car.Period),
 		"period_start_date":     strconv.Itoa(startDate),
 		"period_start_month":    strconv.Itoa(int(startMonth)),

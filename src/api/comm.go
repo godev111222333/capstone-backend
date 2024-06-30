@@ -19,8 +19,6 @@ const (
 	ErrCodeForeignKeyViolated                                 ErrorCode = 10004
 	ErrCodeCheckConstraintViolated                            ErrorCode = 10005
 	ErrCodeInvalidOwnership                                   ErrorCode = 10006
-	ErrCodeInvalidState                                       ErrorCode = 10007
-	ErrCodeInvalidGarageConfig                                ErrorCode = 10008
 	ErrCodeInternalServerError                                ErrorCode = 10009
 	ErrCodeInvalidVerifyOTPRequest                            ErrorCode = 10010
 	ErrCodeInvalidAccountStatus                               ErrorCode = 10011

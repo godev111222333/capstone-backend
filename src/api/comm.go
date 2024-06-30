@@ -74,6 +74,7 @@ const (
 	ErrCodeInvalidGetRegisteredCarsRequest                    ErrorCode = 10059
 	ErrCodeInvalidPartnerAgreeContractRequest                 ErrorCode = 10060
 	ErrCodeInvalidGetPartnerContractDetailRequest             ErrorCode = 10061
+	ErrCodeDatabaseError                                      ErrorCode = 10062
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{
@@ -105,8 +106,14 @@ func responseGormErr(c *gin.Context, err error) {
 		respCode = http.StatusNotFound
 	}
 
+	code := ErrCodeDatabaseError
+	e, ok := gormErrMapping[err]
+	if ok {
+		code = e.ErrorCode
+	}
+
 	c.AbortWithStatusJSON(respCode, CommResponse{
-		ErrorCode: gormErrMapping[err].ErrorCode,
+		ErrorCode: code,
 		Message:   err.Error(),
 	})
 	return

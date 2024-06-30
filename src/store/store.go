@@ -29,7 +29,7 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN: fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 			cfg.DbHost, cfg.DbUsername, cfg.DbPassword, cfg.DbName, cfg.DbPort),
-	}), &gorm.Config{TranslateError: true})
+	}), &gorm.Config{})
 
 	if err != nil {
 		fmt.Printf("error when initing connect to DB: %v\n", err)

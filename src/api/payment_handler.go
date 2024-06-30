@@ -114,7 +114,7 @@ type VnPayIPNRequest struct {
 func (s *Server) HandleVnPayIPN(c *gin.Context) {
 	req := VnPayIPNRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 

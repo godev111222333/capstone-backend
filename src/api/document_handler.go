@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net/http"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -34,26 +33,26 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 	}{}
 
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUploadDocumentRequest, err)
 		return
 	}
 
 	header := req.File
 	if header.Size > MaxUploadFileSize {
-		responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, header.Size))
+		responseCustomErr(c, ErrCodeInvalidFileSize, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, header.Size))
 		return
 	}
 
 	body, err := header.Open()
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeReadingDocumentRequest, err)
 		return
 	}
 	defer body.Close()
 
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -66,12 +65,12 @@ func (s *Server) HandleUploadAvatar(c *gin.Context) {
 	if err := s.store.AccountStore.Update(acct.ID, map[string]interface{}{
 		"avatar_url": url,
 	}); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "upload avatar successfully",
-		"url":    url,
+	responseSuccess(c, gin.H{
+		"url": url,
 	})
 }
 
@@ -83,47 +82,47 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		Files            []*multipart.FileHeader `form:"files"`
 	}{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUploadDocumentRequest, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if !strings.Contains(string(car.Status), string(model.CarStatusPendingApplication)) {
-		responseError(c, errors.New("invalid car state"))
+		responseCustomErr(c, ErrCodeInvalidCarStatus, errors.New("invalid car state"))
 		return
 	}
 
 	if (req.CarImageCategory == model.CarImageCategoryImages && car.Status != model.CarStatusPendingApplicationPendingCarImages) ||
 		req.CarImageCategory == model.CarImageCategoryCaveat && car.Status != model.CarStatusPendingApplicationPendingCarCaveat {
-		responseError(c, errors.New("invalid document category with current car state"))
+		responseCustomErr(c, ErrCodeInvalidDocumentCategory, errors.New("invalid document category with current car state"))
 		return
 	}
 
 	if car.Account.PhoneNumber != authPayload.PhoneNumber {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid ownership")))
+		responseCustomErr(c, ErrCodeInvalidOwnership, nil)
 		return
 	}
 
 	if len(req.Files) > MaxNumberFiles {
-		responseError(c, fmt.Errorf("exceed maximum number of files, max %d, has %d", MaxNumberFiles, len(req.Files)))
+		responseCustomErr(c, ErrCodeInvalidNumberOfFiles, fmt.Errorf("exceed maximum number of files, max %d, has %d", MaxNumberFiles, len(req.Files)))
 		return
 	}
 
 	images := make([]*model.CarImage, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
-			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
+			responseCustomErr(c, ErrCodeInvalidFileSize, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
 			return
 		}
 
 		body, err := f.Open()
 		if err != nil {
-			responseError(c, err)
+			responseCustomErr(c, ErrCodeReadingDocumentRequest, err)
 			return
 		}
 		defer body.Close()
@@ -137,7 +136,7 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 			ACL:    types.ObjectCannedACLPublicRead,
 		})
 		if err != nil {
-			responseError(c, err)
+			responseInternalServerError(c, err)
 			return
 		}
 
@@ -160,7 +159,7 @@ func (s *Server) HandleUploadCarDocuments(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	responseSuccess(c, gin.H{
 		"status": "upload images successfully",
 	})
 }
@@ -171,31 +170,31 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 		Files []*multipart.FileHeader `form:"files"`
 	}{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUploadDocumentRequest, err)
 		return
 	}
 
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if len(req.Files) > MaxNumberDrivingLicenseFiles {
-		responseError(c, fmt.Errorf("exceed maximum number of files, max %d, has %d", MaxNumberDrivingLicenseFiles, len(req.Files)))
+		responseCustomErr(c, ErrCodeInvalidNumberOfFiles, fmt.Errorf("exceed maximum number of files, max %d, has %d", MaxNumberDrivingLicenseFiles, len(req.Files)))
 		return
 	}
 
 	images := make([]*model.DrivingLicenseImage, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
-			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
+			responseCustomErr(c, ErrCodeInvalidFileSize, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
 			return
 		}
 
 		body, err := f.Open()
 		if err != nil {
-			responseError(c, err)
+			responseCustomErr(c, ErrCodeReadingDocumentRequest, err)
 			return
 		}
 		defer body.Close()
@@ -215,24 +214,24 @@ func (s *Server) HandleUploadDrivingLicenseImages(c *gin.Context) {
 	}
 
 	if err := s.store.DrivingLicenseImageStore.Create(images); err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "upload driving license images successfully"})
+	responseSuccess(c, gin.H{"status": "upload driving license images successfully"})
 }
 
 func (s *Server) HandleGetDrivingLicenseImages(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	images, err := s.store.DrivingLicenseImageStore.Get(acct.ID, model.DrivingLicenseImageStatusActive, 2)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -241,7 +240,7 @@ func (s *Server) HandleGetDrivingLicenseImages(c *gin.Context) {
 		urls[i] = d.URL
 	}
 
-	c.JSON(http.StatusOK, urls)
+	responseSuccess(c, urls)
 }
 
 func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
@@ -252,18 +251,18 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 	}{}
 
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUploadDocumentRequest, err)
 		return
 	}
 
 	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if contract.Status != model.CustomerContractStatusOrdered {
-		responseError(c, errors.New(
+		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, errors.New(
 			fmt.Sprintf("invalid customer contract status, required %s, found %s",
 				string(model.CustomerContractStatusOrdered), string(contract.Status))),
 		)
@@ -276,20 +275,20 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 	}
 
 	if len(req.Files) > maxFile {
-		responseError(c, fmt.Errorf("exceed maximum number of files, max %d, has %d", maxFile, len(req.Files)))
+		responseCustomErr(c, ErrCodeInvalidNumberOfFiles, fmt.Errorf("exceed maximum number of files, max %d, has %d", maxFile, len(req.Files)))
 		return
 	}
 
 	images := make([]*model.CustomerContractImage, 0)
 	for _, f := range req.Files {
 		if f.Size > MaxUploadFileSize {
-			responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
+			responseCustomErr(c, ErrCodeInvalidFileSize, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, f.Size))
 			return
 		}
 
 		body, err := f.Open()
 		if err != nil {
-			responseError(c, err)
+			responseCustomErr(c, ErrCodeReadingDocumentRequest, err)
 			return
 		}
 		defer body.Close()
@@ -309,11 +308,11 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 	}
 
 	if err := s.store.CustomerContractImageStore.Create(images); err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "upload customer contract document successfully"})
+	responseSuccess(c, gin.H{"status": "upload customer contract document successfully"})
 }
 
 func (s *Server) uploadDocument(

@@ -24,7 +24,7 @@ type getCarsRequest struct {
 func (s *Server) HandleAdminGetCars(c *gin.Context) {
 	req := getCarsRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeGetCarsRequest, err)
 		return
 	}
 
@@ -35,7 +35,7 @@ func (s *Server) HandleAdminGetCars(c *gin.Context) {
 
 	cars, err := s.store.CarStore.SearchCars(req.Offset, req.Limit, status, req.SearchParam)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (s *Server) HandleAdminGetCars(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	responseSuccess(c, gin.H{
 		"cars":  cars,
 		"total": total,
 	})
@@ -55,13 +55,13 @@ func (s *Server) HandleGetCarDetail(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeGetCarDetailRequest, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(id)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -71,7 +71,7 @@ func (s *Server) HandleGetCarDetail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	responseSuccess(c, resp)
 }
 
 type getGarageConfigResponse struct {
@@ -88,20 +88,20 @@ type getGarageConfigResponse struct {
 func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if authPayload.Role != model.RoleNameAdmin {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
+		responseCustomErr(c, ErrCodeInvalidRole, nil)
 		return
 	}
 
 	configs, err := s.store.GarageConfigStore.Get()
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	countCurrentSeats := func(seatType int) int {
 		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
 		if err != nil {
-			responseInternalServerError(c, err)
+			responseGormErr(c, err)
 			return -1
 		}
 
@@ -112,7 +112,7 @@ func (s *Server) HandleGetGarageConfigs(c *gin.Context) {
 	cur7Seats := countCurrentSeats(7)
 	cur15Seats := countCurrentSeats(15)
 
-	c.JSON(http.StatusOK, getGarageConfigResponse{
+	responseSuccess(c, getGarageConfigResponse{
 		Max4Seats:  configs[model.GarageConfigTypeMax4Seats],
 		Max7Seats:  configs[model.GarageConfigTypeMax7Seats],
 		Max15Seats: configs[model.GarageConfigTypeMax15Seats],
@@ -135,25 +135,25 @@ type updateGarageConfigRequest struct {
 func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	if authPayload.Role != model.RoleNameAdmin {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
+		responseCustomErr(c, ErrCodeInvalidRole, nil)
 		return
 	}
 
 	req := updateGarageConfigRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUpdateGarageConfigRequest, err)
 		return
 	}
 
 	checkValidOfSeats := func(seatType, maxSeat int) bool {
 		counter, err := s.store.CarStore.CountBySeats(seatType, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
 		if err != nil {
-			responseInternalServerError(c, err)
+			responseGormErr(c, err)
 			return false
 		}
 
 		if counter > maxSeat {
-			c.JSON(http.StatusBadRequest, errorResponse(errors.New(fmt.Sprintf("invalid type %d seat. Must at least %d", seatType, counter))))
+			responseCustomErr(c, ErrCodeInvalidSeat, errors.New(fmt.Sprintf("invalid type %d seat. Must at least %d", seatType, counter)))
 			return false
 		}
 
@@ -175,7 +175,7 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "update garage configs successfully"})
+	responseSuccess(c, gin.H{"status": "update garage configs successfully"})
 }
 
 type ApplicationAction string
@@ -192,33 +192,27 @@ type adminApproveOrRejectRequest struct {
 }
 
 func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
-	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNameAdmin {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("invalid role")))
-		return
-	}
-
 	req := adminApproveOrRejectRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidAdminApproveOrRejectCarRequest, err)
 		return
 	}
 
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if car.ParkingLot == model.ParkingLotGarage && (req.Action == ApplicationActionApproveRegister || req.Action == ApplicationActionApproveDelivery) {
 		validSeat, err := s.checkIfInsertableNewSeat(car.CarModel.NumberOfSeats)
 		if err != nil {
-			responseInternalServerError(c, err)
+			responseGormErr(c, err)
 			return
 		}
 
 		if !validSeat {
-			responseError(c, errors.New("not enough slot at garage"))
+			responseCustomErr(c, ErrCodeNotEnoughSlotAtGarage, errors.New("not enough slot at garage"))
 			return
 		}
 	}
@@ -226,14 +220,14 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	newStatus := string(model.CarStatusRejected)
 	if req.Action == ApplicationActionApproveRegister {
 		if car.Status != model.CarStatusPendingApproval {
-			c.JSON(http.StatusBadRequest, errorResponse(
+			responseCustomErr(c, ErrCodeInvalidCarStatus,
 				fmt.Errorf(
 					"invalid car status, require %s,"+
 						" found %s",
 					string(model.CarStatusPendingApproval),
 					string(car.Status),
 				),
-			))
+			)
 			return
 		}
 
@@ -265,19 +259,19 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 
 	if req.Action == ApplicationActionApproveDelivery {
 		if car.Status != model.CarStatusWaitingDelivery {
-			c.JSON(http.StatusBadRequest, errorResponse(
+			responseCustomErr(c, ErrCodeInvalidCarStatus,
 				fmt.Errorf(
 					"invalid car status, require %s, found %s",
 					string(model.CarStatusWaitingDelivery),
 					string(car.Status),
 				),
-			))
+			)
 			return
 		}
 
 		contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
 		if err != nil {
-			responseError(c, err)
+			responseGormErr(c, err)
 			return
 		}
 
@@ -287,7 +281,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}
 
 		if contract.Status != model.PartnerContractStatusAgreed {
-			responseError(c, errors.New("partner must agree the contract first"))
+			responseCustomErr(c, ErrCodeInvalidPartnerContractStatus, errors.New("partner must agree the contract first"))
 			return
 		}
 
@@ -301,7 +295,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("%s car successfully", req.Action)})
+	responseSuccess(c, gin.H{"status": fmt.Sprintf("%s car successfully", req.Action)})
 }
 
 func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car) error {
@@ -310,7 +304,6 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 
 	contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	startYear, startMonth, startDate := contract.StartDate.Date()
@@ -441,7 +434,7 @@ func (s *Server) newCustomerContractResponse(contract *model.CustomerContract) *
 func (s *Server) HandleAdminGetCustomerContracts(c *gin.Context) {
 	req := adminGetContractRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetCustomerContractRequest, err)
 		return
 	}
 
@@ -461,7 +454,7 @@ func (s *Server) HandleAdminGetCustomerContracts(c *gin.Context) {
 		contractResp[i] = s.newCustomerContractResponse(contract)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"contracts": contractResp, "total": counter})
+	responseSuccess(c, gin.H{"contracts": contractResp, "total": counter})
 }
 
 type CustomerContractAction string
@@ -479,20 +472,20 @@ type adminApproveOrRejectCustomerContractRequest struct {
 func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 	req := adminApproveOrRejectCustomerContractRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidAdminApproveOrRejectCustomerContractRequest, err)
 		return
 	}
 
 	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	newStatus := string(model.CustomerContractStatusCancel)
 	if req.Action == CustomerContractActionApprove {
 		if contract.Status != model.CustomerContractStatusOrdered {
-			responseError(c, errors.New(
+			responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, errors.New(
 				fmt.Sprintf("invalid customer contract status. expect %s, found %s",
 					string(model.CustomerContractStatusOrdered), string(contract.Status))))
 			return
@@ -502,11 +495,11 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 	}
 
 	if err := s.store.CustomerContractStore.Update(contract.ID, map[string]interface{}{"status": newStatus}); err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "approve/reject customer contract successfully"})
+	responseSuccess(c, contract)
 }
 
 type adminGetAccountsRequest struct {
@@ -519,7 +512,7 @@ type adminGetAccountsRequest struct {
 func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
 	req := adminGetAccountsRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetAccountsRequest, err)
 		return
 	}
 
@@ -530,7 +523,7 @@ func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
 
 	accounts, err := s.store.AccountStore.Get(status, req.Role, req.SearchParam, req.Offset, req.Limit)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -539,7 +532,7 @@ func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
 		respAccts[i] = s.newAccountResponse(acct)
 	}
 
-	c.JSON(http.StatusOK, respAccts)
+	responseSuccess(c, respAccts)
 }
 
 type adminSetAccountStatusRequest struct {
@@ -550,13 +543,13 @@ type adminSetAccountStatusRequest struct {
 func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
 	req := adminSetAccountStatusRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidSetAccountStatusRequest, err)
 		return
 	}
 
 	acct, err := s.store.AccountStore.GetByID(req.AccountID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -583,24 +576,24 @@ func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "update account status successfully"})
+	responseSuccess(c, acct)
 }
 
 func (s *Server) HandleAdminGetAccountDetail(c *gin.Context) {
 	id := c.Param("account_id")
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetAccountDetailRequest, err)
 		return
 	}
 
 	acct, err := s.store.AccountStore.GetByID(idInt)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, s.newAccountResponse(acct))
+	responseSuccess(c, s.newAccountResponse(acct))
 }
 
 type adminAdminGetCustomerPaymentsRequest struct {
@@ -627,7 +620,7 @@ func newCustomerPaymentResponse(p *model.CustomerPayment) *customerPaymentRespon
 func (s *Server) HandleAdminGetCustomerPayments(c *gin.Context) {
 	req := adminAdminGetCustomerPaymentsRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGetCustomerPaymentRequest, err)
 		return
 	}
 
@@ -637,7 +630,7 @@ func (s *Server) HandleAdminGetCustomerPayments(c *gin.Context) {
 	}
 	payments, err := s.store.CustomerPaymentStore.GetByCustomerContractID(req.CustomerContractID, status, req.Offset, req.Limit)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -646,7 +639,7 @@ func (s *Server) HandleAdminGetCustomerPayments(c *gin.Context) {
 		resp[index] = newCustomerPaymentResponse(p)
 	}
 
-	c.JSON(http.StatusOK, resp)
+	responseSuccess(c, resp)
 }
 
 type adminCreateCustomerPaymentRequest struct {
@@ -659,7 +652,7 @@ type adminCreateCustomerPaymentRequest struct {
 func (s *Server) HandleAdminCreateCustomerPayment(c *gin.Context) {
 	req := adminCreateCustomerPaymentRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidCreateCustomerPaymentRequest, err)
 		return
 	}
 
@@ -672,11 +665,11 @@ func (s *Server) HandleAdminCreateCustomerPayment(c *gin.Context) {
 	}
 
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "create payment successfully", "payment": payment})
+	responseSuccess(c, payment)
 }
 
 type generateCustomerPaymentQRCode struct {
@@ -687,13 +680,13 @@ type generateCustomerPaymentQRCode struct {
 func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 	req := generateCustomerPaymentQRCode{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidGenerateCustomerPaymentQRCode, err)
 		return
 	}
 
 	customerPayment, err := s.store.CustomerPaymentStore.GetByID(req.CustomerPaymentID)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -705,11 +698,11 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 		req.ReturnURL,
 	)
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeGenerateQRCode, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"payment_url": originURL})
+	responseSuccess(c, gin.H{"payment_url": originURL})
 }
 
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {

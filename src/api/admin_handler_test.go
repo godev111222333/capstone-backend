@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -111,9 +112,12 @@ func TestHandleApproveCar(t *testing.T) {
 			bytes.NewReader(reqBz),
 		)
 		require.NoError(t, err)
+		fmt.Println(accessToken)
 		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessToken.AccessToken)
 		recorder := httptest.NewRecorder()
 		TestServer.route.ServeHTTP(recorder, req)
+		bz, _ := io.ReadAll(recorder.Body)
+		fmt.Println(string(bz))
 		require.Equal(t, http.StatusOK, recorder.Code)
 		updatedCar, err := TestDb.CarStore.GetByID(car.ID)
 		require.NoError(t, err)

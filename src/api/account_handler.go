@@ -1,10 +1,8 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"mime/multipart"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,49 +18,45 @@ type verifyOTPRequest struct {
 func (s *Server) HandleVerifyOTP(c *gin.Context) {
 	req := verifyOTPRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidVerifyOTPRequest, err)
 		return
 	}
 
 	account, err := s.store.AccountStore.GetByPhoneNumber(req.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if account.Status != model.AccountStatusWaitingConfirmPhoneNumber {
-		responseError(c, errors.New("invalid account status"))
+		responseCustomErr(c, ErrCodeInvalidAccountStatus, nil)
 		return
 	}
 
 	isValidOTP, err := s.otpService.VerifyOTP(model.OTPTypeRegister, req.PhoneNumber, req.OTP)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if !isValidOTP {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": "invalid OTP or OTP was expired",
-		})
+		responseCustomErr(c, ErrCodeInvalidOTP, nil)
 		return
 	}
 
 	if err := s.store.OTPStore.UpdateStatus(req.PhoneNumber, model.OTPTypeRegister, model.OTPStatusVerified); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
 	if err := s.store.AccountStore.Update(account.ID, map[string]interface{}{
 		"status": model.AccountStatusActive,
 	}); err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "verify account successfully",
-	})
+	responseSuccess(c, account)
 }
 
 type rawLoginRequest struct {
@@ -121,30 +115,23 @@ func (s *Server) newAccountResponse(acct *model.Account) *accountResponse {
 func (s *Server) HandleRawLogin(c *gin.Context) {
 	req := rawLoginRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidLoginRequest, err)
 		return
 	}
 
 	acct, err := s.store.AccountStore.GetByPhoneNumber(req.PhoneNumber)
 	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	if acct == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "email not found",
-		})
+		responseGormErr(c, err)
 		return
 	}
 
 	if s.hashVerifier.Compare(acct.Password, req.Password) != nil {
-		responseError(c, errors.New("invalid email or password"))
+		responseCustomErr(c, ErrCodeWrongPhoneNumberOrPassword, nil)
 		return
 	}
 
 	if acct.Status != model.AccountStatusActive {
-		responseError(c, errors.New("active is not active"))
+		responseCustomErr(c, ErrCodeAccountNotActive, nil)
 		return
 	}
 
@@ -154,15 +141,11 @@ func (s *Server) HandleRawLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, rawLoginResponse{
+	responseSuccess(c, rawLoginResponse{
 		AccessToken:          accessToken,
 		AccessTokenExpiresAt: accessTokenPayload.ExpiredAt,
 		User:                 s.newAccountResponse(acct),
 	})
-}
-
-type renewAccessTokenRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 type updateProfileRequest struct {
@@ -183,23 +166,23 @@ func (s *Server) HandleGetProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, s.newAccountResponse(acct))
+	responseSuccess(c, s.newAccountResponse(acct))
 }
 
 func (s *Server) HandleUpdateProfile(c *gin.Context) {
 	req := updateProfileRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUpdateProfileRequest, err)
 		return
 	}
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseError(c, err)
+		responseGormErr(c, err)
 		return
 	}
-	if acct == nil || acct.PhoneNumber != authPayload.PhoneNumber {
-		c.JSON(http.StatusUnauthorized, errorResponse(errors.New("mismatch token or account not found")))
+	if acct.PhoneNumber != authPayload.PhoneNumber {
+		responseCustomErr(c, ErrCodeInvalidOwnership, nil)
 		return
 	}
 
@@ -231,7 +214,7 @@ func (s *Server) HandleUpdateProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, accountResponse{
+	responseSuccess(c, accountResponse{
 		ID:                       updatedAcct.ID,
 		Role:                     updatedAcct.Role.RoleName,
 		FirstName:                updatedAcct.FirstName,
@@ -253,13 +236,13 @@ type updatePaymentInfoRequest struct {
 func (s *Server) HandleUpdatePaymentInformation(c *gin.Context) {
 	req := updatePaymentInfoRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeUpdatePaymentInfoRequest, nil)
 		return
 	}
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
-		responseInternalServerError(c, err)
+		responseGormErr(c, err)
 		return
 	}
 
@@ -272,9 +255,7 @@ func (s *Server) HandleUpdatePaymentInformation(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "updated payment information successfully",
-	})
+	responseSuccess(c, acct)
 }
 
 func (s *Server) HandleGetPaymentInformation(c *gin.Context) {
@@ -291,7 +272,7 @@ func (s *Server) HandleGetPaymentInformation(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, p)
+	responseSuccess(c, p)
 }
 
 func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
@@ -306,18 +287,18 @@ func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 		File *multipart.FileHeader `form:"file"`
 	}{}
 	if err := c.Bind(&req); err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeInvalidUploadDocumentRequest, nil)
 		return
 	}
 
 	if req.File.Size > MaxUploadFileSize {
-		responseError(c, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, req.File.Size))
+		responseCustomErr(c, ErrCodeInvalidFileSize, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, req.File.Size))
 		return
 	}
 
 	file, err := req.File.Open()
 	if err != nil {
-		responseError(c, err)
+		responseCustomErr(c, ErrCodeReadingDocumentRequest, err)
 		return
 	}
 	defer file.Close()
@@ -335,7 +316,7 @@ func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	responseSuccess(c, gin.H{
 		"qr_code_url": url,
 	})
 }

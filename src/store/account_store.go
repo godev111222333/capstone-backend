@@ -52,7 +52,7 @@ func (s *AccountStore) UpdateTx(tx *gorm.DB, accountID int, values map[string]in
 
 func (s *AccountStore) GetByPhoneNumber(phoneNumber string) (*model.Account, error) {
 	res := &model.Account{}
-	if err := s.db.Where("phone_number = ?", phoneNumber).Preload("Role").Find(res).Error; err != nil {
+	if err := s.db.Where("phone_number = ?", phoneNumber).Preload("Role").First(res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -66,7 +66,7 @@ func (s *AccountStore) GetByPhoneNumber(phoneNumber string) (*model.Account, err
 
 func (s *AccountStore) GetByID(id int) (*model.Account, error) {
 	res := &model.Account{}
-	if err := s.db.Where("id = ?", id).Preload("Role").Find(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Preload("Role").First(res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

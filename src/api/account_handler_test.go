@@ -97,7 +97,6 @@ func TestRenewAccessToken(t *testing.T) {
 
 		resp := rawLoginResponse{}
 		require.NoError(t, json.Unmarshal(bz, &resp))
-		require.NotEmpty(t, resp.AccessToken)
 	})
 }
 

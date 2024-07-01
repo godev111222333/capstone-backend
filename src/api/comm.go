@@ -73,6 +73,8 @@ const (
 	ErrCodeInvalidPartnerAgreeContractRequest                 ErrorCode = 10060
 	ErrCodeInvalidGetPartnerContractDetailRequest             ErrorCode = 10061
 	ErrCodeDatabaseError                                      ErrorCode = 10062
+	ErrCodeInvalidCompleteCustomerContractRequest             ErrorCode = 10063
+	ErrCodeExistPendingPayments                               ErrorCode = 10064
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{
@@ -81,6 +83,7 @@ var customErrMapping = map[ErrorCode]CommResponse{
 	ErrCodeAccountNotActive:           {ErrCodeInvalidAccountStatus, "active is not active", nil},
 	ErrCodeInvalidRole:                {ErrCodeInvalidRole, "invalid role", nil},
 	ErrCodeInvalidOwnership:           {ErrCodeInvalidOwnership, "invalid ownership", nil},
+	ErrCodeExistPendingPayments:       {ErrCodeExistPendingPayments, "exist pending payments for this contract", nil},
 	ErrCodeSuccess:                    {ErrCodeSuccess, "success", nil},
 }
 

@@ -133,12 +133,6 @@ type updateGarageConfigRequest struct {
 }
 
 func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
-	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
-	if authPayload.Role != model.RoleNameAdmin {
-		responseCustomErr(c, ErrCodeInvalidRole, nil)
-		return
-	}
-
 	req := updateGarageConfigRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		responseCustomErr(c, ErrCodeInvalidUpdateGarageConfigRequest, err)
@@ -705,6 +699,53 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 	responseSuccess(c, gin.H{"payment_url": originURL})
 }
 
+type completeCustomerContractRequest struct {
+	CustomerContractID int `json:"customer_contract_id" binding:"required"`
+}
+
+func (s *Server) HandleAdminCompleteCustomerContract(c *gin.Context) {
+	req := completeCustomerContractRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidCompleteCustomerContractRequest, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusRenting {
+		responseCustomErr(
+			c,
+			ErrCodeInvalidCustomerContractStatus,
+			errors.New(fmt.Sprintf("invalid customer contract status, require %s, found %s", string(model.CustomerContractStatusRenting), string(contract.Status))),
+		)
+		return
+	}
+
+	// check if any pending payment
+	payments, err := s.store.CustomerPaymentStore.GetByCustomerContractID(req.CustomerContractID, model.PaymentStatusPending, 0, 100000)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+	if len(payments) > 0 {
+		responseCustomErr(c, ErrCodeExistPendingPayments, nil)
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(
+		req.CustomerContractID,
+		map[string]interface{}{"status": model.CustomerContractStatusCompleted},
+	); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, contract)
+}
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats
 	if seatNumber == 7 {

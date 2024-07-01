@@ -185,6 +185,12 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	}
 
 	pricing := calculateRentPrice(car, rule, req.StartDate, req.EndDate)
+	paymentInfo, err := s.store.PaymentInformationStore.GetByAcctID(customer.ID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
@@ -194,6 +200,11 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		Status:                  model.CustomerContractStatusWaitingContractAgreement,
 		InsuranceAmount:         pricing.TotalInsuranceAmount,
 		CollateralType:          req.CollateralType,
+		InsurancePercent:        rule.InsurancePercent,
+		PrepayPercent:           rule.PrepayPercent,
+		BankName:                paymentInfo.BankName,
+		BankNumber:              paymentInfo.BankNumber,
+		BankOwner:               paymentInfo.BankOwner,
 		IsReturnCollateralAsset: false,
 	}
 	if err := s.store.CustomerContractStore.Create(contract); err != nil {

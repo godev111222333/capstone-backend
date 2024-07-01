@@ -744,6 +744,12 @@ func (s *Server) HandleAdminCompleteCustomerContract(c *gin.Context) {
 		return
 	}
 
+	contract, err = s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
 	responseSuccess(c, contract)
 }
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {

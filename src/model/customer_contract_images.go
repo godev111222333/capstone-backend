@@ -18,7 +18,7 @@ const (
 type CustomerContractImage struct {
 	ID                 int                           `json:"id"`
 	CustomerContractID int                           `json:"customer_contract_id"`
-	CustomerContract   CustomerContract              `json:"customer_contract"`
+	CustomerContract   *CustomerContract             `json:"customer_contract,omitempty"`
 	URL                string                        `json:"url"`
 	Category           CustomerContractImageCategory `json:"category"`
 	Status             CustomerContractImageStatus   `json:"status"`

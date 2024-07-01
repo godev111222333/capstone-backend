@@ -336,7 +336,7 @@ type getContractRequest struct {
 	CarID int `form:"car_id"`
 }
 
-func (s *Server) HandleGetPartnerContractDetails(c *gin.Context) {
+func (s *Server) HandleGetPartnerContractDetail(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := getContractRequest{}
 	if err := c.Bind(&req); err != nil {

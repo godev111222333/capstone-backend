@@ -45,13 +45,13 @@ const (
 	RouteAdminCompleteCustomerContract          = "admin_complete_customer_contract"
 	RouteAdminUpdateCustomerContractImageStatus = "admin_update_customer_contract_image_status"
 	RoutePartnerAgreeContract                   = "partner_agree_contract"
-	RouteGetPartnerContractDetails              = "get_partner_contract_detail"
+	RouteGetPartnerContractDetail               = "get_partner_contract_detail"
 	RouteCustomerFindCars                       = "customer_find_cars"
 	RouteCustomerRentCar                        = "customer_rent_car"
 	RouteCustomerUploadDrivingLicenseImages     = "customer_upload_driving_license_images"
 	RouteCustomerGetDrivingLicenseImages        = "customer_get_driving_license_images"
 	RouteCustomerGetContracts                   = "customer_get_contracts"
-	RouteCustomerAdminGetContractDetails        = "customer_get_contract_details"
+	RouteCustomerAdminGetContractDetail         = "customer_get_contract_detail"
 	RouteCustomerAgreeContract                  = "customer_agree_contract"
 	RouteCustomerGetLastPaymentDetail           = "customer_get_payment_document_detail"
 	RouteCustomerCalculateRentingPrice          = "customer_calculate_renting_price"
@@ -273,7 +273,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 		RouteAdminGetPartnerContractDetail: {
 			Path:        "/admin/partner_contract",
 			Method:      http.MethodGet,
-			Handler:     s.HandleGetPartnerContractDetails,
+			Handler:     s.HandleGetPartnerContractDetail,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
@@ -319,10 +319,10 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRolePartner,
 		},
-		RouteGetPartnerContractDetails: {
+		RouteGetPartnerContractDetail: {
 			Path:        "/partner/contract",
 			Method:      http.MethodGet,
-			Handler:     s.HandleGetPartnerContractDetails,
+			Handler:     s.HandleGetPartnerContractDetail,
 			RequireAuth: true,
 			AuthRoles:   AuthRolePartner,
 		},
@@ -367,7 +367,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomer,
 		},
-		RouteCustomerAdminGetContractDetails: {
+		RouteCustomerAdminGetContractDetail: {
 			Path:        "/contract/:customer_contract_id",
 			Method:      http.MethodGet,
 			Handler:     s.HandleCustomerAdminGetCustomerContractDetails,

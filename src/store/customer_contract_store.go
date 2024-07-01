@@ -188,7 +188,7 @@ where customer_contracts.status = ?
 	for index, join := range joinModel {
 		res[index] = join.CustomerContract
 		res[index].Car = *join.Car
-		res[index].Customer = *join.Account
+		res[index].Customer = join.Account
 	}
 	return res, counter.Count, nil
 }

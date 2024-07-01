@@ -21,7 +21,7 @@ const (
 type CarImage struct {
 	ID        int              `json:"id"`
 	CarID     int              `json:"car_id"`
-	Car       Car              `json:"car"`
+	Car       *Car             `json:"car,omitempty"`
 	URL       string           `json:"url"`
 	Category  CarImageCategory `json:"category"`
 	Status    CarImageStatus   `json:"status"`

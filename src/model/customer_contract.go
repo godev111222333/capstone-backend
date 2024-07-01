@@ -21,7 +21,7 @@ const (
 type CustomerContract struct {
 	ID                      int                    `json:"id"`
 	CustomerID              int                    `json:"customer_id"`
-	Customer                Account                `gorm:"foreignKey:CustomerID" json:"customer"`
+	Customer                *Account               `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
 	CarID                   int                    `json:"car_id"`
 	Car                     Car                    `json:"car"`
 	RentPrice               int                    `json:"rent_price"`

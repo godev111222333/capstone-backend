@@ -5,7 +5,7 @@ import "time"
 type PaymentInformation struct {
 	ID         int       `json:"id"`
 	AccountID  int       `json:"account_id"`
-	Account    Account   `json:"account"`
+	Account    *Account  `json:"account,omitempty"`
 	BankNumber string    `json:"bank_number"`
 	BankOwner  string    `json:"bank_owner"`
 	BankName   string    `json:"bank_name"`

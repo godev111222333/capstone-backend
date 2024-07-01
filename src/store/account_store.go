@@ -114,7 +114,7 @@ func (s *AccountStore) Get(status model.AccountStatus, role string, searchParam 
 
 	var res []*model.Account
 	for _, acct := range joinModel {
-		acct.Account.Role = *acct.Role
+		acct.Account.Role = acct.Role
 		res = append(res, acct.Account)
 	}
 

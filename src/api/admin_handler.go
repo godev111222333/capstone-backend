@@ -394,8 +394,8 @@ type adminGetContractRequest struct {
 
 type customerContractResponse struct {
 	*model.CustomerContract
-	ReceivingCarImages    []string `json:"receiving_car_images"`
-	CollateralAssetImages []string `json:"collateral_asset_images"`
+	ReceivingCarImages    []*model.CustomerContractImage `json:"receiving_car_images"`
+	CollateralAssetImages []*model.CustomerContractImage `json:"collateral_asset_images"`
 }
 
 func (s *Server) newCustomerContractResponse(contract *model.CustomerContract) *customerContractResponse {
@@ -751,6 +751,26 @@ func (s *Server) HandleAdminCompleteCustomerContract(c *gin.Context) {
 	}
 
 	responseSuccess(c, contract)
+}
+
+type adminUpdateCustomerContractImageStatusRequest struct {
+	CustomerContractImageID int                               `json:"customer_contract_image_id" binding:"required"`
+	NewStatus               model.CustomerContractImageStatus `json:"new_status" binding:"required"`
+}
+
+func (s *Server) HandleAdminUpdateCustomerContractImageStatus(c *gin.Context) {
+	req := adminUpdateCustomerContractImageStatusRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidUpdateCustomerContractImageStatusRequest, err)
+		return
+	}
+
+	if err := s.store.CustomerContractImageStore.Update(req.CustomerContractImageID, req.NewStatus); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "update image status successfully"})
 }
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats

@@ -30,8 +30,8 @@ func (s *CustomerContractImageStore) Get(
 	category model.CustomerContractImageCategory,
 	limit int,
 	status model.CustomerContractImageStatus,
-) ([]string, error) {
-	res := make([]model.CustomerContractImage, 0)
+) ([]*model.CustomerContractImage, error) {
+	res := make([]*model.CustomerContractImage, 0)
 	if err := s.db.Where(
 		"customer_contract_id = ? and category = ? and status = ?",
 		cusContractId, string(category), string(status)).Order("id desc").Limit(limit).Find(&res).Error; err != nil {
@@ -40,9 +40,20 @@ func (s *CustomerContractImageStore) Get(
 	}
 
 	n := len(res)
-	urls := make([]string, n)
+	respImages := make([]*model.CustomerContractImage, n)
 	for index, image := range res {
-		urls[n-1-index] = image.URL
+		respImages[n-1-index] = image
 	}
-	return urls, nil
+	return respImages, nil
+}
+
+func (s *CustomerContractImageStore) Update(imageID int, newStatus model.CustomerContractImageStatus) error {
+	if err := s.db.Model(model.CustomerContractImage{}).
+		Where("id = ?", imageID).
+		Updates(map[string]interface{}{"status": string(newStatus)}).Error; err != nil {
+		fmt.Printf("CustomerContractImageStore: Update %v\n", err)
+		return err
+	}
+
+	return nil
 }

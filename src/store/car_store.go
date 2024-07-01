@@ -86,7 +86,7 @@ where car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or 
 	for i, record := range joinModel {
 		searchRes[i] = record.Car
 		searchRes[i].CarModel = *record.CarModel
-		searchRes[i].Account = *record.Account
+		searchRes[i].Account = record.Account
 	}
 
 	return searchRes, nil

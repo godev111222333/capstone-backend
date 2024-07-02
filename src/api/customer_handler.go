@@ -68,6 +68,7 @@ type customerFindCarsRequest struct {
 }
 
 func (s *Server) HandleCustomerFindCars(c *gin.Context) {
+	// TODO: add start_date & end_date validation
 	req := customerFindCarsRequest{}
 	if err := c.Bind(&req); err != nil {
 		responseCustomErr(c, ErrCodeInvalidFindCarsRequest, err)
@@ -430,13 +431,13 @@ func (s *Server) HandleCustomerGetLastPaymentDetail(c *gin.Context) {
 
 type customerGetActivitiesRequest struct {
 	Pagination `json:"pagination"`
-	Status     string `json:"status"`
+	Status     string `form:"status"`
 }
 
 func (s *Server) HandleCustomerGetActivities(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := customerGetActivitiesRequest{}
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.Bind(&req); err != nil {
 		responseCustomErr(c, ErrCodeInvalidCustomerGetActivitiesRequest, err)
 		return
 	}

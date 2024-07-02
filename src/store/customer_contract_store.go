@@ -241,3 +241,19 @@ func (s *CustomerContractStore) CountByStatus(status model.CustomerContractStatu
 
 	return int(count), nil
 }
+
+func (s *CustomerContractStore) GetFeedbacks(offset, limit int) ([]*model.CustomerContract, int, error) {
+	var res []*model.CustomerContract
+	if err := s.db.Where("length(content) > 0 and rating > 0").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		fmt.Printf("CustomerContracStore: GetFeedbacks %v\n", err)
+		return nil, 1, err
+	}
+
+	var counter int64
+	if err := s.db.Where("length(content) > 0 and rating > 0").Count(&counter).Error; err != nil {
+		fmt.Printf("CustomerContracStore: GetFeedbacks %v\n", err)
+		return nil, 1, err
+	}
+
+	return res, int(counter), nil
+}

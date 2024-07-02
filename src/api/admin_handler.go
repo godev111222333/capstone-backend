@@ -565,7 +565,6 @@ func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
 				return
 			}
 		}
-
 	} else if acct.RoleID == model.RoleIDCustomer {
 		if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{"status": string(req.Status)}); err != nil {
 			responseGormErr(c, err)
@@ -775,6 +774,47 @@ func (s *Server) HandleAdminUpdateCustomerContractImageStatus(c *gin.Context) {
 
 	responseSuccess(c, gin.H{"status": "update image status successfully"})
 }
+
+type adminGetFeedbackRequest struct {
+	Pagination
+}
+
+func (s *Server) HandleAdminGetFeedbacks(c *gin.Context) {
+	req := adminGetFeedbackRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminGetFeedbackRequest, err)
+		return
+	}
+
+	feedbacks, total, err := s.store.CustomerContractStore.GetFeedbacks(req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"total": total, "feedbacks": feedbacks})
+}
+
+type adminUpdateFeedbackStatus struct {
+	CustomerContractID int                  `json:"customer_contract_id"`
+	NewStatus          model.FeedBackStatus `json:"new_status"`
+}
+
+func (s *Server) HandleAdminUpdateFeedbackStatus(c *gin.Context) {
+	req := adminUpdateFeedbackStatus{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminUpdateFeedbackStatusRequest, err)
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, map[string]interface{}{"feedback_status": string(req.NewStatus)}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "update feedback status successfully"})
+}
+
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats
 	if seatNumber == 7 {

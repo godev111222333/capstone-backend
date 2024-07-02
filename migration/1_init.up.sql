@@ -17,18 +17,22 @@ create table accounts
 (
     "id"                         serial primary key,
     "role_id"                    bigint references roles (id),
-    "first_name"                 varchar(255) not null default '',
-    "last_name"                  varchar(255) not null default '',
-    "phone_number"               varchar(255) not null unique,
-    "email"                      varchar(255) not null default '',
-    "identification_card_number" varchar(255) not null default '',
-    "password"                   varchar(255) not null default '',
-    "avatar_url"                 varchar(255) not null default '',
-    "driving_license"            varchar(255) not null default '',
-    "status"                     varchar(255) not null default '',
+    "first_name"                 varchar(255)  not null default '',
+    "last_name"                  varchar(255)  not null default '',
+    "phone_number"               varchar(255)  not null unique,
+    "email"                      varchar(255)  not null default '',
+    "identification_card_number" varchar(255)  not null default '',
+    "password"                   varchar(255)  not null default '',
+    "avatar_url"                 varchar(255)  not null default '',
+    "driving_license"            varchar(255)  not null default '',
+    "status"                     varchar(255)  not null default '',
     "date_of_birth"              timestamptz,
-    "created_at"                 timestamptz           DEFAULT (now()),
-    "updated_at"                 timestamptz           DEFAULT (now())
+    "bank_number"                varchar(255)  not null default '',
+    "bank_owner"                 varchar(255)  not null default '',
+    "bank_name"                  varchar(255)  not null default '',
+    "qr_code_url"                varchar(1023) not null default '',
+    "created_at"                 timestamptz            DEFAULT (now()),
+    "updated_at"                 timestamptz            DEFAULT (now())
 );
 
 create table otps
@@ -88,18 +92,6 @@ create table "notifications"
     "status"     varchar(255)  not null default '',
     "created_at" timestamptz            DEFAULT (now()),
     "updated_at" timestamptz            DEFAULT (now())
-);
-
-create table "payment_informations"
-(
-    "id"          serial primary key,
-    "account_id"  bigint references accounts (id),
-    "bank_number" varchar(255)  not null default '',
-    "bank_owner"  varchar(255)  not null default '',
-    "bank_name"   varchar(255)  not null default '',
-    "qr_code_url" varchar(1023) not null default '',
-    "created_at"  timestamptz            DEFAULT (now()),
-    "updated_at"  timestamptz            DEFAULT (now())
 );
 
 create table "car_images"

@@ -179,7 +179,7 @@ func TestUpdatePaymentInformation(t *testing.T) {
 	TestServer.route.ServeHTTP(recorder, req)
 	require.Equal(t, http.StatusOK, recorder.Code)
 
-	resp := &model.PaymentInformation{}
+	resp := &model.Account{}
 	bz, _ := io.ReadAll(recorder.Body)
 	require.NoError(t, unmarshalFromCommResponse(bz, resp))
 

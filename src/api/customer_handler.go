@@ -68,10 +68,13 @@ type customerFindCarsRequest struct {
 }
 
 func (s *Server) HandleCustomerFindCars(c *gin.Context) {
-	// TODO: add start_date & end_date validation
 	req := customerFindCarsRequest{}
 	if err := c.Bind(&req); err != nil {
 		responseCustomErr(c, ErrCodeInvalidFindCarsRequest, err)
+		return
+	}
+
+	if !validateStartEndDate(c, req.StartDate, req.EndDate) {
 		return
 	}
 
@@ -127,6 +130,25 @@ type customerRentCarRequest struct {
 	CollateralType model.CollateralType `json:"collateral_type" binding:"required"`
 }
 
+func validateStartEndDate(c *gin.Context, startDate, endDate time.Time) bool {
+	if time.Now().After(startDate) {
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("start_date must be greater than now"))
+		return false
+	}
+
+	if startDate.After(endDate) {
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("start_date must be less than end_date"))
+		return false
+	}
+
+	if endDate.Sub(startDate) < 24*time.Hour {
+		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("rent period must be at least 1 day"))
+		return false
+	}
+
+	return true
+}
+
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := customerRentCarRequest{}
@@ -135,18 +157,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	if time.Now().After(req.StartDate) {
-		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("start_date must be greater than now"))
-		return
-	}
-
-	if req.StartDate.After(req.EndDate) {
-		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("start_date must be less than end_date"))
-		return
-	}
-
-	if req.EndDate.Sub(req.StartDate) < 24*time.Hour {
-		responseCustomErr(c, ErrCodeInvalidRentCarRequest, errors.New("rent period must be at least 1 day"))
+	if !validateStartEndDate(c, req.StartDate, req.EndDate) {
 		return
 	}
 
@@ -168,6 +179,14 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
+	isEmpty := func(str string) bool { return len(str) == 0 }
+
+	if isEmpty(customer.QRCodeURL) &&
+		(isEmpty(customer.BankName) || isEmpty(customer.BankNumber) || isEmpty(customer.BankOwner)) {
+		responseCustomErr(c, ErrCodeMissingPaymentInformation, nil)
+		return
+	}
+
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
 		responseGormErr(c, err)
@@ -186,12 +205,6 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	}
 
 	pricing := calculateRentPrice(car, rule, req.StartDate, req.EndDate)
-	paymentInfo, err := s.store.PaymentInformationStore.GetByAcctID(customer.ID)
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
@@ -204,9 +217,9 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		CollateralCashAmount:    rule.CollateralCashAmount,
 		InsurancePercent:        rule.InsurancePercent,
 		PrepayPercent:           rule.PrepayPercent,
-		BankName:                paymentInfo.BankName,
-		BankNumber:              paymentInfo.BankNumber,
-		BankOwner:               paymentInfo.BankOwner,
+		BankName:                customer.BankName,
+		BankNumber:              customer.BankNumber,
+		BankOwner:               customer.BankOwner,
 		IsReturnCollateralAsset: false,
 	}
 	if err := s.store.CustomerContractStore.Create(contract); err != nil {

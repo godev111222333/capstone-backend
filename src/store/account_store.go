@@ -16,15 +16,7 @@ func NewAccountStore(db *gorm.DB) *AccountStore {
 }
 
 func (s *AccountStore) Create(acct *model.Account) error {
-	if err := s.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(acct).Error; err != nil {
-			return err
-		}
-
-		return tx.Create(&model.PaymentInformation{
-			AccountID: acct.ID,
-		}).Error
-	}); err != nil {
+	if err := s.db.Create(acct).Error; err != nil {
 		fmt.Printf("AccountStore: Create %v\n", err)
 		return err
 	}

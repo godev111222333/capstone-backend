@@ -44,8 +44,8 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 		query := req.URL.Query()
 		now := time.Now()
 
-		query.Add("start_date", now.Format(time.RFC3339))
-		query.Add("end_date", now.Add(time.Hour*time.Duration(3)).Format(time.RFC3339))
+		query.Add("start_date", now.Add(time.Second).Format(time.RFC3339))
+		query.Add("end_date", now.AddDate(0, 0, 1).Add(time.Hour*time.Duration(3)).Format(time.RFC3339))
 		req.URL.RawQuery = query.Encode()
 		req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+accessPayload.AccessToken)
 
@@ -66,8 +66,8 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 		query := req.URL.Query()
 		now := time.Now()
 
-		query.Add("start_date", now.Format(time.RFC3339))
-		query.Add("end_date", now.Add(time.Hour*time.Duration(3)).Format(time.RFC3339))
+		query.Add("start_date", now.Add(time.Second).Format(time.RFC3339))
+		query.Add("end_date", now.AddDate(0, 0, 1).Add(time.Hour*time.Duration(3)).Format(time.RFC3339))
 		query.Add("brands", "Lexus")
 		query.Add("number_of_seats", "4,7,15")
 		req.URL.RawQuery = query.Encode()

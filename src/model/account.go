@@ -25,6 +25,10 @@ type Account struct {
 	DrivingLicense           string        `json:"driving_license"`
 	Status                   AccountStatus `json:"status"`
 	DateOfBirth              time.Time     `json:"date_of_birth"`
+	BankNumber               string        `json:"bank_number"`
+	BankOwner                string        `json:"bank_owner"`
+	BankName                 string        `json:"bank_name"`
+	QRCodeURL                string        `json:"qr_code_url"`
 	CreatedAt                time.Time     `json:"created_at"`
 	UpdatedAt                time.Time     `json:"updated_at"`
 }

@@ -78,6 +78,7 @@ const (
 	ErrCodeInvalidUpdateCustomerContractImageStatusRequest    ErrorCode = 10065
 	ErrCodeInvalidCustomerGetActivitiesRequest                ErrorCode = 10066
 	ErrCodeInvalidGiveFeedbackRequest                         ErrorCode = 10067
+	ErrCodeMissingPaymentInformation                          ErrorCode = 10068
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{
@@ -87,6 +88,7 @@ var customErrMapping = map[ErrorCode]CommResponse{
 	ErrCodeInvalidRole:                {ErrCodeInvalidRole, "invalid role", nil},
 	ErrCodeInvalidOwnership:           {ErrCodeInvalidOwnership, "invalid ownership", nil},
 	ErrCodeExistPendingPayments:       {ErrCodeExistPendingPayments, "exist pending payments for this contract", nil},
+	ErrCodeMissingPaymentInformation:  {ErrCodeMissingPaymentInformation, "missing bank information", nil},
 	ErrCodeSuccess:                    {ErrCodeSuccess, "success", nil},
 }
 

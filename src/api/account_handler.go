@@ -246,7 +246,7 @@ func (s *Server) HandleUpdatePaymentInformation(c *gin.Context) {
 		return
 	}
 
-	if err := s.store.PaymentInformationStore.Update(acct.ID, map[string]interface{}{
+	if err := s.store.AccountStore.Update(acct.ID, map[string]interface{}{
 		"bank_number": req.BankNumber,
 		"bank_owner":  req.BankOwner,
 		"bank_name":   req.BankName,
@@ -266,13 +266,12 @@ func (s *Server) HandleGetPaymentInformation(c *gin.Context) {
 		return
 	}
 
-	p, err := s.store.PaymentInformationStore.GetByAcctID(acct.ID)
-	if err != nil {
-		responseInternalServerError(c, err)
-		return
-	}
-
-	responseSuccess(c, p)
+	responseSuccess(c, gin.H{
+		"bank_number": acct.BankNumber,
+		"bank_owner":  acct.BankOwner,
+		"bank_name":   acct.BankName,
+		"qr_code_url": acct.QRCodeURL,
+	})
 }
 
 func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
@@ -309,7 +308,7 @@ func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 		return
 	}
 
-	if err := s.store.PaymentInformationStore.Update(acct.ID, map[string]interface{}{
+	if err := s.store.AccountStore.Update(acct.ID, map[string]interface{}{
 		"qr_code_url": url,
 	}); err != nil {
 		responseInternalServerError(c, err)

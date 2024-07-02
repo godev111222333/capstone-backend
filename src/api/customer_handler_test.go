@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -118,4 +120,38 @@ func TestServer_HandleCustomerCalculateRentPricing(t *testing.T) {
 	require.Equal(t, 30_000, resp.TotalInsuranceAmount)
 	require.Equal(t, 330_000, resp.TotalAmount)
 	require.Equal(t, 99_000, resp.PrepaidAmount)
+}
+
+func TestServer_HandleCustomerGiveFeedback(t *testing.T) {
+	carModel := &model.CarModel{Brand: "BMW"}
+	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+	partner, _ := seedAccountAndLogin("12231", "xxxx", model.RoleIDPartner)
+	car := &model.Car{CarModelID: carModel.ID, LicensePlate: "kdjkas", PartnerID: partner.ID}
+	require.NoError(t, TestDb.CarStore.Create(car))
+	customer, authPayload := seedAccountAndLogin("2233", "xxxx", model.RoleIDCustomer)
+	cusContract := &model.CustomerContract{CustomerID: customer.ID, CarID: car.ID, Status: model.CustomerContractStatusCompleted}
+	require.NoError(t, TestDb.CustomerContractStore.Create(cusContract))
+
+	route := TestServer.AllRoutes()[RouteCustomerGiveFeedback]
+	reqBody := customerGiveFeedbackRequest{
+		CustomerContractID: cusContract.ID,
+		Content:            "good car",
+		Rating:             5,
+	}
+	bz, err := json.Marshal(reqBody)
+	require.NoError(t, err)
+	req, err := http.NewRequest(route.Method, route.Path, bytes.NewReader(bz))
+	req.Header.Set(authorizationHeaderKey, authorizationTypeBearer+" "+authPayload.AccessToken)
+	require.NoError(t, err)
+
+	recorder := httptest.NewRecorder()
+	TestServer.route.ServeHTTP(recorder, req)
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	updateContract, err := TestDb.CustomerContractStore.FindByID(cusContract.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, updateContract)
+	require.Equal(t, "good car", updateContract.FeedbackContent)
+	require.Equal(t, 5, updateContract.FeedbackRating)
+	require.Equal(t, model.FeedbackStatusActive, updateContract.FeedbackStatus)
 }

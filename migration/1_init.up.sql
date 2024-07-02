@@ -160,6 +160,9 @@ create table "customer_contracts"
     "bank_owner"                 varchar(255)  not null default '',
     "insurance_percent"          numeric(3, 1) not null default 0.0,
     "prepay_percent"             numeric(3, 1) not null default 0.0,
+    "feedback_content"           varchar(1023) not null default '',
+    "feedback_rating"            bigint        not null default 0,
+    "feedback_status"            varchar(255)  not null default '',
     "created_at"                 timestamptz            DEFAULT (now()),
     "updated_at"                 timestamptz            DEFAULT (now())
 );
@@ -184,17 +187,6 @@ create table "customer_payments"
     "amount"               bigint        not null default 0,
     "note"                 varchar(1023) not null default '',
     "status"               varchar(255)  not null default '',
-    "created_at"           timestamptz            DEFAULT (now()),
-    "updated_at"           timestamptz            DEFAULT (now())
-);
-
-create table "customer_feedbacks"
-(
-    "id"                   serial primary key,
-    "customer_contract_id" bigint references customer_contracts (id),
-    "content"              varchar(1023) not null default '',
-    "rating"               bigint        not null default 0,
-    "status"               bigint        not null default 0,
     "created_at"           timestamptz            DEFAULT (now()),
     "updated_at"           timestamptz            DEFAULT (now())
 );

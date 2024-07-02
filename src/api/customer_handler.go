@@ -427,6 +427,95 @@ func (s *Server) HandleCustomerGetLastPaymentDetail(c *gin.Context) {
 	responseSuccess(c, paymentDetail)
 }
 
+type customerGetActivitiesRequest struct {
+	Pagination `json:"pagination"`
+	Status     string `json:"status"`
+}
+
+func (s *Server) HandleCustomerGetActivities(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := customerGetActivitiesRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidCustomerGetActivitiesRequest, err)
+		return
+	}
+
+	cus, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	status := model.CustomerContractStatusNoFilter
+	if len(req.Status) > 0 {
+		status = model.CustomerContractStatus(req.Status)
+	}
+
+	contracts, err := s.store.CustomerContractStore.GetByCustomerID(cus.ID, status, req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, contracts)
+}
+
+type customerGiveFeedbackRequest struct {
+	CustomerContractID int    `json:"customer_contract_id" binding:"required"`
+	Content            string `json:"content" binding:"required,max=1000"`
+	Rating             int    `json:"rating" binding:"required,max=5"`
+}
+
+func (s *Server) HandleCustomerGiveFeedback(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	req := customerGiveFeedbackRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidGiveFeedbackRequest, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if contract.CustomerID != acct.ID {
+		responseCustomErr(c, ErrCodeInvalidOwnership, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusCompleted {
+		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, errors.New("invalid contract status. require completed"))
+		return
+	}
+
+	updateParams := map[string]interface{}{
+		"feedback_content": req.Content,
+		"feedback_rating":  req.Rating,
+		"feedback_status":  model.FeedbackStatusActive,
+	}
+
+	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, updateParams); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	updateContract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, updateContract)
+}
+
 type RentPricing struct {
 	RentPriceQuotation      int `json:"rent_price_quotation"`
 	InsurancePriceQuotation int `json:"insurance_price_quotation"`

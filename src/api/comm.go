@@ -76,6 +76,8 @@ const (
 	ErrCodeInvalidCompleteCustomerContractRequest             ErrorCode = 10063
 	ErrCodeExistPendingPayments                               ErrorCode = 10064
 	ErrCodeInvalidUpdateCustomerContractImageStatusRequest    ErrorCode = 10065
+	ErrCodeInvalidCustomerGetActivitiesRequest                ErrorCode = 10066
+	ErrCodeInvalidGiveFeedbackRequest                         ErrorCode = 10067
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

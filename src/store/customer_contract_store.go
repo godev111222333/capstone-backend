@@ -75,12 +75,12 @@ func (s *CustomerContractStore) GetByCustomerID(cusID int, status model.Customer
 	}
 
 	if status == model.CustomerContractStatusNoFilter {
-		if err := s.db.Where("customer_id = ?", cusID).Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		if err := s.db.Where("customer_id = ?", cusID).Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
 			return nil, err
 		}
 	} else {
-		if err := s.db.Where("customer_id = ? and status like ?", cusID, "%"+string(status)+"%").Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		if err := s.db.Where("customer_id = ? and status like ?", cusID, "%"+string(status)+"%").Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
 			return nil, err
 		}

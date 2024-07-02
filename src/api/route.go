@@ -55,6 +55,8 @@ const (
 	RouteCustomerAgreeContract                  = "customer_agree_contract"
 	RouteCustomerGetLastPaymentDetail           = "customer_get_payment_document_detail"
 	RouteCustomerCalculateRentingPrice          = "customer_calculate_renting_price"
+	RouteCustomerGetActivities                  = "customer_get_activities"
+	RouteCustomerGiveFeedback                   = "customer_give_feedback"
 	RouteVNPayIPNURL                            = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                         = "vn_pay_return_url"
 )
@@ -392,6 +394,20 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/customer/last_payment_detail",
 			Method:      http.MethodGet,
 			Handler:     s.HandleCustomerGetLastPaymentDetail,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
+		},
+		RouteCustomerGetActivities: {
+			Path:        "/customer/activities",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCustomerGetActivities,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
+		},
+		RouteCustomerGiveFeedback: {
+			Path:        "/customer/feedback",
+			Method:      http.MethodPut,
+			Handler:     s.HandleCustomerGiveFeedback,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomer,
 		},

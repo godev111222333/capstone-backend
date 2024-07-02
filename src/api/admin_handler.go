@@ -548,24 +548,27 @@ func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
 	}
 
 	if acct.RoleID == model.RoleIDPartner {
-		carStatus := model.CarStatusActive
 		if req.Status == model.AccountStatusInactive {
-			carStatus = model.CarStatusInactive
-		}
+			if err := s.store.DB.Transaction(func(tx *gorm.DB) error {
+				if err := s.store.CarStore.UpdateByPartnerID(tx, acct.ID, map[string]interface{}{"status": string(model.CarStatusInactive)}); err != nil {
+					return err
+				}
 
-		if err := s.store.DB.Transaction(func(tx *gorm.DB) error {
-			if err := s.store.CarStore.UpdateByPartnerID(tx, acct.ID, map[string]interface{}{"status": string(carStatus)}); err != nil {
-				return err
+				return s.store.AccountStore.UpdateTx(tx, req.AccountID, map[string]interface{}{"status": string(req.Status)})
+			}); err != nil {
+				responseGormErr(c, err)
+				return
 			}
-
-			return s.store.AccountStore.UpdateTx(tx, req.AccountID, map[string]interface{}{"status": string(req.Status)})
-		}); err != nil {
-			responseInternalServerError(c, err)
-			return
+		} else {
+			if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{"status": string(req.Status)}); err != nil {
+				responseGormErr(c, err)
+				return
+			}
 		}
+
 	} else if acct.RoleID == model.RoleIDCustomer {
 		if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{"status": string(req.Status)}); err != nil {
-			responseInternalServerError(c, err)
+			responseGormErr(c, err)
 			return
 		}
 	}

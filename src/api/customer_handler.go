@@ -200,6 +200,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		Status:                  model.CustomerContractStatusWaitingContractAgreement,
 		InsuranceAmount:         pricing.TotalInsuranceAmount,
 		CollateralType:          req.CollateralType,
+		CollateralCashAmount:    rule.CollateralCashAmount,
 		InsurancePercent:        rule.InsurancePercent,
 		PrepayPercent:           rule.PrepayPercent,
 		BankName:                paymentInfo.BankName,

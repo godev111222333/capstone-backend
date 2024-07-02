@@ -153,6 +153,7 @@ create table "customer_contracts"
     "reason"                     varchar(1023) not null default '',
     "insurance_amount"           bigint        not null default 0,
     "collateral_type"            varchar(255)  not null default '',
+    "collateral_cash_amount"     bigint        not null default 0,
     "is_return_collateral_asset" boolean                default false,
     "url"                        varchar(1023) not null default '',
     "bank_name"                  varchar(255)  not null default '',
@@ -232,12 +233,13 @@ create table contract_rules
     "insurance_percent"       numeric(3, 1) not null default 0.0,
     "prepay_percent"          numeric(3, 1) not null default 0.0,
     "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
+    "collateral_cash_amount"  bigint        not null default 0,
     "created_at"              timestamptz            DEFAULT (now()),
     "updated_at"              timestamptz            DEFAULT (now())
 );
 
-insert into contract_rules(insurance_percent, prepay_percent, revenue_sharing_percent)
-values (10.0, 30.0, 5);
+insert into contract_rules(insurance_percent, prepay_percent, revenue_sharing_percent, collateral_cash_amount)
+values (10.0, 30.0, 5, 15000000);
 
 create table driving_license_images
 (

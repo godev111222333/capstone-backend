@@ -79,6 +79,7 @@ const (
 	ErrCodeInvalidCustomerGetActivitiesRequest                ErrorCode = 10066
 	ErrCodeInvalidGiveFeedbackRequest                         ErrorCode = 10067
 	ErrCodeMissingPaymentInformation                          ErrorCode = 10068
+	ErrCodeInvalidPartnerGetActivityDetailRequest             ErrorCode = 10069
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

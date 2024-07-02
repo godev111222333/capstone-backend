@@ -60,6 +60,38 @@ func (s *CustomerContractStore) FindByID(id int) (*model.CustomerContract, error
 	return res, nil
 }
 
+func (s *CustomerContractStore) FindByCarID(
+	carID int,
+	status model.CustomerContractStatus,
+	offset,
+	limit int,
+) ([]*model.CustomerContract, error) {
+	if limit == 0 {
+		limit = 1000
+	}
+
+	var res []*model.CustomerContract
+	if status == model.CustomerContractStatusNoFilter {
+		if err := s.db.Where("car_id = ?", carID).
+			Preload("Customer").
+			Preload("Car").
+			Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			fmt.Printf("CustomerContractStore: FindByCarID %v\n", err)
+			return nil, err
+		}
+	} else {
+		if err := s.db.Where("car_id = ? and status = ?", carID, string(status)).
+			Preload("Customer").
+			Preload("Car").
+			Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			fmt.Printf("CustomerContractStore: FindByCarID %v\n", err)
+			return nil, err
+		}
+	}
+
+	return res, nil
+}
+
 func (s *CustomerContractStore) Update(id int, values map[string]interface{}) error {
 	if err := s.db.Model(&model.CustomerContract{}).Where("id = ?", id).Updates(values).Error; err != nil {
 		fmt.Printf("CustomerContractStore: Update %v\n", err)

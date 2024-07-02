@@ -150,6 +150,7 @@ func validateStartEndDate(c *gin.Context, startDate, endDate time.Time) bool {
 }
 
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {
+	// TODO: check if exist driving license
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := customerRentCarRequest{}
 	if err := c.BindJSON(&req); err != nil {

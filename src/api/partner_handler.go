@@ -364,6 +364,51 @@ func (s *Server) HandleGetPartnerContractDetail(c *gin.Context) {
 	responseSuccess(c, contract)
 }
 
+type partnerGetActivityDetailRequest struct {
+	Pagination
+	CarID                  int    `form:"car_id" binding:"required"`
+	CustomerContractStatus string `form:"customer_contract_status"`
+}
+
+func (s *Server) HandlePartnerGetActivityDetail(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	req := partnerGetActivityDetailRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidPartnerGetActivityDetailRequest, err)
+		return
+	}
+
+	status := model.CustomerContractStatusNoFilter
+	if len(req.CustomerContractStatus) > 0 {
+		status = model.CustomerContractStatus(req.CustomerContractStatus)
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if car.PartnerID != acct.ID {
+		responseCustomErr(c, ErrCodeInvalidOwnership, nil)
+		return
+	}
+
+	contracts, err := s.store.CustomerContractStore.FindByCarID(req.CarID, status, req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, contracts)
+}
+
 func (s *Server) fromUUIDToURL(uuid, extension string) string {
 	return s.s3store.Config.BaseURL + uuid + "." + extension
 }

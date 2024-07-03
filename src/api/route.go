@@ -289,13 +289,6 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
-		RouteAdminCreateCustomerPayment: {
-			Path:        "/admin/customer_payment",
-			Method:      http.MethodPost,
-			Handler:     s.HandleAdminCreateCustomerPayment,
-			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
-		},
 		RouteAdminGenerateCustomerPaymentQRCode: {
 			Path:        "/admin/customer_payment/generate_qr",
 			Method:      http.MethodPost,

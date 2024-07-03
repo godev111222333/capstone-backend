@@ -783,7 +783,7 @@ func (s *Server) HandleAdminUpdateFeedbackStatus(c *gin.Context) {
 }
 
 type adminCancelCustomerPayment struct {
-	CustomerPaymentID int
+	CustomerPaymentID int `json:"customer_payment_id,omitempty" binding:"required"`
 }
 
 func (s *Server) HandleAdminCancelCustomerPayment(c *gin.Context) {

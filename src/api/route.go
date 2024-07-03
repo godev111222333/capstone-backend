@@ -46,6 +46,7 @@ const (
 	RouteAdminUpdateCustomerContractImageStatus = "admin_update_customer_contract_image_status"
 	RouteAdminGetFeedbacks                      = "admin_get_feedbacks"
 	RouteAdminUpdateFeedbackStatus              = "admin_update_feedback_status"
+	RouteAdminCancelCustomerPayment             = "admin_cancel_customer_payment"
 	RoutePartnerAgreeContract                   = "partner_agree_contract"
 	RouteGetPartnerContractDetail               = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail               = "partner_get_activity_detail"
@@ -321,6 +322,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/feedback",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminUpdateFeedbackStatus,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminCancelCustomerPayment: {
+			Path:        "/admin/customer_payment/cancel",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminCancelCustomerPayment,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

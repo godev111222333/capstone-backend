@@ -14,6 +14,7 @@ const (
 	PaymentTypeOther                PaymentType   = "other"
 	PaymentStatusPending            PaymentStatus = "pending"
 	PaymentStatusPaid               PaymentStatus = "paid"
+	PaymentStatusCanceled           PaymentStatus = "canceled"
 	PaymentStatusNoFilter           PaymentStatus = "no_filter"
 )
 

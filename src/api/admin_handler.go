@@ -782,6 +782,28 @@ func (s *Server) HandleAdminUpdateFeedbackStatus(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "update feedback status successfully"})
 }
 
+type adminCancelCustomerPayment struct {
+	CustomerPaymentID int
+}
+
+func (s *Server) HandleAdminCancelCustomerPayment(c *gin.Context) {
+	req := adminCancelCustomerPayment{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminCancelCustomerPaymentRequest, err)
+		return
+	}
+
+	if err := s.store.CustomerPaymentStore.Update(
+		req.CustomerPaymentID,
+		map[string]interface{}{"status": string(model.PaymentStatusCanceled)},
+	); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "cancel payment successfully"})
+}
+
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats
 	if seatNumber == 7 {

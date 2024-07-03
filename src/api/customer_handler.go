@@ -290,6 +290,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		pricing.PrepaidAmount,
 		model.PaymentTypePrePay,
 		req.ReturnURL,
+		"",
 	)
 	if err != nil {
 		responseCustomErr(c, ErrCodeGenerateQRCode, err)
@@ -304,12 +305,14 @@ func (s *Server) generateCustomerContractPaymentQRCode(
 	amount int,
 	paymentType model.PaymentType,
 	returnURL string,
+	note string,
 ) (string, error) {
 	payment := &model.CustomerPayment{
 		CustomerContractID: contractID,
 		PaymentType:        paymentType,
 		Amount:             amount,
 		Status:             model.PaymentStatusPending,
+		Note:               note,
 	}
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
 		return "", err

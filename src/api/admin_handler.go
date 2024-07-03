@@ -638,39 +638,12 @@ func (s *Server) HandleAdminGetCustomerPayments(c *gin.Context) {
 	responseSuccess(c, resp)
 }
 
-type adminCreateCustomerPaymentRequest struct {
-	CustomerContractID int               `json:"customer_contract_id" binding:"required"`
-	PaymentType        model.PaymentType `json:"payment_type" binding:"required"`
-	Amount             int               `json:"amount" binding:"required"`
-	Note               string            `json:"note"`
-}
-
-func (s *Server) HandleAdminCreateCustomerPayment(c *gin.Context) {
-	req := adminCreateCustomerPaymentRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		responseCustomErr(c, ErrCodeInvalidCreateCustomerPaymentRequest, err)
-		return
-	}
-
-	payment := &model.CustomerPayment{
-		CustomerContractID: req.CustomerContractID,
-		PaymentType:        req.PaymentType,
-		Amount:             req.Amount,
-		Note:               req.Note,
-		Status:             model.PaymentStatusPending,
-	}
-
-	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
-	responseSuccess(c, payment)
-}
-
 type generateCustomerPaymentQRCode struct {
-	CustomerPaymentID int    `json:"customer_payment_id" binding:"required"`
-	ReturnURL         string `json:"return_url" binding:"required"`
+	CustomerPaymentID int               `json:"customer_payment_id" binding:"required"`
+	ReturnURL         string            `json:"return_url" binding:"required"`
+	PaymentType       model.PaymentType `json:"payment_type" binding:"required"`
+	Amount            int               `json:"amount" binding:"required"`
+	Note              string            `json:"note"`
 }
 
 func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
@@ -680,18 +653,12 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 		return
 	}
 
-	customerPayment, err := s.store.CustomerPaymentStore.GetByID(req.CustomerPaymentID)
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
-	contract := customerPayment.CustomerContract
 	originURL, err := s.generateCustomerContractPaymentQRCode(
-		contract.ID,
-		customerPayment.Amount,
-		customerPayment.PaymentType,
+		req.CustomerPaymentID,
+		req.Amount,
+		req.PaymentType,
 		req.ReturnURL,
+		req.Note,
 	)
 	if err != nil {
 		responseCustomErr(c, ErrCodeGenerateQRCode, err)

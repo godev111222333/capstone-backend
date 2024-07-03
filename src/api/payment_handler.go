@@ -139,12 +139,14 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
-	if err := s.store.CustomerContractStore.Update(
-		payment.CustomerContractID,
-		map[string]interface{}{"status": string(model.CustomerContractStatusOrdered)},
-	); err != nil {
-		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
-		return
+	if payment.PaymentType == model.PaymentTypePrePay {
+		if err := s.store.CustomerContractStore.Update(
+			payment.CustomerContractID,
+			map[string]interface{}{"status": string(model.CustomerContractStatusOrdered)},
+		); err != nil {
+			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})

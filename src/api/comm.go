@@ -84,6 +84,8 @@ const (
 	ErrCodeInvalidAdminUpdateFeedbackStatusRequest            ErrorCode = 10071
 	ErrCodeInvalidAdminCancelCustomerPaymentRequest           ErrorCode = 10072
 	ErrCodeUnableUpgradeWebsocket                             ErrorCode = 10073
+	ErrCodeInvalidAdminGetConversationsRequest                ErrorCode = 10074
+	ErrCodeInvalidAdminGetMessagesRequest                     ErrorCode = 10075
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

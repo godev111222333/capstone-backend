@@ -22,3 +22,16 @@ func (s *MessageStore) Create(m *model.Message) error {
 	}
 	return nil
 }
+func (s *MessageStore) GetByConversationID(convID, offset, limit int) ([]*model.Message, error) {
+	var res []*model.Message
+	if limit == 0 {
+		limit = 10000
+	}
+
+	if err := s.db.Where("conversation_id = ?", convID).Order("id desc").Offset(offset).Limit(limit).Preload("Account").Find(&res).Error; err != nil {
+		fmt.Printf("MessageStore: GetByConversationID %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

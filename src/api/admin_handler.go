@@ -804,6 +804,43 @@ func (s *Server) HandleAdminCancelCustomerPayment(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "cancel payment successfully"})
 }
 
+func (s *Server) HandleAdminGetConversations(c *gin.Context) {
+	req := Pagination{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminGetConversationsRequest, err)
+		return
+	}
+
+	conversations, err := s.store.ConversationStore.Get(req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, conversations)
+}
+
+type adminGetMessagesRequest struct {
+	Pagination
+	ConversationID int `form:"conversation_id" binding:"required"`
+}
+
+func (s *Server) HandleAdminGetMessages(c *gin.Context) {
+	req := adminGetMessagesRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminGetMessagesRequest, err)
+		return
+	}
+
+	msgs, err := s.store.MessageStore.GetByConversationID(req.ConversationID, req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, msgs)
+}
+
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats
 	if seatNumber == 7 {

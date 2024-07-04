@@ -23,3 +23,17 @@ func (s *ConversationStore) Create(c *model.Conversation) error {
 
 	return nil
 }
+
+func (s *ConversationStore) Get(offset, limit int) ([]*model.Conversation, error) {
+	var res []*model.Conversation
+	if limit == 0 {
+		limit = 10000
+	}
+
+	if err := s.db.Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		fmt.Printf("ConversationStore: Get %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

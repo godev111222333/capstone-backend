@@ -47,6 +47,8 @@ const (
 	RouteAdminGetFeedbacks                      = "admin_get_feedbacks"
 	RouteAdminUpdateFeedbackStatus              = "admin_update_feedback_status"
 	RouteAdminCancelCustomerPayment             = "admin_cancel_customer_payment"
+	RouteAdminGetConversations                  = "admin_get_conversations"
+	RouteAdminGetConversationMessage            = "admin_get_conversation_message"
 	RoutePartnerAgreeContract                   = "partner_agree_contract"
 	RouteGetPartnerContractDetail               = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail               = "partner_get_activity_detail"
@@ -67,11 +69,10 @@ const (
 )
 
 var (
-	AuthRolePartner         = []string{model.RoleNamePartner}
-	AuthRoleAdmin           = []string{model.RoleNameAdmin}
-	AuthRoleCustomer        = []string{model.RoleNameCustomer}
-	AuthRoleCustomerAdmin   = []string{model.RoleNameCustomer, model.RoleNameAdmin}
-	AuthRoleCustomerPartner = []string{model.RoleNameCustomer, model.RoleNamePartner}
+	AuthRolePartner       = []string{model.RoleNamePartner}
+	AuthRoleAdmin         = []string{model.RoleNameAdmin}
+	AuthRoleCustomer      = []string{model.RoleNameCustomer}
+	AuthRoleCustomerAdmin = []string{model.RoleNameCustomer, model.RoleNameAdmin}
 )
 
 type RouteInfo = struct {
@@ -334,6 +335,20 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
+		RouteAdminGetConversations: {
+			Path:        "/admin/conversations",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetConversations,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminGetConversationMessage: {
+			Path:        "/admin/conversation/messages",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetMessages,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
 		RoutePartnerAgreeContract: {
 			Path:        "/partner/contract/agree",
 			Method:      http.MethodPut,
@@ -443,7 +458,6 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleChat,
 			RequireAuth: false,
-			//AuthRoles:   AuthRoleCustomerPartner,
 		},
 		RouteVNPayIPNURL: {
 			Path:        "/vnpay/ipn",

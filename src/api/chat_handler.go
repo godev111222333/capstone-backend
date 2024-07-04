@@ -1,12 +1,15 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/token"
 	"github.com/gorilla/websocket"
-	"net/http"
-	"strconv"
 )
 
 var upgrader = websocket.Upgrader{
@@ -43,7 +46,6 @@ func (s *Server) joinConversation(
 ) {
 	joiners, exist := s.chatRooms.Load(convID)
 	if !exist {
-		fmt.Println("empty room. an actor joining")
 		s.chatRooms.Store(convID, []*websocket.Conn{conn})
 
 		s.sendMsgToAllJoiners(convID, "New comer has joined")
@@ -51,20 +53,16 @@ func (s *Server) joinConversation(
 	}
 
 	if jrs, ok := joiners.([]*websocket.Conn); ok {
-		fmt.Println("exist >= 1 actor in chat room. an actor joining")
 		jrs = append(jrs, conn)
 		s.sendMsgToAllJoiners(convID, "New comer has joined")
 		s.chatRooms.Store(convID, jrs)
 	}
 }
 
-func (s *Server) adminJoin(conn *websocket.Conn) {
-	s.chatRooms.Range(func(key, value any) bool {
-		if convID, ok := key.(int); ok {
-			s.joinConversation(convID, conn)
-		}
-
-		return true
+func sendError(conn *websocket.Conn, err error) error {
+	return conn.WriteJSON(Message{
+		MsgType: MessageTypeError,
+		Content: err.Error(),
 	})
 }
 
@@ -77,6 +75,7 @@ const (
 	MessageTypeUserJoin               MessageType = "USER_JOIN"
 	MessageTypeAdminJoin              MessageType = "ADMIN_JOIN"
 	MessageTypeTexting                MessageType = "TEXTING"
+	MessageTypeError                  MessageType = "ERROR"
 	MessageTypeSystemResponseUserJoin MessageType = "SYSTEM_USER_JOIN_RESPONSE"
 )
 
@@ -90,6 +89,28 @@ type Message struct {
 type SystemMessage struct {
 	MsgType        SystemMessageType `json:"system_msg_type"`
 	ConversationID int               `json:"conversation_id,omitempty"`
+}
+
+func (s *Server) decodeBearerAccessToken(authorize string) (*token.Payload, error) {
+	fields := strings.Fields(authorize)
+	if len(fields) < 2 {
+		err := errors.New("invalid authorization format")
+		return nil, err
+	}
+
+	authorizationType := strings.ToLower(fields[0])
+	if authorizationType != authorizationTypeBearer {
+		err := fmt.Errorf("unsupported authorization type %s", authorizationType)
+		return nil, err
+	}
+
+	accessToken := fields[1]
+	payload, err := s.tokenMaker.VerifyToken(accessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return payload, nil
 }
 
 func (s *Server) HandleChat(c *gin.Context) {
@@ -109,24 +130,53 @@ func (s *Server) HandleChat(c *gin.Context) {
 				break loop
 			}
 
-			fmt.Printf("receiving %s msg: %s\n", msg.MsgType, msg.Content)
-
 			switch msg.MsgType {
 			case MessageTypeAdminJoin:
-				s.adminJoin(conn)
-				break
-			case MessageTypeUserJoin:
-				// TODO: replace acctID with bearer access token
-				acctID, err := strconv.Atoi(msg.AccessToken)
+				authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
 				if err != nil {
 					fmt.Println(err)
-					break loop
+					_ = sendError(conn, err)
+					break
 				}
+				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+				if err != nil {
+					fmt.Println(err)
+					_ = sendError(conn, err)
+					break
+				}
+
+				if acct.Role.RoleName != model.RoleNameAdmin || acct.Status != model.AccountStatusActive {
+					_ = sendError(conn, errors.New("invalid admin or account is inactive"))
+					break
+				}
+
+				s.joinConversation(msg.ConversationID, conn)
+				break
+			case MessageTypeUserJoin:
+				authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
+				if err != nil {
+					fmt.Println(err)
+					_ = sendError(conn, err)
+					break
+				}
+				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+				if err != nil {
+					fmt.Println(err)
+					_ = sendError(conn, err)
+					break
+				}
+
+				if acct.Status != model.AccountStatusActive {
+					_ = sendError(conn, errors.New("account is inactive"))
+					break
+				}
+
 				conv := &model.Conversation{
-					AccountID: acctID,
+					AccountID: acct.ID,
 					Status:    model.ConversationStatusActive,
 				}
 				if err := s.store.ConversationStore.Create(conv); err != nil {
+					_ = sendError(conn, err)
 					break loop
 				}
 				if err := conn.WriteJSON(Message{
@@ -134,18 +184,35 @@ func (s *Server) HandleChat(c *gin.Context) {
 					ConversationID: conv.ID,
 				}); err != nil {
 					fmt.Println(err)
+					_ = sendError(conn, err)
 					break loop
 				}
 
 				s.joinConversation(conv.ID, conn)
 				break
 			case MessageTypeTexting:
+				authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
+				if err != nil {
+					fmt.Println(err)
+					_ = sendError(conn, err)
+					break
+				}
+				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+				if err != nil {
+					fmt.Println(err)
+					_ = sendError(conn, err)
+					break
+				}
+
 				s.sendMsgToAllJoiners(msg.ConversationID, msg.Content)
-				s.store.MessageStore.Create(&model.Message{
+				if err := s.store.MessageStore.Create(&model.Message{
 					ConversationID: msg.ConversationID,
-					Sender:         0,
+					Sender:         acct.ID,
 					Content:        msg.Content,
-				})
+				}); err != nil {
+					_ = sendError(conn, err)
+					break loop
+				}
 				break
 			default:
 				fmt.Println("invalid message_type. stop the chat")

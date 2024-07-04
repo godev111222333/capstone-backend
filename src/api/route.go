@@ -61,15 +61,17 @@ const (
 	RouteCustomerCalculateRentingPrice          = "customer_calculate_renting_price"
 	RouteCustomerGetActivities                  = "customer_get_activities"
 	RouteCustomerGiveFeedback                   = "customer_give_feedback"
+	RouteChat                                   = "chat"
 	RouteVNPayIPNURL                            = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                         = "vn_pay_return_url"
 )
 
 var (
-	AuthRolePartner       = []string{model.RoleNamePartner}
-	AuthRoleAdmin         = []string{model.RoleNameAdmin}
-	AuthRoleCustomer      = []string{model.RoleNameCustomer}
-	AuthRoleCustomerAdmin = []string{model.RoleNameCustomer, model.RoleNameAdmin}
+	AuthRolePartner         = []string{model.RoleNamePartner}
+	AuthRoleAdmin           = []string{model.RoleNameAdmin}
+	AuthRoleCustomer        = []string{model.RoleNameCustomer}
+	AuthRoleCustomerAdmin   = []string{model.RoleNameCustomer, model.RoleNameAdmin}
+	AuthRoleCustomerPartner = []string{model.RoleNameCustomer, model.RoleNamePartner}
 )
 
 type RouteInfo = struct {
@@ -435,6 +437,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleCustomerGiveFeedback,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomer,
+		},
+		RouteChat: {
+			Path:        "/chat",
+			Method:      http.MethodGet,
+			Handler:     s.HandleChat,
+			RequireAuth: false,
+			//AuthRoles:   AuthRoleCustomerPartner,
 		},
 		RouteVNPayIPNURL: {
 			Path:        "/vnpay/ipn",

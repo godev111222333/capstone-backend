@@ -2,14 +2,15 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
-	"github.com/godev111222333/capstone-backend/src/model"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/godev111222333/capstone-backend/src/misc"
+	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/store"
 	"github.com/godev111222333/capstone-backend/src/token"
 )
@@ -28,6 +29,7 @@ type Server struct {
 	paymentService IPaymentService
 
 	bankMetadata []string
+	chatRooms    sync.Map
 }
 
 func NewServer(
@@ -64,6 +66,7 @@ func NewServer(
 		pdfService,
 		paymentService,
 		bankMetadata,
+		sync.Map{},
 	}
 	server.setUp()
 	return server

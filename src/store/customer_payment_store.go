@@ -31,6 +31,15 @@ func (s *CustomerPaymentStore) Update(id int, values map[string]interface{}) err
 	return nil
 }
 
+func (s *CustomerPaymentStore) UpdateMulti(ids []int, values map[string]interface{}) error {
+	if err := s.db.Model(model.CustomerPayment{}).Where("id in ?", ids).Updates(values).Error; err != nil {
+		fmt.Printf("CustomerPaymentStore: UpdateMulti %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *CustomerPaymentStore) GetByID(id int) (*model.CustomerPayment, error) {
 	res := &model.CustomerPayment{}
 	if err := s.db.Where("id = ?", id).Preload("CustomerContract").First(res).Error; err != nil {
@@ -59,6 +68,18 @@ func (s *CustomerPaymentStore) GetByCustomerContractID(
 			fmt.Printf("CustomerPaymentStore: GetByCustomerContractID %v\n", err)
 			return nil, err
 		}
+	}
+
+	return res, nil
+}
+
+func (s *CustomerPaymentStore) GetPendingBatch(ids []int) ([]*model.CustomerPayment, error) {
+	var res []*model.CustomerPayment
+	if err := s.db.Where(
+		"ids in ? and status = ?",
+		ids, string(model.PaymentStatusPending)).Find(&res).Error; err != nil {
+		fmt.Printf("CustomerPaymentStore: GetBatch %v\n", err)
+		return nil, err
 	}
 
 	return res, nil

@@ -668,6 +668,40 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 	responseSuccess(c, gin.H{"payment_url": originURL})
 }
 
+type generateMultipleCustomerPaymentQRCode struct {
+	CustomerPaymentIDs []int  `json:"customer_payment_id" binding:"required"`
+	ReturnURL          string `json:"return_url"`
+}
+
+func (s *Server) HandleAdminGenerateMultipleCustomerPayments(c *gin.Context) {
+	req := generateMultipleCustomerPaymentQRCode{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidGenerateMultipleCustomerPaymentsRequest, err)
+		return
+	}
+
+	pendingPayments, err := s.store.CustomerPaymentStore.GetPendingBatch(req.CustomerPaymentIDs)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	amt := 0
+	ids := make([]int, len(pendingPayments))
+	for i, p := range pendingPayments {
+		amt += p.Amount
+		ids[i] = p.ID
+	}
+
+	url, err := s.paymentService.GeneratePaymentURL(ids, amt, time.Now().Format("02150405"), req.ReturnURL)
+	if err != nil {
+		responseCustomErr(c, ErrCodeGenerateQRCode, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"payment_url": url})
+}
+
 type completeCustomerContractRequest struct {
 	CustomerContractID int `json:"customer_contract_id" binding:"required"`
 }

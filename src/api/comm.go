@@ -86,6 +86,7 @@ const (
 	ErrCodeUnableUpgradeWebsocket                             ErrorCode = 10073
 	ErrCodeInvalidAdminGetConversationsRequest                ErrorCode = 10074
 	ErrCodeInvalidAdminGetMessagesRequest                     ErrorCode = 10075
+	ErrCodeInvalidGenerateMultipleCustomerPaymentsRequest     ErrorCode = 10076
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

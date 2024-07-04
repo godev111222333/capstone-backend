@@ -318,7 +318,7 @@ func (s *Server) generateCustomerContractPaymentQRCode(
 		return "", err
 	}
 
-	url, err := s.paymentService.GeneratePaymentURL(payment.ID, amount, time.Now().Format("02150405"), returnURL)
+	url, err := s.paymentService.GeneratePaymentURL([]int{payment.ID}, amount, time.Now().Format("02150405"), returnURL)
 	if err != nil {
 		return "", err
 	}

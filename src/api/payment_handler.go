@@ -5,7 +5,6 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
-	"github.com/godev111222333/capstone-backend/src/model"
 	"hash"
 	"net/http"
 	"strconv"
@@ -13,8 +12,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/godev111222333/capstone-backend/src/misc"
 	"github.com/google/go-querystring/query"
+
+	"github.com/godev111222333/capstone-backend/src/misc"
+	"github.com/godev111222333/capstone-backend/src/model"
 )
 
 type PayRequest struct {
@@ -37,7 +38,7 @@ type PayRequest struct {
 var _ IPaymentService = (*VnPayService)(nil)
 
 type IPaymentService interface {
-	GeneratePaymentURL(paymentID, amount int, txnRef, returnURL string) (string, error)
+	GeneratePaymentURL(paymentIDs []int, amount int, txnRef, returnURL string) (string, error)
 }
 
 type VnPayService struct {
@@ -51,7 +52,7 @@ func NewVnPayService(cfg *misc.VNPayConfig) *VnPayService {
 }
 
 func (s *VnPayService) GeneratePaymentURL(
-	paymentID, amount int,
+	paymentIDs []int, amount int,
 	txnRef, returnURL string,
 ) (string, error) {
 	req, err := http.NewRequest(http.MethodGet, s.cfg.PayURL, nil)
@@ -72,7 +73,7 @@ func (s *VnPayService) GeneratePaymentURL(
 		CurrCode:    "VND",
 		IpAddress:   "::1",
 		Locale:      s.cfg.Locale,
-		OrderInfo:   encodeOrderInfo(paymentID, amount),
+		OrderInfo:   encodeOrderInfo(paymentIDs),
 		OrderType:   "other",
 		ReturnURL:   returnURL,
 		TxnRef:      txnRef,
@@ -123,29 +124,31 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
-	paymentID, _ := decodeOrderInfo(req.OrderInfo)
-	if err := s.store.CustomerPaymentStore.Update(
-		paymentID,
+	paymentIDs := decodeOrderInfo(req.OrderInfo)
+	if err := s.store.CustomerPaymentStore.UpdateMulti(
+		paymentIDs,
 		map[string]interface{}{"status": string(model.PaymentStatusPaid)},
 	); err != nil {
 		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
 		return
 	}
 
-	// Update contract status to Ordered
-	payment, err := s.store.CustomerPaymentStore.GetByID(paymentID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
-		return
-	}
-
-	if payment.PaymentType == model.PaymentTypePrePay {
-		if err := s.store.CustomerContractStore.Update(
-			payment.CustomerContractID,
-			map[string]interface{}{"status": string(model.CustomerContractStatusOrdered)},
-		); err != nil {
+	for _, paymentID := range paymentIDs {
+		// Update contract status to Ordered
+		payment, err := s.store.CustomerPaymentStore.GetByID(paymentID)
+		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
 			return
+		}
+
+		if payment.PaymentType == model.PaymentTypePrePay {
+			if err := s.store.CustomerContractStore.Update(
+				payment.CustomerContractID,
+				map[string]interface{}{"status": string(model.CustomerContractStatusOrdered)},
+			); err != nil {
+				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				return
+			}
 		}
 	}
 
@@ -156,21 +159,22 @@ func (s *Server) HandleVnPayReturnURL(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-func encodeOrderInfo(paymentID, amount int) string {
-	return fmt.Sprintf("%d.%d", paymentID, amount)
+func encodeOrderInfo(paymentIDs []int) string {
+	strs := make([]string, len(paymentIDs))
+	for i, pID := range paymentIDs {
+		strs[i] = strconv.Itoa(pID)
+	}
+
+	return strings.Join(strs, ".")
 }
 
 // decodeOrderInfo return paymentID, amount
-func decodeOrderInfo(s string) (int, int) {
-	arr := strings.Split(s, ".")
-	paymentID, err := strconv.Atoi(arr[0])
-	if err != nil {
-		return -1, -1
-	}
-	amount, err := strconv.Atoi(arr[1])
-	if err != nil {
-		return -1, -1
+func decodeOrderInfo(s string) []int {
+	pIDs := strings.Split(s, ".")
+	res := make([]int, len(pIDs))
+	for i, pID := range pIDs {
+		res[i], _ = strconv.Atoi(pID)
 	}
 
-	return paymentID, amount
+	return res
 }

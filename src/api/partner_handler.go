@@ -406,7 +406,19 @@ func (s *Server) HandlePartnerGetActivityDetail(c *gin.Context) {
 		return
 	}
 
-	responseSuccess(c, contracts)
+	type contractWNetReceive struct {
+		*model.CustomerContract
+		NetReceive int `json:"net_receive"`
+	}
+	resp := make([]*contractWNetReceive, len(contracts))
+	for i, contract := range contracts {
+		wNetReceive := &contractWNetReceive{
+			contract,
+			contract.RentPrice * int(100.0-contract.RevenueSharingPercent) / 100}
+		resp[i] = wNetReceive
+	}
+
+	responseSuccess(c, resp)
 }
 
 func (s *Server) fromUUIDToURL(uuid, extension string) string {

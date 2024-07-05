@@ -228,6 +228,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		CollateralCashAmount:    rule.CollateralCashAmount,
 		InsurancePercent:        rule.InsurancePercent,
 		PrepayPercent:           rule.PrepayPercent,
+		RevenueSharingPercent:   rule.RevenueSharingPercent,
 		BankName:                customer.BankName,
 		BankNumber:              customer.BankNumber,
 		BankOwner:               customer.BankOwner,

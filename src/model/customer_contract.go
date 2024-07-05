@@ -45,6 +45,7 @@ type CustomerContract struct {
 	BankOwner               string                 `json:"bank_owner"`
 	InsurancePercent        float64                `json:"insurance_percent"`
 	PrepayPercent           float64                `json:"prepay_percent"`
+	RevenueSharingPercent   float64                `json:"revenue_sharing_percent"`
 	FeedbackContent         string                 `json:"feedback_content"`
 	FeedbackRating          int                    `json:"feedback_rating"`
 	FeedbackStatus          FeedBackStatus         `json:"feedback_status"`

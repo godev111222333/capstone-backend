@@ -292,6 +292,31 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": fmt.Sprintf("%s car successfully", req.Action)})
 }
 
+func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
+	seatCode := model.GarageConfigTypeMax4Seats
+	if seatNumber == 7 {
+		seatCode = model.GarageConfigTypeMax7Seats
+	} else if seatNumber == 15 {
+		seatCode = model.GarageConfigTypeMax15Seats
+	}
+
+	return seatCode
+}
+
+func (s *Server) checkIfInsertableNewSeat(seatNumber int) (bool, error) {
+	garageCfg, err := s.store.GarageConfigStore.Get()
+	if err != nil {
+		return false, err
+	}
+
+	cur, err := s.store.CarStore.CountBySeats(seatNumber, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
+	if err != nil {
+		return false, err
+	}
+
+	return cur < garageCfg[seatNumberToGarageConfigType(seatNumber)], nil
+}
+
 func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car) error {
 	now := time.Now()
 	year, month, date := now.Date()
@@ -875,27 +900,25 @@ func (s *Server) HandleAdminGetMessages(c *gin.Context) {
 	responseSuccess(c, msgs)
 }
 
-func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
-	seatCode := model.GarageConfigTypeMax4Seats
-	if seatNumber == 7 {
-		seatCode = model.GarageConfigTypeMax7Seats
-	} else if seatNumber == 15 {
-		seatCode = model.GarageConfigTypeMax15Seats
-	}
-
-	return seatCode
+type adminUpdateIsReturnCollateralAssetRequest struct {
+	CustomerContractID int  `json:"customer_contract_id"`
+	NewStatus          bool `json:"new_status"`
 }
 
-func (s *Server) checkIfInsertableNewSeat(seatNumber int) (bool, error) {
-	garageCfg, err := s.store.GarageConfigStore.Get()
-	if err != nil {
-		return false, err
+func (s *Server) HandleAdminUpdateReturnCollateralAsset(c *gin.Context) {
+	req := adminUpdateIsReturnCollateralAssetRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidUpdateIsReturnCollateralAsset, err)
+		return
 	}
 
-	cur, err := s.store.CarStore.CountBySeats(seatNumber, model.ParkingLotGarage, []model.CarStatus{model.CarStatusActive, model.CarStatusWaitingDelivery})
-	if err != nil {
-		return false, err
+	if err := s.store.CustomerContractStore.Update(
+		req.CustomerContractID,
+		map[string]interface{}{"is_return_collateral_asset": req.NewStatus},
+	); err != nil {
+		responseGormErr(c, err)
+		return
 	}
 
-	return cur < garageCfg[seatNumberToGarageConfigType(seatNumber)], nil
+	responseSuccess(c, gin.H{"status": "update is_return_collateral_asset successfully"})
 }

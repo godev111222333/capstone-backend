@@ -89,6 +89,7 @@ const (
 	ErrCodeInvalidGenerateMultipleCustomerPaymentsRequest     ErrorCode = 10076
 	ErrCodeMissingDrivingLicence                              ErrorCode = 10077
 	ErrCodeInvalidGetFeedBackByCarRequest                     ErrorCode = 10078
+	ErrCodeInvalidUpdateIsReturnCollateralAsset               ErrorCode = 10079
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

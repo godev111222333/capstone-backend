@@ -583,7 +583,7 @@ type getFeedbackByCarRequest struct {
 func (s *Server) HandleGetFeedbackByCar(c *gin.Context) {
 	req := getFeedbackByCarRequest{}
 	if err := c.Bind(&req); err != nil {
-		responseCustomErr(c, ErrCodeMissingDrivingLicence, err)
+		responseCustomErr(c, ErrCodeInvalidGetFeedBackByCarRequest, err)
 		return
 	}
 

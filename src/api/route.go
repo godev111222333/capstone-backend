@@ -49,6 +49,7 @@ const (
 	RouteAdminCancelCustomerPayment                  = "admin_cancel_customer_payment"
 	RouteAdminGetConversations                       = "admin_get_conversations"
 	RouteAdminGetConversationMessage                 = "admin_get_conversation_message"
+	RouteAdminUpdateIsReturnCollateralAsset          = "admin_update_collateral_asset"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -289,11 +290,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminGetCustomerPayments: {
-			Path:        "/admin/customer_payments",
+			Path:        "/customer_payments",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetCustomerPayments,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleCustomerAdmin,
 		},
 		RouteAdminGenerateCustomerPaymentQRCode: {
 			Path:        "/admin/customer_payment/generate_qr",
@@ -303,11 +304,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminGenerateMultipleCustomerPaymentsQRCode: {
-			Path:        "/admin/customer_payment/multiple/generate_qr",
+			Path:        "/customer_payment/multiple/generate_qr",
 			Method:      http.MethodPost,
 			Handler:     s.HandleAdminGenerateMultipleCustomerPayments,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleCustomerAdmin,
 		},
 		RouteAdminCompleteCustomerContract: {
 			Path:        "/admin/contract/complete",
@@ -341,6 +342,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/customer_payment/cancel",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminCancelCustomerPayment,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminUpdateIsReturnCollateralAsset: {
+			Path:        "/admin/update_is_return_collateral_asset",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminUpdateReturnCollateralAsset,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

@@ -580,7 +580,24 @@ type getFeedbackByCarRequest struct {
 }
 
 func (s *Server) HandleGetFeedbackByCar(c *gin.Context) {
+	req := getFeedbackByCarRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeMissingDrivingLicence, err)
+		return
+	}
 
+	feedbacks, counter, err := s.store.CustomerContractStore.GetFeedbacksByCarID(
+		req.CarID,
+		req.Offset,
+		req.Limit,
+		model.FeedbackStatusActive,
+	)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"total": counter, "feedbacks": feedbacks})
 }
 
 type RentPricing struct {

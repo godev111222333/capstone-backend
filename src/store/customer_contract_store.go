@@ -257,3 +257,26 @@ func (s *CustomerContractStore) GetFeedbacks(offset, limit int) ([]*model.Custom
 
 	return res, int(counter), nil
 }
+
+func (s *CustomerContractStore) GetFeedbacksByCarID(carID, offset, limit int, status model.FeedBackStatus) ([]*model.CustomerContract, int, error) {
+	var res []*model.CustomerContract
+	if err := s.db.Model(model.CustomerContract{}).
+		Where("car_id = ? and length(feedback_content) > 0 and feedback_rating > 0 and status = ?", carID, string(status)).
+		Order("id desc").
+		Offset(offset).
+		Limit(limit).
+		Find(&res).Error; err != nil {
+		fmt.Printf("CustomerContracStore: GetFeedbacks %v\n", err)
+		return nil, 1, err
+	}
+
+	var counter int64
+	if err := s.db.Model(model.CustomerContract{}).
+		Where("car_id = ? and length(feedback_content) > 0 and feedback_rating > 0 and status = ?", carID, string(status)).
+		Count(&counter).Error; err != nil {
+		fmt.Printf("CustomerContracStore: GetFeedbacks %v\n", err)
+		return nil, 1, err
+	}
+
+	return res, int(counter), nil
+}

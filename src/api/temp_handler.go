@@ -17,7 +17,7 @@ func (s *Server) updateAdminReturnURL(c *gin.Context) {
 	}
 
 	s.feCfg.AdminReturnURL = req.NewReturnURL
-	file, err := os.Open(s.feCfg.Path)
+	file, err := os.OpenFile(s.feCfg.Path, os.O_WRONLY|os.O_CREATE, 0777)
 	if err != nil {
 		responseCustomErr(c, -1, err)
 		return

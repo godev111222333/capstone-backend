@@ -150,7 +150,6 @@ func validateStartEndDate(c *gin.Context, startDate, endDate time.Time) bool {
 }
 
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {
-	// TODO: check if exist driving license
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := customerRentCarRequest{}
 	if err := c.BindJSON(&req); err != nil {
@@ -185,6 +184,17 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	if isEmpty(customer.QRCodeURL) &&
 		(isEmpty(customer.BankName) || isEmpty(customer.BankNumber) || isEmpty(customer.BankOwner)) {
 		responseCustomErr(c, ErrCodeMissingPaymentInformation, nil)
+		return
+	}
+
+	drivingLicenseImgs, err := s.store.DrivingLicenseImageStore.Get(customer.ID, model.DrivingLicenseImageStatusActive, MaxNumberDrivingLicenseFiles)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if len(drivingLicenseImgs) != MaxNumberDrivingLicenseFiles {
+		responseCustomErr(c, ErrCodeMissingDrivingLicence, nil)
 		return
 	}
 

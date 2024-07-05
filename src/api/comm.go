@@ -87,6 +87,7 @@ const (
 	ErrCodeInvalidAdminGetConversationsRequest                ErrorCode = 10074
 	ErrCodeInvalidAdminGetMessagesRequest                     ErrorCode = 10075
 	ErrCodeInvalidGenerateMultipleCustomerPaymentsRequest     ErrorCode = 10076
+	ErrCodeMissingDrivingLicence                              ErrorCode = 10077
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{
@@ -97,6 +98,7 @@ var customErrMapping = map[ErrorCode]CommResponse{
 	ErrCodeInvalidOwnership:           {ErrCodeInvalidOwnership, "invalid ownership", nil},
 	ErrCodeExistPendingPayments:       {ErrCodeExistPendingPayments, "exist pending payments for this contract", nil},
 	ErrCodeMissingPaymentInformation:  {ErrCodeMissingPaymentInformation, "missing bank information", nil},
+	ErrCodeMissingDrivingLicence:      {ErrCodeMissingDrivingLicence, "missing driving license images", nil},
 	ErrCodeSuccess:                    {ErrCodeSuccess, "success", nil},
 }
 

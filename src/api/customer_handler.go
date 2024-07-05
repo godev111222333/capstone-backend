@@ -216,6 +216,10 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	}
 
 	pricing := calculateRentPrice(car, rule, req.StartDate, req.EndDate)
+	collateralCash := 0
+	if req.CollateralType == model.CollateralTypeCash {
+		collateralCash = rule.CollateralCashAmount
+	}
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
@@ -225,7 +229,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		Status:                  model.CustomerContractStatusWaitingContractAgreement,
 		InsuranceAmount:         pricing.TotalInsuranceAmount,
 		CollateralType:          req.CollateralType,
-		CollateralCashAmount:    rule.CollateralCashAmount,
+		CollateralCashAmount:    collateralCash,
 		InsurancePercent:        rule.InsurancePercent,
 		PrepayPercent:           rule.PrepayPercent,
 		RevenueSharingPercent:   rule.RevenueSharingPercent,

@@ -639,11 +639,11 @@ func (s *Server) HandleAdminGetCustomerPayments(c *gin.Context) {
 }
 
 type generateCustomerPaymentQRCode struct {
-	CustomerPaymentID int               `json:"customer_payment_id" binding:"required"`
-	ReturnURL         string            `json:"return_url" binding:"required"`
-	PaymentType       model.PaymentType `json:"payment_type" binding:"required"`
-	Amount            int               `json:"amount" binding:"required"`
-	Note              string            `json:"note"`
+	CustomerContractID int               `json:"customer_contract_id" binding:"required"`
+	ReturnURL          string            `json:"return_url" binding:"required"`
+	PaymentType        model.PaymentType `json:"payment_type" binding:"required"`
+	Amount             int               `json:"amount" binding:"required"`
+	Note               string            `json:"note"`
 }
 
 func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
@@ -654,7 +654,7 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 	}
 
 	originURL, err := s.generateCustomerContractPaymentQRCode(
-		req.CustomerPaymentID,
+		req.CustomerContractID,
 		req.Amount,
 		req.PaymentType,
 		req.ReturnURL,
@@ -669,7 +669,7 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 }
 
 type generateMultipleCustomerPaymentQRCode struct {
-	CustomerPaymentIDs []int  `json:"customer_payment_id" binding:"required"`
+	CustomerPaymentIDs []int  `json:"customer_payment_ids" binding:"required"`
 	ReturnURL          string `json:"return_url"`
 }
 

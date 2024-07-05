@@ -76,7 +76,7 @@ func (s *CustomerPaymentStore) GetByCustomerContractID(
 func (s *CustomerPaymentStore) GetPendingBatch(ids []int) ([]*model.CustomerPayment, error) {
 	var res []*model.CustomerPayment
 	if err := s.db.Where(
-		"ids in ? and status = ?",
+		"id in ? and status = ?",
 		ids, string(model.PaymentStatusPending)).Find(&res).Error; err != nil {
 		fmt.Printf("CustomerPaymentStore: GetBatch %v\n", err)
 		return nil, err

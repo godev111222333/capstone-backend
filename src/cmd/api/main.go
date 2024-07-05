@@ -15,6 +15,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	feCfg, err := misc.LoadFEConfig("fe-config.yaml")
+	if err != nil {
+		panic(err)
+	}
 
 	dbStore, err := store.NewDbStore(cfg.Database)
 	if err != nil {
@@ -31,7 +35,7 @@ func main() {
 	pdfService := api.NewPDFService(cfg.PDFService)
 	paymentService := api.NewVnPayService(cfg.VNPay)
 
-	server := api.NewServer(cfg.ApiServer, dbStore, s3Store, otpService, bankMetadata, pdfService, paymentService)
+	server := api.NewServer(cfg.ApiServer, feCfg, dbStore, s3Store, otpService, bankMetadata, pdfService, paymentService)
 	go func() {
 		if err := server.Run(); err != nil {
 			panic(err)

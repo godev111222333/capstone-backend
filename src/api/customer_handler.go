@@ -285,7 +285,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	}
 
 	pricing := calculateRentPrice(&contract.Car, rule, contract.StartDate, contract.EndDate)
-	url, err := s.generateCustomerContractPaymentQRCode(
+	prepayPayment, err := s.generateCustomerContractPaymentQRCode(
 		contract.ID,
 		pricing.PrepaidAmount,
 		model.PaymentTypePrePay,
@@ -297,7 +297,30 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	responseSuccess(c, gin.H{"payment_url": url})
+	// if this is collateral cash type, combine prepay + collateral pay into one payment_url
+	if contract.CollateralType == model.CollateralTypeCash && contract.CollateralCashAmount > 0 {
+		collateralPayment, err := s.generateCustomerContractPaymentQRCode(
+			contract.ID, contract.CollateralCashAmount, model.PaymentTypeCollateralCash, req.ReturnURL, "")
+		if err != nil {
+			responseCustomErr(c, ErrCodeGenerateQRCode, err)
+			return
+		}
+
+		combined, err := s.paymentService.GeneratePaymentURL(
+			[]int{prepayPayment.ID, collateralPayment.ID},
+			prepayPayment.Amount+collateralPayment.Amount,
+			time.Now().Format("02150405"),
+			req.ReturnURL,
+		)
+		if err != nil {
+			responseCustomErr(c, ErrCodeGenerateQRCode, err)
+			return
+		}
+
+		responseSuccess(c, gin.H{"payment_url": combined})
+	}
+
+	responseSuccess(c, gin.H{"payment_url": prepayPayment.PaymentURL})
 }
 
 func (s *Server) generateCustomerContractPaymentQRCode(
@@ -306,7 +329,7 @@ func (s *Server) generateCustomerContractPaymentQRCode(
 	paymentType model.PaymentType,
 	returnURL string,
 	note string,
-) (string, error) {
+) (*model.CustomerPayment, error) {
 	payment := &model.CustomerPayment{
 		CustomerContractID: contractID,
 		PaymentType:        paymentType,
@@ -315,19 +338,24 @@ func (s *Server) generateCustomerContractPaymentQRCode(
 		Note:               note,
 	}
 	if err := s.store.CustomerPaymentStore.Create(payment); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	url, err := s.paymentService.GeneratePaymentURL([]int{payment.ID}, amount, time.Now().Format("02150405"), returnURL)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if err := s.store.CustomerPaymentStore.Update(payment.ID, map[string]interface{}{"payment_url": url}); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return url, nil
+	updatedPayment, err := s.store.CustomerPaymentStore.GetByID(payment.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedPayment, nil
 }
 
 type customerGetContractsRequest struct {
@@ -533,6 +561,15 @@ func (s *Server) HandleCustomerGiveFeedback(c *gin.Context) {
 	}
 
 	responseSuccess(c, updateContract)
+}
+
+type getFeedbackByCarRequest struct {
+	Pagination
+	CarID int `form:"car_id" binding:"required"`
+}
+
+func (s *Server) HandleGetFeedbackByCar(c *gin.Context) {
+
 }
 
 type RentPricing struct {

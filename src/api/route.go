@@ -478,5 +478,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleVnPayReturnURL,
 			RequireAuth: false,
 		},
+
+		// Temporary API
+		"set_admin_return_url": {
+			Path:        "/set_admin_return_url",
+			Method:      http.MethodPost,
+			Handler:     s.updateAdminReturnURL,
+			RequireAuth: false,
+		},
 	}
 }

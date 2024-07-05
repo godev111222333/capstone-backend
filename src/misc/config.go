@@ -61,8 +61,34 @@ type GlobalConfig struct {
 	VNPay      *VNPayConfig      `yaml:"vn_pay"`
 }
 
+type FEConfig struct {
+	Path           string `yaml:"path"`
+	AdminReturnURL string `yaml:"admin_return_url"`
+}
+
 func LoadConfig(path string) (*GlobalConfig, error) {
 	cfg := &GlobalConfig{}
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if file != nil {
+			file.Close()
+		}
+	}()
+
+	d := yaml.NewDecoder(file)
+	if err = d.Decode(cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func LoadFEConfig(path string) (*FEConfig, error) {
+	cfg := &FEConfig{}
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err

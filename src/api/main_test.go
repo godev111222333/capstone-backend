@@ -59,6 +59,7 @@ func initTestServer(cfg *misc.GlobalConfig) {
 
 	TestServer = NewServer(
 		cfg.ApiServer,
+		nil,
 		TestDb,
 		TestS3Store,
 		NewOTPService(cfg.OTP, TestDb),

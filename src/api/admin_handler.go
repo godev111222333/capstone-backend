@@ -665,7 +665,7 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 		return
 	}
 
-	responseSuccess(c, gin.H{"payment_url": originURL})
+	responseSuccess(c, gin.H{"payment_url": originURL.PaymentURL})
 }
 
 type generateMultipleCustomerPaymentQRCode struct {

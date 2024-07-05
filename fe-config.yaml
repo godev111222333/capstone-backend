@@ -1,0 +1,2 @@
+path: fe-config.yaml
+admin_return_url: http://localhost:3000/contracts/payments/

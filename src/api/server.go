@@ -19,6 +19,7 @@ const DefaultHost = "0.0.0.0"
 
 type Server struct {
 	cfg            *misc.ApiServerConfig
+	feCfg          *misc.FEConfig
 	route          *gin.Engine
 	store          *store.DbStore
 	s3store        *store.S3Store
@@ -34,6 +35,7 @@ type Server struct {
 
 func NewServer(
 	cfg *misc.ApiServerConfig,
+	feCfg *misc.FEConfig,
 	store *store.DbStore,
 	s3Store *store.S3Store,
 	otpService *OTPService,
@@ -57,6 +59,7 @@ func NewServer(
 
 	server := &Server{
 		cfg,
+		feCfg,
 		route,
 		store,
 		s3Store,

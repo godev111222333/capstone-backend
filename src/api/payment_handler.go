@@ -149,6 +149,23 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
 				return
 			}
+		} else if payment.PaymentType == model.PaymentTypeCollateralCash {
+			contract, err := s.store.CustomerContractStore.FindByID(payment.CustomerContractID)
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				return
+			}
+
+			_, err = s.generateCustomerContractPaymentQRCode(
+				contract.ID,
+				payment.Amount,
+				model.PaymentTypeReturnCollateralCash,
+				s.feCfg.AdminReturnURL+strconv.Itoa(contract.ID), "",
+			)
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				return
+			}
 		}
 	}
 

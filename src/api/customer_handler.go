@@ -328,6 +328,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		}
 
 		responseSuccess(c, gin.H{"payment_url": combined})
+		return
 	}
 
 	responseSuccess(c, gin.H{"payment_url": prepayPayment.PaymentURL})

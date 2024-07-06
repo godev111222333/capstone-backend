@@ -268,6 +268,7 @@ func (s *CustomerContractStore) GetFeedbacksByCarID(carID, offset, limit int, st
 		Order("id desc").
 		Offset(offset).
 		Limit(limit).
+		Preload("Account").
 		Find(&res).Error; err != nil {
 		fmt.Printf("CustomerContracStore: GetFeedbacks %v\n", err)
 		return nil, -1, err

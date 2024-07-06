@@ -166,6 +166,13 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
 				return
 			}
+		} else if payment.PaymentType == model.PaymentTypeReturnCollateralCash {
+			if err := s.store.CustomerContractStore.Update(payment.CustomerContractID, map[string]interface{}{
+				"is_return_collateral_asset": true,
+			}); err != nil {
+				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				return
+			}
 		}
 	}
 

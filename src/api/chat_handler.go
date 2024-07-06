@@ -3,13 +3,12 @@ package api
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
 	"github.com/gorilla/websocket"
+	"net/http"
+	"strings"
 )
 
 var upgrader = websocket.Upgrader{
@@ -171,14 +170,24 @@ func (s *Server) HandleChat(c *gin.Context) {
 					break
 				}
 
-				conv := &model.Conversation{
-					AccountID: acct.ID,
-					Status:    model.ConversationStatusActive,
-				}
-				if err := s.store.ConversationStore.Create(conv); err != nil {
+				conv, err := s.store.ConversationStore.GetByAccID(acct.ID)
+				if err != nil {
 					_ = sendError(conn, err)
 					break loop
 				}
+
+				if conv == nil {
+					conv = &model.Conversation{
+						AccountID: acct.ID,
+						Status:    model.ConversationStatusActive,
+					}
+
+					if err := s.store.ConversationStore.Create(conv); err != nil {
+						_ = sendError(conn, err)
+						break loop
+					}
+				}
+
 				if err := conn.WriteJSON(Message{
 					MsgType:        MessageTypeSystemResponseUserJoin,
 					ConversationID: conv.ID,

@@ -37,3 +37,20 @@ func (s *ConversationStore) Get(offset, limit int) ([]*model.Conversation, error
 
 	return res, nil
 }
+
+func (s *ConversationStore) GetByAccID(acctID int) (*model.Conversation, error) {
+	res := &model.Conversation{}
+	row := s.db.
+		Where("account_id = ? and status = ?", acctID, string(model.ConversationStatusActive)).
+		Find(res)
+	if err := row.Error; err != nil {
+		fmt.Printf("ConversationStore: GetByAccID %v\n", err)
+		return nil, err
+	}
+
+	if row.RowsAffected == 0 {
+		return nil, nil
+	}
+
+	return res, nil
+}

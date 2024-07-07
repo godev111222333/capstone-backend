@@ -107,14 +107,11 @@ func (s *Server) registerHandlers() {
 			for _, authRole := range r.AuthRoles {
 				switch authRole {
 				case model.RoleNameAdmin:
-					truncatedPrefix := strings.Replace(r.Path, "/admin", "", 1)
-					adminGroup.Handle(r.Method, truncatedPrefix, r.Handler)
+					adminGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/admin/"+"/"), r.Handler)
 				case model.RoleNamePartner:
-					truncatedPrefix := strings.Replace(r.Path, "/partner", "", 1)
-					partnerGroup.Handle(r.Method, truncatedPrefix, r.Handler)
+					partnerGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/partner/"+"/"), r.Handler)
 				case model.RoleNameCustomer:
-					truncatedPrefix := strings.Replace(r.Path, "/customer", "", 1)
-					customerGroup.Handle(r.Method, truncatedPrefix, r.Handler)
+					customerGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/customer/"+"/"), r.Handler)
 				}
 			}
 		}

@@ -28,6 +28,7 @@ func (s *Server) sendMsgToAllJoiners(convID int, content string) {
 	}
 
 	if jrs, ok := joiners.([]*websocket.Conn); ok {
+		fmt.Printf("len room: %d\n", len(jrs))
 		for _, conn := range jrs {
 			if err := conn.WriteJSON(Message{
 				MsgType: MessageTypeTexting,

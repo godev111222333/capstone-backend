@@ -361,7 +361,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminGetConversationMessage: {
-			Path:        "/admin/conversation/messages",
+			Path:        "/conversation/messages",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetMessages,
 			RequireAuth: true,

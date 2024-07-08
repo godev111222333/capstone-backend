@@ -35,7 +35,6 @@ func (s *Server) sendMsgToAllJoiners(convID int, content string) {
 				Content: content,
 			}); err != nil {
 				fmt.Printf("end msg to all joiners err %v\n", err)
-				return
 			}
 		}
 	}

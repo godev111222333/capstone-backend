@@ -20,7 +20,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func (s *Server) sendMsgToAllJoiners(convID int, content string) {
+func (s *Server) sendMsgToAllJoiners(convID int, content, sender string) {
 	joiners, ok := s.chatRooms.Load(convID)
 	if !ok {
 		fmt.Println("something has wrong")
@@ -33,8 +33,9 @@ func (s *Server) sendMsgToAllJoiners(convID int, content string) {
 			if err := conn.WriteJSON(Message{
 				MsgType: MessageTypeTexting,
 				Content: content,
+				Sender:  sender,
 			}); err != nil {
-				fmt.Printf("end msg to all joiners err %v\n", err)
+				fmt.Printf("send msg to all joiners err %v\n", err)
 			}
 		}
 	}
@@ -69,7 +70,7 @@ func (s *Server) joinConversation(
 		return nil
 	})
 
-	s.sendMsgToAllJoiners(convID, "New comer has joined")
+	s.sendMsgToAllJoiners(convID, "New comer has joined", "system")
 }
 
 func sendError(conn *websocket.Conn, err error) error {
@@ -97,6 +98,7 @@ type Message struct {
 	AccessToken    string      `json:"access_token,omitempty"`
 	Content        string      `json:"content,omitempty"`
 	ConversationID int         `json:"conversation_id,omitempty"`
+	Sender         string      `json:"sender"`
 }
 
 func (s *Server) decodeBearerAccessToken(authorize string) (*token.Payload, error) {
@@ -219,7 +221,7 @@ func (s *Server) HandleChat(c *gin.Context) {
 					break
 				}
 
-				s.sendMsgToAllJoiners(msg.ConversationID, msg.Content)
+				s.sendMsgToAllJoiners(msg.ConversationID, msg.Content, acct.Role.RoleName)
 				if err := s.store.MessageStore.Create(&model.Message{
 					ConversationID: msg.ConversationID,
 					Sender:         acct.ID,

@@ -33,7 +33,7 @@ func (s *Server) sendMsgToAllJoiners(convID int, content string) {
 				MsgType: MessageTypeTexting,
 				Content: content,
 			}); err != nil {
-				fmt.Println(err)
+				fmt.Printf("end msg to all joiners err %v\n", err)
 				return
 			}
 		}
@@ -123,7 +123,7 @@ func (s *Server) decodeBearerAccessToken(authorize string) (*token.Payload, erro
 func (s *Server) HandleChat(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("upgrade to ws error %v\n", err)
 		responseCustomErr(c, ErrCodeUnableUpgradeWebsocket, err)
 		return
 	}
@@ -133,7 +133,7 @@ func (s *Server) HandleChat(c *gin.Context) {
 		for {
 			msg := Message{}
 			if err := conn.ReadJSON(&msg); err != nil {
-				fmt.Println(err)
+				fmt.Printf("ReadJSON err %v\n", err)
 				break loop
 			}
 
@@ -214,7 +214,6 @@ func (s *Server) HandleChat(c *gin.Context) {
 				}
 				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 				if err != nil {
-					fmt.Println(err)
 					_ = sendError(conn, err)
 					break
 				}

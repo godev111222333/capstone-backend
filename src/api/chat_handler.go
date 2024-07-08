@@ -54,6 +54,7 @@ func (s *Server) joinConversation(
 	conn.SetCloseHandler(func(code int, text string) error {
 		joiners, ok := s.chatRooms.Load(convID)
 		if ok {
+			fmt.Println("removing from array")
 			jrs, _ := joiners.([]*websocket.Conn)
 			newSubs := make([]*websocket.Conn, 0)
 			for _, joiner := range jrs {

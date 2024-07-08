@@ -31,6 +31,8 @@ type Server struct {
 
 	bankMetadata []string
 	chatRooms    sync.Map
+
+	adminNotificationSubs sync.Map
 }
 
 func NewServer(
@@ -69,6 +71,7 @@ func NewServer(
 		pdfService,
 		paymentService,
 		bankMetadata,
+		sync.Map{},
 		sync.Map{},
 	}
 	server.setUp()

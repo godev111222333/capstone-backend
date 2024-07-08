@@ -44,19 +44,31 @@ func (s *Server) joinConversation(
 	convID int,
 	conn *websocket.Conn,
 ) {
-	joiners, exist := s.chatRooms.Load(convID)
-	if !exist {
-		s.chatRooms.Store(convID, []*websocket.Conn{conn})
-
-		s.sendMsgToAllJoiners(convID, "New comer has joined")
-		return
-	}
-
-	if jrs, ok := joiners.([]*websocket.Conn); ok {
+	joiners, exist := s.chatRooms.LoadOrStore(convID, []*websocket.Conn{conn})
+	if exist {
+		jrs, _ := joiners.([]*websocket.Conn)
 		jrs = append(jrs, conn)
-		s.sendMsgToAllJoiners(convID, "New comer has joined")
 		s.chatRooms.Store(convID, jrs)
 	}
+
+	conn.SetCloseHandler(func(code int, text string) error {
+		joiners, ok := s.chatRooms.Load(convID)
+		if ok {
+			jrs, _ := joiners.([]*websocket.Conn)
+			newSubs := make([]*websocket.Conn, 0)
+			for _, joiner := range jrs {
+				if joiner != conn {
+					newSubs = append(newSubs, joiner)
+				}
+			}
+
+			s.chatRooms.Store(convID, newSubs)
+		}
+
+		return nil
+	})
+
+	s.sendMsgToAllJoiners(convID, "New comer has joined")
 }
 
 func sendError(conn *websocket.Conn, err error) error {
@@ -84,11 +96,6 @@ type Message struct {
 	AccessToken    string      `json:"access_token,omitempty"`
 	Content        string      `json:"content,omitempty"`
 	ConversationID int         `json:"conversation_id,omitempty"`
-}
-
-type SystemMessage struct {
-	MsgType        SystemMessageType `json:"system_msg_type"`
-	ConversationID int               `json:"conversation_id,omitempty"`
 }
 
 func (s *Server) decodeBearerAccessToken(authorize string) (*token.Payload, error) {
@@ -140,7 +147,6 @@ func (s *Server) HandleChat(c *gin.Context) {
 				}
 				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 				if err != nil {
-					fmt.Println(err)
 					_ = sendError(conn, err)
 					break
 				}
@@ -161,7 +167,6 @@ func (s *Server) HandleChat(c *gin.Context) {
 				}
 				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 				if err != nil {
-					fmt.Println(err)
 					_ = sendError(conn, err)
 					break
 				}
@@ -193,7 +198,7 @@ func (s *Server) HandleChat(c *gin.Context) {
 					MsgType:        MessageTypeSystemResponseUserJoin,
 					ConversationID: conv.ID,
 				}); err != nil {
-					fmt.Println(err)
+					fmt.Printf("write JSON %v\v", err)
 					_ = sendError(conn, err)
 					break loop
 				}

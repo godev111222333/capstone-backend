@@ -76,6 +76,7 @@ var (
 	AuthRoleCustomer        = []string{model.RoleNameCustomer}
 	AuthRoleCustomerAdmin   = []string{model.RoleNameCustomer, model.RoleNameAdmin}
 	AuthRoleCustomerPartner = []string{model.RoleNameCustomer, model.RoleNamePartner}
+	AuthRoleAll             = []string{model.RoleNameCustomer, model.RoleNamePartner, model.RoleNameAdmin}
 )
 
 type RouteInfo = struct {
@@ -364,7 +365,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetMessages,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleAll,
 		},
 		RoutePartnerAgreeContract: {
 			Path:        "/partner/contract/agree",

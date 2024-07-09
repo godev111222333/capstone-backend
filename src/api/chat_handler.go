@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -27,18 +28,41 @@ func (s *Server) sendMsgToAllJoiners(convID int, content, sender string) {
 		return
 	}
 
-	if jrs, ok := joiners.([]*websocket.Conn); ok {
-		fmt.Printf("len room: %d\n", len(jrs))
-		for _, conn := range jrs {
-			if err := conn.WriteJSON(Message{
-				MsgType: MessageTypeTexting,
-				Content: content,
-				Sender:  sender,
-			}); err != nil {
-				fmt.Printf("send msg to all joiners err %v\n", err)
-			}
+	jrs, _ := joiners.([]*websocket.Conn)
+	// remove all disconnected connection before sending
+	for _, joiner := range jrs {
+		if _, _, err := joiner.NextReader(); err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+			s.removeConnFromRoom(convID, joiner)
 		}
 	}
+
+	fmt.Printf("len room: %d\n", len(jrs))
+	for _, conn := range jrs {
+		if err := conn.WriteJSON(Message{
+			MsgType: MessageTypeTexting,
+			Content: content,
+			Sender:  sender,
+		}); err != nil {
+			fmt.Printf("send msg to all joiners err %v\n", err)
+		}
+	}
+}
+
+func (s *Server) removeConnFromRoom(convID int, conn *websocket.Conn) {
+	joiners, ok := s.chatRooms.Load(convID)
+	if !ok {
+		return
+	}
+
+	jrs, _ := joiners.([]*websocket.Conn)
+	newSubs := make([]*websocket.Conn, 0)
+	for _, joiner := range jrs {
+		if joiner != conn {
+			newSubs = append(newSubs, joiner)
+		}
+	}
+
+	s.chatRooms.Store(convID, newSubs)
 }
 
 func (s *Server) joinConversation(
@@ -53,20 +77,7 @@ func (s *Server) joinConversation(
 	}
 
 	conn.SetCloseHandler(func(code int, text string) error {
-		joiners, ok := s.chatRooms.Load(convID)
-		if ok {
-			fmt.Println("removing from array")
-			jrs, _ := joiners.([]*websocket.Conn)
-			newSubs := make([]*websocket.Conn, 0)
-			for _, joiner := range jrs {
-				if joiner != conn {
-					newSubs = append(newSubs, joiner)
-				}
-			}
-
-			s.chatRooms.Store(convID, newSubs)
-		}
-
+		s.removeConnFromRoom(convID, conn)
 		return nil
 	})
 

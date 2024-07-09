@@ -50,6 +50,7 @@ const (
 	RouteAdminGetConversations                       = "admin_get_conversations"
 	RouteAdminGetConversationMessage                 = "admin_get_conversation_message"
 	RouteAdminUpdateIsReturnCollateralAsset          = "admin_update_collateral_asset"
+	RouteAdminSubscribeNotification                  = "admin_subscribe_notification"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -366,6 +367,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleAdminGetMessages,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAll,
+		},
+		RouteAdminSubscribeNotification: {
+			Path:        "/admin/subscribe_notification",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminSubscribeNotification,
+			RequireAuth: false,
 		},
 		RoutePartnerAgreeContract: {
 			Path:        "/partner/contract/agree",

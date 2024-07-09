@@ -32,7 +32,8 @@ type Server struct {
 	bankMetadata []string
 	chatRooms    sync.Map
 
-	adminNotificationSubs sync.Map
+	adminNotificationSubs  sync.Map
+	adminNotificationQueue chan NotificationMsg
 }
 
 func NewServer(
@@ -73,6 +74,7 @@ func NewServer(
 		bankMetadata,
 		sync.Map{},
 		sync.Map{},
+		make(chan NotificationMsg, 100),
 	}
 	server.setUp()
 	return server
@@ -80,6 +82,7 @@ func NewServer(
 
 func (s *Server) Run() error {
 	fmt.Printf("API server running at port: %s\n", s.cfg.ApiPort)
+	s.startAdminSub()
 
 	return s.route.Run(fmt.Sprintf("%s:%s", DefaultHost, s.cfg.ApiPort))
 }
@@ -118,21 +121,5 @@ func (s *Server) registerHandlers() {
 				}
 			}
 		}
-	}
-}
-
-func customCORSHeader() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, PATCH, DELETE")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
 	}
 }

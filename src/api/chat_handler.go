@@ -170,13 +170,12 @@ func (s *Server) HandleChat(c *gin.Context) {
 
 func (s *Server) checkConnection(convID int, conn *websocket.Conn) {
 	pingTicker := time.NewTicker(5 * time.Second)
+	defer pingTicker.Stop()
 loop:
 	for {
 		select {
 		case <-pingTicker.C:
-			fmt.Println("checking connection ...")
 			if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-				fmt.Println("closing connection ...")
 				s.removeConnFromRoom(convID, conn)
 				break loop
 			}

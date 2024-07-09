@@ -28,13 +28,6 @@ func (s *Server) sendMsgToAllJoiners(convID int, content, sender string) {
 	}
 
 	jrs, _ := joiners.([]*websocket.Conn)
-	// remove all disconnected connection before sending
-	for _, joiner := range jrs {
-		if _, _, err := joiner.NextReader(); err != nil {
-			fmt.Println("next reader", err)
-			s.removeConnFromRoom(convID, joiner)
-		}
-	}
 
 	fmt.Printf("len room: %d\n", len(jrs))
 	for _, conn := range jrs {
@@ -153,92 +146,17 @@ func (s *Server) HandleChat(c *gin.Context) {
 
 			switch msg.MsgType {
 			case MessageTypeAdminJoin:
-				authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
-				if err != nil {
-					fmt.Println(err)
-					_ = sendError(conn, err)
-					break
+				if !s.handleAdminJoinMsg(conn, msg) {
+					break loop
 				}
-				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
-				if err != nil {
-					_ = sendError(conn, err)
-					break
-				}
-
-				if acct.Role.RoleName != model.RoleNameAdmin || acct.Status != model.AccountStatusActive {
-					_ = sendError(conn, errors.New("invalid admin or account is inactive"))
-					break
-				}
-
-				s.joinConversation(msg.ConversationID, conn)
 				break
 			case MessageTypeUserJoin:
-				authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
-				if err != nil {
-					fmt.Println(err)
-					_ = sendError(conn, err)
-					break
-				}
-				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
-				if err != nil {
-					_ = sendError(conn, err)
-					break
-				}
-
-				if acct.Status != model.AccountStatusActive {
-					_ = sendError(conn, errors.New("account is inactive"))
-					break
-				}
-
-				conv, err := s.store.ConversationStore.GetByAccID(acct.ID)
-				if err != nil {
-					_ = sendError(conn, err)
+				if !s.handleUserJoinMsg(conn, msg) {
 					break loop
 				}
-
-				if conv == nil {
-					conv = &model.Conversation{
-						AccountID: acct.ID,
-						Status:    model.ConversationStatusActive,
-					}
-
-					if err := s.store.ConversationStore.Create(conv); err != nil {
-						_ = sendError(conn, err)
-						break loop
-					}
-				}
-
-				if err := conn.WriteJSON(Message{
-					MsgType:        MessageTypeSystemResponseUserJoin,
-					ConversationID: conv.ID,
-				}); err != nil {
-					fmt.Printf("write JSON %v\v", err)
-					_ = sendError(conn, err)
-					break loop
-				}
-
-				s.joinConversation(conv.ID, conn)
 				break
 			case MessageTypeTexting:
-				authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
-				if err != nil {
-					fmt.Println(err)
-					_ = sendError(conn, err)
-					break
-				}
-				acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
-				if err != nil {
-					_ = sendError(conn, err)
-					break
-				}
-
-				s.sendMsgToAllJoiners(msg.ConversationID, msg.Content, acct.Role.RoleName)
-				if err := s.store.MessageStore.Create(&model.Message{
-					ConversationID: msg.ConversationID,
-					Sender:         acct.ID,
-					Content:        msg.Content,
-				}); err != nil {
-					_ = sendError(conn, err)
+				if !s.handleTextingMsg(conn, msg) {
 					break loop
 				}
 				break
@@ -248,4 +166,101 @@ func (s *Server) HandleChat(c *gin.Context) {
 			}
 		}
 	}()
+}
+
+func (s *Server) handleAdminJoinMsg(conn *websocket.Conn, msg Message) bool {
+	authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
+	if err != nil {
+		fmt.Println(err)
+		_ = sendError(conn, err)
+		return false
+	}
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		_ = sendError(conn, err)
+		return false
+	}
+
+	if acct.Role.RoleName != model.RoleNameAdmin || acct.Status != model.AccountStatusActive {
+		_ = sendError(conn, errors.New("invalid admin or account is inactive"))
+		return false
+	}
+
+	s.joinConversation(msg.ConversationID, conn)
+	return true
+}
+
+func (s *Server) handleUserJoinMsg(conn *websocket.Conn, msg Message) bool {
+	authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
+	if err != nil {
+		fmt.Println(err)
+		_ = sendError(conn, err)
+		return false
+	}
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		_ = sendError(conn, err)
+		return false
+	}
+
+	if acct.Status != model.AccountStatusActive {
+		_ = sendError(conn, errors.New("account is inactive"))
+		return false
+	}
+
+	conv, err := s.store.ConversationStore.GetByAccID(acct.ID)
+	if err != nil {
+		_ = sendError(conn, err)
+		return false
+	}
+
+	if conv == nil {
+		conv = &model.Conversation{
+			AccountID: acct.ID,
+			Status:    model.ConversationStatusActive,
+		}
+
+		if err := s.store.ConversationStore.Create(conv); err != nil {
+			_ = sendError(conn, err)
+			return false
+		}
+	}
+
+	if err := conn.WriteJSON(Message{
+		MsgType:        MessageTypeSystemResponseUserJoin,
+		ConversationID: conv.ID,
+	}); err != nil {
+		fmt.Printf("write JSON %v\v", err)
+		_ = sendError(conn, err)
+		return false
+	}
+
+	s.joinConversation(conv.ID, conn)
+	return true
+}
+
+func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) bool {
+	authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
+	if err != nil {
+		fmt.Println(err)
+		_ = sendError(conn, err)
+		return false
+	}
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		_ = sendError(conn, err)
+		return false
+	}
+
+	s.sendMsgToAllJoiners(msg.ConversationID, msg.Content, acct.Role.RoleName)
+	if err := s.store.MessageStore.Create(&model.Message{
+		ConversationID: msg.ConversationID,
+		Sender:         acct.ID,
+		Content:        msg.Content,
+	}); err != nil {
+		_ = sendError(conn, err)
+		return false
+	}
+
+	return true
 }

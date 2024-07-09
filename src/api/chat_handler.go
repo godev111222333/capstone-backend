@@ -3,13 +3,13 @@ package api
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/godev111222333/capstone-backend/src/token"
 	"github.com/gorilla/websocket"
+	"net/http"
+	"strings"
+	"time"
 )
 
 var upgrader = websocket.Upgrader{
@@ -168,6 +168,18 @@ func (s *Server) HandleChat(c *gin.Context) {
 	}()
 }
 
+func (s *Server) checkConnection(convID int, conn *websocket.Conn) {
+	pingTicker := time.NewTicker(5 * time.Second)
+	for {
+		select {
+		case <-pingTicker.C:
+			if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+				s.removeConnFromRoom(convID, conn)
+			}
+		}
+	}
+}
+
 func (s *Server) handleAdminJoinMsg(conn *websocket.Conn, msg Message) bool {
 	authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
 	if err != nil {
@@ -187,6 +199,7 @@ func (s *Server) handleAdminJoinMsg(conn *websocket.Conn, msg Message) bool {
 	}
 
 	s.joinConversation(msg.ConversationID, conn)
+	go s.checkConnection(msg.ConversationID, conn)
 	return true
 }
 
@@ -236,6 +249,7 @@ func (s *Server) handleUserJoinMsg(conn *websocket.Conn, msg Message) bool {
 	}
 
 	s.joinConversation(conv.ID, conn)
+	go s.checkConnection(msg.ConversationID, conn)
 	return true
 }
 

@@ -31,6 +31,7 @@ func (s *Server) sendMsgToAllJoiners(convID int, content, sender string) {
 	// remove all disconnected connection before sending
 	for _, joiner := range jrs {
 		if _, _, err := joiner.NextReader(); err != nil {
+			fmt.Println("next reader", err)
 			s.removeConnFromRoom(convID, joiner)
 		}
 	}

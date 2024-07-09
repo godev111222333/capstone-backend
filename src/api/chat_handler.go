@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
@@ -31,7 +30,7 @@ func (s *Server) sendMsgToAllJoiners(convID int, content, sender string) {
 	jrs, _ := joiners.([]*websocket.Conn)
 	// remove all disconnected connection before sending
 	for _, joiner := range jrs {
-		if _, _, err := joiner.NextReader(); err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+		if _, _, err := joiner.NextReader(); err != nil {
 			s.removeConnFromRoom(convID, joiner)
 		}
 	}

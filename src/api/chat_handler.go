@@ -3,13 +3,15 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/godev111222333/capstone-backend/src/model"
-	"github.com/godev111222333/capstone-backend/src/token"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+
+	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/token"
 )
 
 var upgrader = websocket.Upgrader{

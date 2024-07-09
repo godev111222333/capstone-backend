@@ -173,8 +173,11 @@ func (s *Server) checkConnection(convID int, conn *websocket.Conn) {
 	for {
 		select {
 		case <-pingTicker.C:
+			fmt.Println("checking connection ...")
 			if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+				fmt.Println("closing connection ...")
 				s.removeConnFromRoom(convID, conn)
+				break
 			}
 		}
 	}

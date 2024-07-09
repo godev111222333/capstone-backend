@@ -36,7 +36,7 @@ func (s *Server) startAdminSub() {
 			case <-testTicker.C:
 				s.adminNotificationQueue <- NotificationMsg{
 					Title: "test title",
-					Body:  "test body",
+					Body:  "this is test msg from server for testing purpose",
 					Data:  map[string]string{"aa": "bb"},
 				}
 			}

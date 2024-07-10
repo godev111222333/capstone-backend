@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"time"
@@ -552,52 +551,6 @@ func (s *Server) HandleAdminGetAccounts(c *gin.Context) {
 	}
 
 	responseSuccess(c, respAccts)
-}
-
-type adminSetAccountStatusRequest struct {
-	AccountID int                 `json:"account_id"`
-	Status    model.AccountStatus `json:"status"`
-}
-
-func (s *Server) HandleAdminSetAccountStatus(c *gin.Context) {
-	req := adminSetAccountStatusRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		responseCustomErr(c, ErrCodeInvalidSetAccountStatusRequest, err)
-		return
-	}
-
-	acct, err := s.store.AccountStore.GetByID(req.AccountID)
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
-	if acct.RoleID == model.RoleIDPartner {
-		if req.Status == model.AccountStatusInactive {
-			if err := s.store.DB.Transaction(func(tx *gorm.DB) error {
-				if err := s.store.CarStore.UpdateByPartnerID(tx, acct.ID, map[string]interface{}{"status": string(model.CarStatusInactive)}); err != nil {
-					return err
-				}
-
-				return s.store.AccountStore.UpdateTx(tx, req.AccountID, map[string]interface{}{"status": string(req.Status)})
-			}); err != nil {
-				responseGormErr(c, err)
-				return
-			}
-		} else {
-			if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{"status": string(req.Status)}); err != nil {
-				responseGormErr(c, err)
-				return
-			}
-		}
-	} else if acct.RoleID == model.RoleIDCustomer {
-		if err := s.store.AccountStore.Update(req.AccountID, map[string]interface{}{"status": string(req.Status)}); err != nil {
-			responseGormErr(c, err)
-			return
-		}
-	}
-
-	responseSuccess(c, acct)
 }
 
 func (s *Server) HandleAdminGetAccountDetail(c *gin.Context) {

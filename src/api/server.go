@@ -17,6 +17,10 @@ import (
 
 const DefaultHost = "0.0.0.0"
 
+const (
+	ChanBufferSize = 100
+)
+
 type Server struct {
 	cfg            *misc.ApiServerConfig
 	feCfg          *misc.FEConfig
@@ -32,8 +36,10 @@ type Server struct {
 	bankMetadata []string
 	chatRooms    sync.Map
 
-	adminNotificationSubs  sync.Map
-	adminNotificationQueue chan NotificationMsg
+	adminSubs sync.Map
+
+	adminNotificationQueue    chan NotificationMsg
+	adminNewConversationQueue chan ConversationMsg
 }
 
 func NewServer(
@@ -74,7 +80,8 @@ func NewServer(
 		bankMetadata,
 		sync.Map{},
 		sync.Map{},
-		make(chan NotificationMsg, 100),
+		make(chan NotificationMsg, ChanBufferSize),
+		make(chan ConversationMsg, ChanBufferSize),
 	}
 	server.setUp()
 	return server

@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"go.uber.org/mock/gomock"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -88,6 +89,14 @@ func TestAdminHandler_GetCar(t *testing.T) {
 }
 
 func TestHandleApproveCar(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockNotificationService := NewMockINotificationPushService(ctrl)
+	mockNotificationService.EXPECT().Push(gomock.Any()).AnyTimes().Return(nil)
+	mockNotificationService.EXPECT().NewRejectCarMsg(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockNotificationService.EXPECT().NewApproveCarRegisterMsg(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockNotificationService.EXPECT().NewApproveCarDeliveryMsg(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	TestServer.notificationPushService = mockNotificationService
+
 	t.Run("reject car", func(t *testing.T) {
 		carModel := &model.CarModel{Brand: "toyota"}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))

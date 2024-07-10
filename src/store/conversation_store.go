@@ -54,3 +54,21 @@ func (s *ConversationStore) GetByAccID(acctID int) (*model.Conversation, error) 
 
 	return res, nil
 }
+
+func (s *ConversationStore) GetByID(ID int) (*model.Conversation, error) {
+	res := &model.Conversation{}
+	row := s.db.
+		Where("id = ? and status = ?", ID, string(model.ConversationStatusActive)).
+		Preload("Account").
+		Find(res)
+	if err := row.Error; err != nil {
+		fmt.Printf("ConversationStore: GetByID %v\n", err)
+		return nil, err
+	}
+
+	if row.RowsAffected == 0 {
+		return nil, nil
+	}
+
+	return res, nil
+}

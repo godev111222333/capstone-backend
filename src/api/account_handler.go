@@ -319,3 +319,19 @@ func (s *Server) HandleUpdateQRCodeImage(c *gin.Context) {
 		"qr_code_url": url,
 	})
 }
+
+type RegisterExpoPushTokenRequest struct {
+	ExpoPushToken string `json:"expo_push_token"`
+}
+
+func (s *Server) HandleRegisterExpoPushToken(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := RegisterExpoPushTokenRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidRegisterExpoPushTokenRequest, err)
+		return
+	}
+
+	s.expoPushTokens.Store(authPayload.PhoneNumber, req.ExpoPushToken)
+	responseSuccess(c, gin.H{"status": "register expo push token successfully"})
+}

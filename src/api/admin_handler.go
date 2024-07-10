@@ -288,6 +288,29 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		return
 	}
 
+	go func() {
+		carID, phone, expoToken := car.ID, car.Account.PhoneNumber, s.getExpoToken(car.Account.PhoneNumber)
+		var msg *PushMessage
+		switch req.Action {
+		case ApplicationActionReject:
+			msg = s.notificationPushService.NewRejectCarMsg(car.ID, phone, expoToken)
+			if car.Status == model.CarStatusActive {
+				msg = s.notificationPushService.NewRejectPartnerContractMsg(carID, phone, expoToken)
+			}
+			break
+		case ApplicationActionApproveDelivery:
+			msg = s.notificationPushService.NewApproveCarDeliveryMsg(car.ID, phone, expoToken)
+			break
+		case ApplicationActionApproveRegister:
+			msg = s.notificationPushService.NewApproveCarRegisterMsg(carID, phone, expoToken)
+			break
+		}
+
+		if msg != nil {
+			_ = s.notificationPushService.Push(msg)
+		}
+	}()
+
 	responseSuccess(c, gin.H{"status": fmt.Sprintf("%s car successfully", req.Action)})
 }
 
@@ -517,6 +540,16 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 		return
 	}
 
+	go func() {
+		phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
+		msg := s.notificationPushService.NewApproveRentingCarRequestMsg(expoToken, phone)
+		if req.Action == CustomerContractActionReject {
+			msg = s.notificationPushService.NewRejectRentingCarRequestMsg(expoToken, phone)
+		}
+
+		_ = s.notificationPushService.Push(msg)
+	}()
+
 	responseSuccess(c, contract)
 }
 
@@ -642,6 +675,16 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 		responseCustomErr(c, ErrCodeGenerateQRCode, err)
 		return
 	}
+
+	go func() {
+		contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+		if err != nil {
+			return
+		}
+
+		phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
+		_ = s.notificationPushService.Push(s.notificationPushService.NewCustomerAdditionalPaymentMsg(contract.ID, expoToken, phone))
+	}()
 
 	responseSuccess(c, gin.H{"payment_url": originURL.PaymentURL})
 }
@@ -874,4 +917,13 @@ func (s *Server) HandleAdminUpdateReturnCollateralAsset(c *gin.Context) {
 	}
 
 	responseSuccess(c, gin.H{"status": "update is_return_collateral_asset successfully"})
+}
+
+func (s *Server) getExpoToken(phone string) string {
+	expoToken, ok := s.expoPushTokens.Load(phone)
+	if ok {
+		return expoToken.(string)
+	}
+
+	return ""
 }

@@ -22,16 +22,19 @@ const (
 )
 
 type Server struct {
-	cfg            *misc.ApiServerConfig
-	feCfg          *misc.FEConfig
-	route          *gin.Engine
-	store          *store.DbStore
-	s3store        *store.S3Store
-	tokenMaker     token.Maker
-	hashVerifier   *misc.HashVerifier
-	otpService     *OTPService
-	pdfService     IPDFService
-	paymentService IPaymentService
+	cfg                     *misc.ApiServerConfig
+	feCfg                   *misc.FEConfig
+	route                   *gin.Engine
+	store                   *store.DbStore
+	s3store                 *store.S3Store
+	tokenMaker              token.Maker
+	hashVerifier            *misc.HashVerifier
+	otpService              *OTPService
+	pdfService              IPDFService
+	paymentService          IPaymentService
+	notificationPushService INotificationPushService
+
+	expoPushTokens sync.Map
 
 	bankMetadata []string
 	chatRooms    sync.Map
@@ -51,6 +54,7 @@ func NewServer(
 	bankMetadata []string,
 	pdfService IPDFService,
 	paymentService IPaymentService,
+	notificationPushService INotificationPushService,
 ) *Server {
 	route := gin.New()
 	tokenMaker, err := token.NewJWTMaker("12345678901234567890123456789012")
@@ -77,6 +81,8 @@ func NewServer(
 		otpService,
 		pdfService,
 		paymentService,
+		notificationPushService,
+		sync.Map{},
 		bankMetadata,
 		sync.Map{},
 		sync.Map{},

@@ -276,6 +276,18 @@ func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) bool {
 		return false
 	}
 
+	if authPayload.Role == model.RoleNameAdmin {
+		go func() {
+			conv, err := s.store.ConversationStore.GetByAccID(msg.ConversationID)
+			if err != nil {
+				return
+			}
+
+			phone, expoToken := conv.Account.PhoneNumber, s.getExpoToken(conv.Account.PhoneNumber)
+			_ = s.notificationPushService.Push(s.notificationPushService.NewChatMsg(expoToken, phone))
+		}()
+	}
+
 	s.sendMsgToAllJoiners(msg.ConversationID, msg.Content, acct.Role.RoleName)
 	if err := s.store.MessageStore.Create(&model.Message{
 		ConversationID: msg.ConversationID,

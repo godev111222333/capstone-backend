@@ -70,6 +70,7 @@ const (
 	RouteChat                                        = "chat"
 	RouteVNPayIPNURL                                 = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                              = "vn_pay_return_url"
+	RouteRegisterExpoPushToken                       = "register_expo_push_token"
 )
 
 var (
@@ -509,6 +510,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleVnPayReturnURL,
 			RequireAuth: false,
+		},
+		RouteRegisterExpoPushToken: {
+			Path:        "/expo_push_token",
+			Method:      http.MethodPost,
+			Handler:     s.HandleRegisterExpoPushToken,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAll,
 		},
 
 		// Temporary API

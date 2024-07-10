@@ -64,7 +64,7 @@ func initTestServer(cfg *misc.GlobalConfig) {
 		TestS3Store,
 		NewOTPService(cfg.OTP, TestDb),
 		bankMetadata,
-		nil, nil,
+		nil, nil, nil,
 	)
 }
 

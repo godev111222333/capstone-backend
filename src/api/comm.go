@@ -90,7 +90,7 @@ const (
 	ErrCodeMissingDrivingLicence                              ErrorCode = 10077
 	ErrCodeInvalidGetFeedBackByCarRequest                     ErrorCode = 10078
 	ErrCodeInvalidUpdateIsReturnCollateralAsset               ErrorCode = 10079
-	ErrCodeInvalidGetSuggestedCarsRequest                     ErrorCode = 10080
+	ErrCodeInvalidRegisterExpoPushTokenRequest                ErrorCode = 10080
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

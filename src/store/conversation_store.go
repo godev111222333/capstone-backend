@@ -42,6 +42,7 @@ func (s *ConversationStore) GetByAccID(acctID int) (*model.Conversation, error) 
 	res := &model.Conversation{}
 	row := s.db.
 		Where("account_id = ? and status = ?", acctID, string(model.ConversationStatusActive)).
+		Preload("Account").
 		Find(res)
 	if err := row.Error; err != nil {
 		fmt.Printf("ConversationStore: GetByAccID %v\n", err)

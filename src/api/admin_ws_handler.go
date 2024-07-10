@@ -99,10 +99,6 @@ func (s *Server) startAdminSub() {
 					Body:  "this is test msg from server for testing purpose",
 					Data:  map[string]string{"aa": "bb"},
 				}
-
-				s.adminNewConversationQueue <- ConversationMsg{
-					ConversationID: 1,
-				}
 			}
 		}
 

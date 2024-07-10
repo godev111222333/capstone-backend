@@ -14,11 +14,6 @@ const (
 	AdminConversationSubsKey = -2
 )
 
-const (
-	TypeNotification int = iota + 1
-	TypeConversation
-)
-
 type NotificationMsg struct {
 	Title string      `json:"title,omitempty"`
 	Body  string      `json:"body,omitempty"`
@@ -34,23 +29,21 @@ type AuthMsg struct {
 }
 
 func (s *Server) HandleAdminSubscribeNotification(c *gin.Context) {
-	conn, err := s.initAdminWsConnection(c)
-	if err != nil {
-		return
-	}
-
-	s.adminSubscribeTo(conn, TypeNotification)
-	go s.checkAdminConnection(conn, TypeNotification)
+	s.processWsWithKey(c, AdminNotificationSubsKey)
 }
 
 func (s *Server) HandleAdminSubscribeNewConversation(c *gin.Context) {
+	s.processWsWithKey(c, AdminConversationSubsKey)
+}
+
+func (s *Server) processWsWithKey(c *gin.Context, key int) {
 	conn, err := s.initAdminWsConnection(c)
 	if err != nil {
 		return
 	}
 
-	s.adminSubscribeTo(conn, TypeConversation)
-	go s.checkAdminConnection(conn, TypeConversation)
+	s.adminSubscribeTo(conn, key)
+	go s.checkAdminConnection(conn, key)
 }
 
 func (s *Server) initAdminWsConnection(c *gin.Context) (*websocket.Conn, error) {
@@ -86,10 +79,10 @@ func (s *Server) startAdminSub() {
 		for {
 			select {
 			case msg := <-s.adminNotificationQueue:
-				s.sendAdminNotification(msg, TypeNotification)
+				s.sendMsgToAdmin(msg, AdminNotificationSubsKey)
 				break
 			case msg := <-s.adminNewConversationQueue:
-				s.sendAdminNotification(msg, TypeConversation)
+				s.sendMsgToAdmin(msg, AdminConversationSubsKey)
 				break
 			}
 		}
@@ -116,11 +109,7 @@ func (s *Server) startAdminSub() {
 	}()
 }
 
-func (s *Server) sendAdminNotification(msg interface{}, tz int) {
-	key := AdminNotificationSubsKey
-	if tz == TypeConversation {
-		key = AdminConversationSubsKey
-	}
+func (s *Server) sendMsgToAdmin(msg interface{}, key int) {
 	subs, ok := s.adminSubs.Load(key)
 	if !ok {
 		return
@@ -129,12 +118,12 @@ func (s *Server) sendAdminNotification(msg interface{}, tz int) {
 	toSubs, _ := subs.([]*websocket.Conn)
 	for _, sub := range toSubs {
 		if err := sub.WriteJSON(msg); err != nil {
-			s.removeAdminSub(sub, tz)
+			s.removeAdminSub(sub, key)
 		}
 	}
 }
 
-func (s *Server) checkAdminConnection(conn *websocket.Conn, typez int) {
+func (s *Server) checkAdminConnection(conn *websocket.Conn, key int) {
 	pingTicker := time.NewTicker(5 * time.Second)
 	defer pingTicker.Stop()
 loop:
@@ -142,19 +131,14 @@ loop:
 		select {
 		case <-pingTicker.C:
 			if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-				s.removeAdminSub(conn, typez)
+				s.removeAdminSub(conn, key)
 				break loop
 			}
 		}
 	}
 }
 
-func (s *Server) removeAdminSub(conn *websocket.Conn, tz int) {
-	key := AdminNotificationSubsKey
-	if tz == TypeConversation {
-		key = AdminConversationSubsKey
-	}
-
+func (s *Server) removeAdminSub(conn *websocket.Conn, key int) {
 	subs, ok := s.adminSubs.Load(key)
 	if ok {
 		curSubs, _ := subs.([]*websocket.Conn)
@@ -169,12 +153,7 @@ func (s *Server) removeAdminSub(conn *websocket.Conn, tz int) {
 	}
 }
 
-func (s *Server) adminSubscribeTo(conn *websocket.Conn, tz int) {
-	key := AdminConversationSubsKey
-	if tz == TypeConversation {
-		key = AdminConversationSubsKey
-	}
-
+func (s *Server) adminSubscribeTo(conn *websocket.Conn, key int) {
 	curSubscribers, isLoaded := s.adminSubs.LoadOrStore(key, []*websocket.Conn{conn})
 	if curSubs, ok := curSubscribers.([]*websocket.Conn); ok && isLoaded {
 		curSubscribers = append(curSubs, conn)
@@ -182,7 +161,7 @@ func (s *Server) adminSubscribeTo(conn *websocket.Conn, tz int) {
 	}
 
 	conn.SetCloseHandler(func(code int, text string) error {
-		s.removeAdminSub(conn, tz)
+		s.removeAdminSub(conn, key)
 		return nil
 	})
 }

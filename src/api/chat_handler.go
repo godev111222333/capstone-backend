@@ -156,11 +156,15 @@ func (s *Server) HandleChat(c *gin.Context) {
 				if !s.handleUserJoinMsg(conn, msg) {
 					break loop
 				}
+
+				s.adminNewConversationQueue <- ConversationMsg{ConversationID: msg.ConversationID}
 				break
 			case MessageTypeTexting:
 				if !s.handleTextingMsg(conn, msg) {
 					break loop
 				}
+
+				s.adminNewConversationQueue <- ConversationMsg{ConversationID: msg.ConversationID}
 				break
 			default:
 				fmt.Println("invalid message_type. stop the chat")

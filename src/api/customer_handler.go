@@ -627,3 +627,23 @@ func calculateRentPrice(car *model.Car, rule *model.ContractRule, startDate, end
 		PrepaidAmount:           int((float64(totalRentPriceAmount) + totalInsuranceAmount) * rule.PrepayPercent / 100.0),
 	}
 }
+
+func (s *Server) HandleCustomerGetSuggestedCars(c *gin.Context) {
+	now := time.Now()
+	foundCars, err := s.store.CarStore.FindCars(now, now.AddDate(100, 0, 0), nil)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	respCars := make([]*carResponse, len(foundCars))
+	for i, car := range foundCars {
+		respCars[i], err = s.newCarResponse(car)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+	}
+
+	responseSuccess(c, respCars)
+}

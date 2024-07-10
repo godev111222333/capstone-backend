@@ -65,6 +65,7 @@ const (
 	RouteCustomerCalculateRentingPrice               = "customer_calculate_renting_price"
 	RouteCustomerGetActivities                       = "customer_get_activities"
 	RouteCustomerGiveFeedback                        = "customer_give_feedback"
+	RouteCustomerGetSuggestedCars                    = "customer_get_suggested_cars"
 	RouteCustomerPartnerGetFeedbacksByCar            = "customer_partner_get_feedbacks_by_car"
 	RouteChat                                        = "chat"
 	RouteVNPayIPNURL                                 = "vn_pay_ipn_url"
@@ -483,6 +484,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleGetFeedbackByCar,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomerPartner,
+		},
+		RouteCustomerGetSuggestedCars: {
+			Path:        "/customer/suggested_cars",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCustomerGetSuggestedCars,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomer,
 		},
 		RouteChat: {
 			Path:        "/chat",

@@ -153,11 +153,12 @@ func (s *Server) HandleChat(c *gin.Context) {
 				}
 				break
 			case MessageTypeUserJoin:
-				if !s.handleUserJoinMsg(conn, msg) {
+				convID, ok := s.handleUserJoinMsg(conn, msg)
+				if !ok {
 					break loop
 				}
 
-				s.adminNewConversationQueue <- ConversationMsg{ConversationID: msg.ConversationID}
+				s.adminNewConversationQueue <- ConversationMsg{ConversationID: convID}
 				break
 			case MessageTypeTexting:
 				if !s.handleTextingMsg(conn, msg) {
@@ -212,28 +213,28 @@ func (s *Server) handleAdminJoinMsg(conn *websocket.Conn, msg Message) bool {
 	return true
 }
 
-func (s *Server) handleUserJoinMsg(conn *websocket.Conn, msg Message) bool {
+func (s *Server) handleUserJoinMsg(conn *websocket.Conn, msg Message) (int, bool) {
 	authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
 	if err != nil {
 		fmt.Println(err)
 		_ = sendError(conn, err)
-		return false
+		return -1, false
 	}
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		_ = sendError(conn, err)
-		return false
+		return -1, false
 	}
 
 	if acct.Status != model.AccountStatusActive {
 		_ = sendError(conn, errors.New("account is inactive"))
-		return false
+		return -1, false
 	}
 
 	conv, err := s.store.ConversationStore.GetByAccID(acct.ID)
 	if err != nil {
 		_ = sendError(conn, err)
-		return false
+		return -1, false
 	}
 
 	if conv == nil {
@@ -244,7 +245,7 @@ func (s *Server) handleUserJoinMsg(conn *websocket.Conn, msg Message) bool {
 
 		if err := s.store.ConversationStore.Create(conv); err != nil {
 			_ = sendError(conn, err)
-			return false
+			return -1, false
 		}
 	}
 
@@ -254,12 +255,12 @@ func (s *Server) handleUserJoinMsg(conn *websocket.Conn, msg Message) bool {
 	}); err != nil {
 		fmt.Printf("write JSON %v\v", err)
 		_ = sendError(conn, err)
-		return false
+		return -1, false
 	}
 
 	s.joinConversation(conv.ID, conn)
 	go s.checkConnection(msg.ConversationID, conn)
-	return true
+	return conv.ID, true
 }
 
 func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) bool {

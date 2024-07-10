@@ -23,11 +23,10 @@ type INotificationPushService interface {
 }
 
 type PushMessage struct {
-	To          []string    `json:"to"`
-	Title       string      `json:"title,omitempty"`
-	Body        string      `json:"body"`
-	Data        interface{} `json:"data,omitempty"`
-	PhoneNumber string      `json:"phone_number"`
+	To    []string    `json:"to"`
+	Title string      `json:"title,omitempty"`
+	Body  string      `json:"body"`
+	Data  interface{} `json:"data,omitempty"`
 }
 
 type NotificationPushService struct {
@@ -74,90 +73,108 @@ func (s *NotificationPushService) Push(m *PushMessage) error {
 
 func (s *NotificationPushService) NewApproveCarRegisterMsg(carID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Xe của bạn đã được duyệt!",
-		Body:        "Vui lòng xem và xác nhận thông tin hợp đồng!",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Xe của bạn đã được duyệt!",
+		Body:  "Vui lòng xem và xác nhận thông tin hợp đồng!",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewApproveCarDeliveryMsg(carID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Xe giao tới garage của bạn đã được duyệt!",
-		Body:        "MinhHungCar đã chấp nhận xe giao tới garage của bạn",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Xe giao tới garage của bạn đã được duyệt!",
+		Body:  "MinhHungCar đã chấp nhận xe giao tới garage của bạn",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewRejectCarMsg(carID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Xe của bạn không được duyệt!",
-		Body:        "MinhHungCar từ chối yêu cầu đăng kí xe của bạn",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Xe của bạn không được duyệt!",
+		Body:  "MinhHungCar từ chối yêu cầu đăng kí xe của bạn",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewChatMsg(expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Bạn có tin nhắn mới",
-		Body:        "Bạn nhận được tin nhắn mới từ MinhHungCar",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/chat", s.FrontendURL)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Bạn có tin nhắn mới",
+		Body:  "Bạn nhận được tin nhắn mới từ MinhHungCar",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/chat", s.FrontendURL),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewReceivingPaymentMsg(month, amount int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Nhận tiền từ MinhHungCar",
-		Body:        fmt.Sprintf("MinhHungCar thanh toán tiền tháng %d là %d VNĐ", month, amount),
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/chat", s.FrontendURL)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Nhận tiền từ MinhHungCar",
+		Body:  fmt.Sprintf("MinhHungCar thanh toán tiền tháng %d là %d VNĐ", month, amount),
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/chat", s.FrontendURL),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewRejectPartnerContractMsg(carID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Hợp đồng bị hủy",
-		Body:        "Hợp đồng cho thuê xe của bạn đã bị hủy",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Hợp đồng bị hủy",
+		Body:  "Hợp đồng cho thuê xe của bạn đã bị hủy",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewRejectRentingCarRequestMsg(expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Yêu cầu thuê xe bị từ chối",
-		Body:        "MinhHungCar đã từ chối yêu cầu thuê xe của bạn",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/trip", s.FrontendURL)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Yêu cầu thuê xe bị từ chối",
+		Body:  "MinhHungCar đã từ chối yêu cầu thuê xe của bạn",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/trip", s.FrontendURL),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewApproveRentingCarRequestMsg(expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Yêu cầu thuê xe đã được chấp nhận",
-		Body:        "MinhHungCar đã chấp nhận yêu cầu thuê xe của bạn",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/trip", s.FrontendURL)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Yêu cầu thuê xe đã được chấp nhận",
+		Body:  "MinhHungCar đã chấp nhận yêu cầu thuê xe của bạn",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/trip", s.FrontendURL),
+			"phone_number": toPhone,
+		},
 	}
 }
 
 func (s *NotificationPushService) NewCustomerAdditionalPaymentMsg(contractID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
-		To:          []string{expoToken},
-		Title:       "Phát sinh thêm thanh toán",
-		Body:        "MinhHungCar vừa thêm 1 khoản thanh toán cho chuyến xe của bạn",
-		Data:        map[string]interface{}{"screen": fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID)},
-		PhoneNumber: toPhone,
+		To:    []string{expoToken},
+		Title: "Phát sinh thêm thanh toán",
+		Body:  "MinhHungCar vừa thêm 1 khoản thanh toán cho chuyến xe của bạn",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
+			"phone_number": toPhone,
+		},
 	}
 }

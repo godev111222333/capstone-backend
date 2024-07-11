@@ -133,6 +133,11 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
+	var (
+		commCustomerContractID int
+		licensePlate           string
+	)
+
 	for _, paymentID := range paymentIDs {
 		// Update contract status to Ordered
 		payment, err := s.store.CustomerPaymentStore.GetByID(paymentID)
@@ -140,6 +145,9 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
 			return
 		}
+
+		commCustomerContractID = payment.CustomerContractID
+		licensePlate = payment.CustomerContract.Car.LicensePlate
 
 		if payment.PaymentType == model.PaymentTypePrePay {
 			if err := s.store.CustomerContractStore.Update(
@@ -175,6 +183,10 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 			}
 		}
 	}
+
+	go func() {
+		s.adminNotificationQueue <- s.NewCustomerContractPaymentNotificationMsg(commCustomerContractID, licensePlate)
+	}()
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 }

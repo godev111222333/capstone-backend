@@ -42,7 +42,7 @@ func (s *CustomerPaymentStore) UpdateMulti(ids []int, values map[string]interfac
 
 func (s *CustomerPaymentStore) GetByID(id int) (*model.CustomerPayment, error) {
 	res := &model.CustomerPayment{}
-	if err := s.db.Where("id = ?", id).Preload("CustomerContract").First(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Preload("CustomerContract").Preload("CustomerContract.Car").First(res).Error; err != nil {
 		fmt.Printf("CustomerPaymentStore: GetByID %v\n", err)
 		return nil, err
 	}

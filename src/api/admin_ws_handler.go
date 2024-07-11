@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,59 @@ type NotificationMsg struct {
 	Title string      `json:"title,omitempty"`
 	Body  string      `json:"body,omitempty"`
 	Data  interface{} `json:"data,omitempty"`
+}
+
+func (s *Server) NewCarRegisterNotificationMsg(carID int) NotificationMsg {
+	return NotificationMsg{
+		Title: "Thông báo của đối tác",
+		Body:  "Bạn có đơn đăng ký xe cần duyệt",
+		Data: map[string]interface{}{
+			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
+		},
+	}
+}
+
+func (s *Server) NewCarDeliveryNotificationMsg(carID int, licensePlate string) NotificationMsg {
+	return NotificationMsg{
+		Title: "Thông báo của đối tác",
+		Body:  fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái chờ giao", licensePlate),
+		Data: map[string]interface{}{
+			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
+		},
+	}
+}
+
+func (s *Server) NewCarActiveNotificationMsg(carID int, licensePlate string) NotificationMsg {
+	return NotificationMsg{
+		Title: "Thông báo của đối tác",
+		Body:  fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái đang hoạt động", licensePlate),
+		Data: map[string]interface{}{
+			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
+		},
+	}
+}
+
+func (s *Server) NewCustomerContractNotificationMsg(cusContractID int, licensePlate string) NotificationMsg {
+	return NotificationMsg{
+		Title: "Thông báo của khách hàng",
+		Body:  fmt.Sprintf("Bạn có đơn đặt xe có biển số %s", licensePlate),
+		Data: map[string]interface{}{
+			"redirect_url": fmt.Sprintf("%scontracts/%d", s.feCfg.AdminBaseURL, cusContractID),
+		},
+	}
+}
+
+func (s *Server) NewCustomerContractPaymentNotificationMsg(cusContractID int, licensePlate string) NotificationMsg {
+	return NotificationMsg{
+		Title: "Thông báo của khách hàng",
+		Body: fmt.Sprintf(
+			"Một khoản thanh toán của hợp đồng xe biến số %s đã được thanh toán bởi khách hàng",
+			licensePlate,
+		),
+		Data: map[string]interface{}{
+			"redirect_url": fmt.Sprintf("%scontracts/payments/%d", s.feCfg.AdminBaseURL, cusContractID),
+		},
+	}
 }
 
 type ConversationMsg struct {
@@ -84,21 +138,6 @@ func (s *Server) startAdminSub() {
 			case msg := <-s.adminNewConversationQueue:
 				s.sendMsgToAdmin(msg, AdminConversationSubsKey)
 				break
-			}
-		}
-	}()
-
-	// test function
-	go func() {
-		testTicker := time.NewTicker(3 * time.Second)
-		for {
-			select {
-			case <-testTicker.C:
-				s.adminNotificationQueue <- NotificationMsg{
-					Title: "test title",
-					Body:  "this is test msg from server for testing purpose",
-					Data:  map[string]string{"aa": "bb"},
-				}
 			}
 		}
 	}()

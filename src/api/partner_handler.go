@@ -151,6 +151,10 @@ func (s *Server) HandleUpdateRentalPrice(c *gin.Context) {
 		return
 	}
 
+	go func() {
+		s.adminNotificationQueue <- s.NewCarRegisterNotificationMsg(car.ID)
+	}()
+
 	responseSuccess(c, gin.H{
 		"car_id":    car.ID,
 		"new_price": req.NewPrice,
@@ -328,6 +332,15 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		responseGormErr(c, err)
 		return
 	}
+
+	go func() {
+		msg := s.NewCarDeliveryNotificationMsg(car.ID, car.LicensePlate)
+		if status == string(model.CarStatusActive) {
+			msg = s.NewCarActiveNotificationMsg(car.ID, car.LicensePlate)
+		}
+
+		s.adminNotificationQueue <- msg
+	}()
 
 	responseSuccess(c, gin.H{"status": "agree contract successfully"})
 }

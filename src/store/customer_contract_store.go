@@ -277,18 +277,19 @@ type RentedCar struct {
 	Count         int    `json:"count"`
 }
 
-func (s *CustomerContractStore) CountRentedCars() ([]*RentedCar, error) {
+func (s *CustomerContractStore) CountRentedCars(backoff time.Duration) ([]*RentedCar, error) {
 	res := make([]*RentedCar, 0)
 	sql := `
 select concat(car_models.brand, ' ', car_models.model) as brand_model, count(customer_contracts.id)
 from customer_contracts
          join cars on cars.id = customer_contracts.car_id
          join car_models on cars.car_model_id = car_models.id
-where customer_contracts.status = 'completed'
+where customer_contracts.status = 'completed' and customer_contracts.end_date >= ?
 group by concat(car_models.brand, ' ', car_models.model)
-order by count(customer_contracts.id) desc
+order by count(customer_contracts.id) desc;
+
 `
-	if err := s.db.Raw(sql).Scan(&res).Error; err != nil {
+	if err := s.db.Raw(sql, time.Now().Add(-backoff)).Scan(&res).Error; err != nil {
 		fmt.Printf("CustomerContractStore: CountRentedCars %v\n", err)
 		return nil, err
 	}

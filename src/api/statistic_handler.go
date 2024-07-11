@@ -64,7 +64,7 @@ func (s *Server) HandleAdminGetStatistic(c *gin.Context) {
 		return
 	}
 
-	rentedCars, err := s.store.CustomerContractStore.CountRentedCars()
+	rentedCars, err := s.store.CustomerContractStore.CountRentedCars(dayToDuration(req.RentedCarsBackOffDay))
 	if err != nil {
 		responseGormErr(c, err)
 		return

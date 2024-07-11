@@ -51,6 +51,7 @@ const (
 	RouteAdminUpdateIsReturnCollateralAsset          = "admin_update_collateral_asset"
 	RouteAdminSubscribeNotification                  = "admin_subscribe_notification"
 	RouteAdminSubscribeNewConversation               = "admin_subscribe_new_conversation"
+	RouteAdminGetStatistic                           = "admin_get_statistic"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -346,6 +347,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/update_is_return_collateral_asset",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminUpdateReturnCollateralAsset,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminGetStatistic: {
+			Path:        "/admin/statistic",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetStatistic,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

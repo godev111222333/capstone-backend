@@ -5,6 +5,7 @@ import (
 	"github.com/godev111222333/capstone-backend/src/model"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 type AccountStore struct {
@@ -111,4 +112,17 @@ func (s *AccountStore) Get(status model.AccountStatus, role string, searchParam 
 	}
 
 	return res, nil
+}
+
+func (s *AccountStore) CountActiveByRole(roleID model.RoleID, backoff time.Duration) (int, error) {
+	var count int64
+	err := s.db.Model(model.Account{}).
+		Where("role_id = ? and status == ? and created_date >= ?", roleID, string(model.AccountStatusActive), time.Now().Add(-backoff)).
+		Count(&count).Error
+	if err != nil {
+		fmt.Printf("AccountStore: CountActiveByRole %v\n", err)
+		return -1, err
+	}
+
+	return int(count), nil
 }

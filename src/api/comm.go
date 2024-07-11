@@ -91,6 +91,7 @@ const (
 	ErrCodeInvalidGetFeedBackByCarRequest                     ErrorCode = 10078
 	ErrCodeInvalidUpdateIsReturnCollateralAsset               ErrorCode = 10079
 	ErrCodeInvalidRegisterExpoPushTokenRequest                ErrorCode = 10080
+	ErrCodeInvalidStatisticRequest                            ErrorCode = 10081
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

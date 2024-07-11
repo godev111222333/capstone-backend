@@ -2,10 +2,10 @@ package store
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"time"
 
 	"github.com/godev111222333/capstone-backend/src/model"
+	"gorm.io/gorm"
 )
 
 type CustomerContractStore struct {
@@ -240,6 +240,60 @@ func (s *CustomerContractStore) CountByStatus(status model.CustomerContractStatu
 	}
 
 	return int(count), nil
+}
+
+func (s *CustomerContractStore) CountTotalValidCustomerContracts(backoff time.Duration) (int, error) {
+	var count int64
+	err := s.db.Model(model.CustomerContract{}).
+		Where("status != ? and start_date >= ?", string(model.CustomerContractStatusCancel), time.Now().Add(-backoff)).
+		Count(&count).Error
+	if err != nil {
+		fmt.Printf("CustomerContractStore: CountByStatus %v\n", err)
+		return -1, err
+	}
+
+	return int(count), nil
+}
+
+func (s *CustomerContractStore) SumRevenueForCompletedContracts(timeRange time.Duration) (float64, error) {
+	sum := struct {
+		Sum float64 `json:"sum"`
+	}{}
+	sql := `select SUM(customer_contracts.revenue_sharing_percent * customer_contracts.rent_price / 100)
+from customer_contracts
+where customer_contracts.status = 'completed'
+  and end_date >= ?`
+
+	if err := s.db.Raw(sql, time.Now().Add(-timeRange)).Scan(&sum).Error; err != nil {
+		fmt.Printf("CustomerContractStore: SumRevenueForCompletedContracts %v\n", err)
+		return -1, err
+	}
+
+	return sum.Sum, nil
+}
+
+type RentedCar struct {
+	CarBrandModel string `json:"car_brand_model"`
+	Count         int    `json:"count"`
+}
+
+func (s *CustomerContractStore) CountRentedCars() ([]*RentedCar, error) {
+	res := make([]*RentedCar, 0)
+	sql := `
+select concat(car_models.brand, ' ', car_models.model) as brand_model, count(customer_contracts.id)
+from customer_contracts
+         join cars on cars.id = customer_contracts.car_id
+         join car_models on cars.car_model_id = car_models.id
+where customer_contracts.status = 'completed'
+group by concat(car_models.brand, ' ', car_models.model)
+order by count(customer_contracts.id) desc
+`
+	if err := s.db.Raw(sql).Scan(&res).Error; err != nil {
+		fmt.Printf("CustomerContractStore: CountRentedCars %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (s *CustomerContractStore) GetFeedbacks(offset, limit int) ([]*model.CustomerContract, int, error) {

@@ -280,7 +280,7 @@ type RentedCar struct {
 func (s *CustomerContractStore) CountRentedCars(backoff time.Duration) ([]*RentedCar, error) {
 	res := make([]*RentedCar, 0)
 	sql := `
-select concat(car_models.brand, ' ', car_models.model) as brand_model, count(customer_contracts.id)
+select concat(car_models.brand, ' ', car_models.model) as car_brand_model, count(customer_contracts.id)
 from customer_contracts
          join cars on cars.id = customer_contracts.car_id
          join car_models on cars.car_model_id = car_models.id

@@ -17,9 +17,9 @@ type StatisticRequest struct {
 }
 
 type StatisticResponse struct {
-	TotalCustomerContracts int                `json:"total_customer_contracts,omitempty"`
-	TotalActivePartners    int                `json:"total_active_partners,omitempty"`
-	TotalActiveCustomers   int                `json:"total_active_customers,omitempty"`
+	TotalCustomerContracts int                `json:"total_customer_contracts"`
+	TotalActivePartners    int                `json:"total_active_partners"`
+	TotalActiveCustomers   int                `json:"total_active_customers"`
 	Revenue                float64            `json:"revenue,omitempty"`
 	RentedCars             []*store.RentedCar `json:"rented_cars,omitempty"`
 }

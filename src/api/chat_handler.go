@@ -142,7 +142,6 @@ func (s *Server) HandleChat(c *gin.Context) {
 		for {
 			msg := Message{}
 			if err := conn.ReadJSON(&msg); err != nil {
-				fmt.Printf("ReadJSON err %v\n", err)
 				break loop
 			}
 

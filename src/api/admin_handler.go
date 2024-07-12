@@ -943,6 +943,29 @@ func (s *Server) HandleAdminUpdateReturnCollateralAsset(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "update is_return_collateral_asset successfully"})
 }
 
+func (s *Server) HandleGetNotificationHistory(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := Pagination{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, errCodeInvalidGetNotificationHistoryRequest, err)
+		return
+	}
+
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	notis, err := s.store.NotificationStore.GetByAcctID(acct.ID, req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, notis)
+}
+
 func (s *Server) getExpoToken(phone string) string {
 	expoToken, ok := s.expoPushTokens.Load(phone)
 	if ok {

@@ -72,6 +72,7 @@ const (
 	RouteVNPayIPNURL                                 = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                              = "vn_pay_return_url"
 	RouteRegisterExpoPushToken                       = "register_expo_push_token"
+	RouteGetNotificationHistory                      = "get_notification_history"
 )
 
 var (
@@ -523,6 +524,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/expo_push_token",
 			Method:      http.MethodPost,
 			Handler:     s.HandleRegisterExpoPushToken,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAll,
+		},
+		RouteGetNotificationHistory: {
+			Path:        "/notifications",
+			Method:      http.MethodGet,
+			Handler:     s.HandleGetNotificationHistory,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAll,
 		},

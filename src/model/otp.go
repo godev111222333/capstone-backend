@@ -16,12 +16,9 @@ const (
 )
 
 type OTP struct {
-	ID          int
-	PhoneNumber string
-	OTP         string
-	Status      OTPStatus
-	OtpType     OTPType
-	ExpiresAt   time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	PhoneNumber string    `json:"phone_number"`
+	OTP         string    `json:"OTP"`
+	Status      OTPStatus `json:"status"`
+	OtpType     OTPType   `json:"otp_type"`
+	ExpiresAt   time.Time `json:"expires_at"`
 }

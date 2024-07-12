@@ -525,7 +525,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodPost,
 			Handler:     s.HandleRegisterExpoPushToken,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAll,
+			AuthRoles:   AuthRoleCustomerPartner,
 		},
 		RouteGetNotificationHistory: {
 			Path:        "/notifications",

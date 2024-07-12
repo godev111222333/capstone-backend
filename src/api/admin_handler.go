@@ -947,7 +947,7 @@ func (s *Server) HandleGetNotificationHistory(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := Pagination{}
 	if err := c.Bind(&req); err != nil {
-		responseCustomErr(c, errCodeInvalidGetNotificationHistoryRequest, err)
+		responseCustomErr(c, ErrCodeInvalidGetNotificationHistoryRequest, err)
 		return
 	}
 

@@ -13,6 +13,5 @@ drop table if exists notifications;
 drop table if exists car_images;
 drop table if exists cars;
 drop table if exists car_models;
-drop table if exists otps;
 drop table if exists accounts;
 drop table if exists roles;

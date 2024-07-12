@@ -16,10 +16,11 @@ const (
 )
 
 var (
-	TestDb      *store.DbStore
-	TestServer  *Server
-	TestS3Store *store.S3Store
-	TestConfig  *misc.GlobalConfig
+	TestDb       *store.DbStore
+	TestServer   *Server
+	TestS3Store  *store.S3Store
+	TestConfig   *misc.GlobalConfig
+	TestFeConfig *misc.FEConfig
 )
 
 func TestMain(m *testing.M) {
@@ -27,6 +28,13 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+
+	feCfg, err := misc.LoadFEConfig("../../fe-config.yaml")
+	if err != nil {
+		panic(err)
+	}
+
+	TestFeConfig = feCfg
 
 	TestConfig = cfg
 	TestS3Store = store.NewS3Store(cfg.AWS)
@@ -59,10 +67,10 @@ func initTestServer(cfg *misc.GlobalConfig) {
 
 	TestServer = NewServer(
 		cfg.ApiServer,
-		nil,
+		TestFeConfig,
 		TestDb,
 		TestS3Store,
-		NewOTPService(cfg.OTP, TestDb),
+		NewOTPService(cfg.OTP, nil),
 		bankMetadata,
 		nil, nil, nil,
 	)

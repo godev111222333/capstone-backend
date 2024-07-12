@@ -36,6 +36,12 @@ type OTPConfig struct {
 	FromNumber string `yaml:"from_number"`
 }
 
+type RedisConfig struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Password string `yaml:"password"`
+}
+
 type PDFServiceConfig struct {
 	Url     string        `yaml:"url"`
 	Timeout time.Duration `yaml:"timeout"`
@@ -59,6 +65,7 @@ type GlobalConfig struct {
 	OTP        *OTPConfig        `yaml:"otp"`
 	PDFService *PDFServiceConfig `yaml:"pdf_service"`
 	VNPay      *VNPayConfig      `yaml:"vn_pay"`
+	Redis      *RedisConfig      `yaml:"redis"`
 }
 
 type FEConfig struct {

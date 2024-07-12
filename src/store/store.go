@@ -12,7 +12,6 @@ import (
 type DbStore struct {
 	DB                         *gorm.DB
 	AccountStore               *AccountStore
-	OTPStore                   *OTPStore
 	CarModelStore              *CarModelStore
 	CarStore                   *CarStore
 	CarImageStore              *CarImageStore
@@ -42,7 +41,6 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 	return &DbStore{
 		DB:                         db,
 		AccountStore:               NewAccountStore(db),
-		OTPStore:                   NewOTPStore(db),
 		CarModelStore:              NewCarModelStore(db),
 		CarStore:                   NewCarStore(db),
 		CarImageStore:              NewCarImageStore(db),

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"os"
 	"os/signal"
 
@@ -25,7 +26,12 @@ func main() {
 		panic(err)
 	}
 
-	otpService := api.NewOTPService(cfg.OTP, dbStore)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
+		Password: cfg.Redis.Password,
+	})
+
+	otpService := api.NewOTPService(cfg.OTP, redisClient)
 	s3Store := store.NewS3Store(cfg.AWS)
 	bankMetadata, err := misc.LoadBankMetadata("etc/converted_banks.txt")
 	if err != nil {

@@ -35,17 +35,12 @@ func (s *Server) HandleVerifyOTP(c *gin.Context) {
 
 	isValidOTP, err := s.otpService.VerifyOTP(model.OTPTypeRegister, req.PhoneNumber, req.OTP)
 	if err != nil {
-		responseGormErr(c, err)
+		responseCustomErr(c, ErrCodeCacheError, err)
 		return
 	}
 
 	if !isValidOTP {
 		responseCustomErr(c, ErrCodeInvalidOTP, nil)
-		return
-	}
-
-	if err := s.store.OTPStore.UpdateStatus(req.PhoneNumber, model.OTPTypeRegister, model.OTPStatusVerified); err != nil {
-		responseGormErr(c, err)
 		return
 	}
 

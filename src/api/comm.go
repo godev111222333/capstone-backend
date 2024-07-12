@@ -92,7 +92,8 @@ const (
 	ErrCodeInvalidUpdateIsReturnCollateralAsset               ErrorCode = 10079
 	ErrCodeInvalidRegisterExpoPushTokenRequest                ErrorCode = 10080
 	ErrCodeInvalidStatisticRequest                            ErrorCode = 10081
-	errCodeInvalidGetNotificationHistoryRequest               ErrorCode = 10082
+	ErrCodeInvalidGetNotificationHistoryRequest               ErrorCode = 10082
+	ErrCodeCacheError                                         ErrorCode = 10083
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

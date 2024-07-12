@@ -24,7 +24,7 @@ func TestOTPService(t *testing.T) {
 			},
 		))
 
-		otpService := NewOTPService(TestConfig.OTP, TestDb)
+		otpService := NewOTPService(TestConfig.OTP, nil)
 		require.NoError(t, otpService.SendOTP(model.OTPTypeRegister, phoneNumber))
 	})
 }

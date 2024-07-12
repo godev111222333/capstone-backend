@@ -35,18 +35,6 @@ create table accounts
     "updated_at"                 timestamptz            DEFAULT (now())
 );
 
-create table otps
-(
-    "id"           serial primary key,
-    "phone_number" varchar(255) references accounts (phone_number),
-    "otp"          varchar(20)  not null default '',
-    "status"       varchar(255) not null default '',
-    "otp_type"     varchar(255) not null default '',
-    "expires_at"   timestamptz           DEFAULT (now()),
-    "created_at"   timestamptz           DEFAULT (now()),
-    "updated_at"   timestamptz           DEFAULT (now())
-);
-
 insert into accounts(role_id, phone_number, password, status)
 values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
 
@@ -153,6 +141,7 @@ create table "customer_contracts"
     "bank_owner"                 varchar(255)  not null default '',
     "insurance_percent"          numeric(3, 1) not null default 0.0,
     "prepay_percent"             numeric(3, 1) not null default 0.0,
+    "revenue_sharing_percent"    numeric(3, 1) not null default 0.0,
     "feedback_content"           varchar(1023) not null default '',
     "feedback_rating"            bigint        not null default 0,
     "feedback_status"            varchar(255)  not null default '',

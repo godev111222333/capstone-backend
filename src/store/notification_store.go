@@ -30,9 +30,10 @@ func (s *NotificationStore) GetByAcctID(acctID, offset, limit int) ([]*model.Not
 	}
 	var res []*model.Notification
 	if err := s.db.Model(model.Notification{}).Where("account_id = ? and status = ?", acctID, string(model.NotificationStatusActive)).
+		Preload("Account").
 		Order("id desc").
 		Offset(offset).
-		Limit(limit).Preload("Account").Scan(&res).Error; err != nil {
+		Limit(limit).Scan(&res).Error; err != nil {
 		fmt.Printf("NotificationStore: GetByAcctID %v\n", err)
 		return nil, err
 	}

@@ -122,7 +122,7 @@ func (s *Server) HandleGetParkingLotMetadata(c *gin.Context) {
 	}
 
 	if totalCarInGarage >= garageConfig[typeCode] {
-		c.JSON(http.StatusOK, []OptionResponse{
+		responseSuccess(c, []OptionResponse{
 			{
 				Code: string(model.ParkingLotHome),
 				Text: "Tại nhà",

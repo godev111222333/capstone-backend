@@ -16,54 +16,60 @@ const (
 )
 
 type NotificationMsg struct {
-	Title string      `json:"title,omitempty"`
-	Body  string      `json:"body,omitempty"`
-	Data  interface{} `json:"data,omitempty"`
+	AdminAccountID int         `json:"-"`
+	Title          string      `json:"title,omitempty"`
+	Body           string      `json:"body,omitempty"`
+	Data           interface{} `json:"data,omitempty"`
 }
 
-func (s *Server) NewCarRegisterNotificationMsg(carID int) NotificationMsg {
+func (s *Server) NewCarRegisterNotificationMsg(adminID, carID int) NotificationMsg {
 	return NotificationMsg{
-		Title: "Thông báo của đối tác",
-		Body:  "Bạn có đơn đăng ký xe cần duyệt",
+		AdminAccountID: adminID,
+		Title:          "Thông báo của đối tác",
+		Body:           "Bạn có đơn đăng ký xe cần duyệt",
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
 		},
 	}
 }
 
-func (s *Server) NewCarDeliveryNotificationMsg(carID int, licensePlate string) NotificationMsg {
+func (s *Server) NewCarDeliveryNotificationMsg(adminID, carID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		Title: "Thông báo của đối tác",
-		Body:  fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái chờ giao", licensePlate),
+		AdminAccountID: adminID,
+		Title:          "Thông báo của đối tác",
+		Body:           fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái chờ giao", licensePlate),
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
 		},
 	}
 }
 
-func (s *Server) NewCarActiveNotificationMsg(carID int, licensePlate string) NotificationMsg {
+func (s *Server) NewCarActiveNotificationMsg(adminID, carID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		Title: "Thông báo của đối tác",
-		Body:  fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái đang hoạt động", licensePlate),
+		AdminAccountID: adminID,
+		Title:          "Thông báo của đối tác",
+		Body:           fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái đang hoạt động", licensePlate),
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
 		},
 	}
 }
 
-func (s *Server) NewCustomerContractNotificationMsg(cusContractID int, licensePlate string) NotificationMsg {
+func (s *Server) NewCustomerContractNotificationMsg(adminID, cusContractID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		Title: "Thông báo của khách hàng",
-		Body:  fmt.Sprintf("Bạn có đơn đặt xe có biển số %s", licensePlate),
+		AdminAccountID: adminID,
+		Title:          "Thông báo của khách hàng",
+		Body:           fmt.Sprintf("Bạn có đơn đặt xe có biển số %s", licensePlate),
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scontracts/%d", s.feCfg.AdminBaseURL, cusContractID),
 		},
 	}
 }
 
-func (s *Server) NewCustomerContractPaymentNotificationMsg(cusContractID int, licensePlate string) NotificationMsg {
+func (s *Server) NewCustomerContractPaymentNotificationMsg(adminID, cusContractID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		Title: "Thông báo của khách hàng",
+		AdminAccountID: adminID,
+		Title:          "Thông báo của khách hàng",
 		Body: fmt.Sprintf(
 			"Một khoản thanh toán của hợp đồng xe biến số %s đã được thanh toán bởi khách hàng",
 			licensePlate,
@@ -133,6 +139,16 @@ func (s *Server) startAdminSub() {
 		for {
 			select {
 			case msg := <-s.adminNotificationQueue:
+				s.store.NotificationStore.Create(&model.Notification{
+					AccountID: 1,
+					Account:   nil,
+					Title:     "",
+					Content:   "",
+					URL:       "",
+					Status:    "",
+					CreatedAt: time.Time{},
+					UpdatedAt: time.Time{},
+				})
 				s.sendMsgToAdmin(msg, AdminNotificationSubsKey)
 				break
 			case msg := <-s.adminNewConversationQueue:

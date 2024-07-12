@@ -25,6 +25,7 @@ type DbStore struct {
 	ContractRuleStore          *ContractRuleStore
 	ConversationStore          *ConversationStore
 	MessageStore               *MessageStore
+	NotificationStore          *NotificationStore
 }
 
 func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
@@ -54,5 +55,6 @@ func NewDbStore(cfg *misc.DatabaseConfig) (*DbStore, error) {
 		ContractRuleStore:          NewContractRuleStore(db),
 		ConversationStore:          NewConversationStore(db),
 		MessageStore:               NewMessageStore(db),
+		NotificationStore:          NewNotificationStore(db),
 	}, nil
 }

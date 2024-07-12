@@ -185,7 +185,12 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 	}
 
 	go func() {
-		s.adminNotificationQueue <- s.NewCustomerContractPaymentNotificationMsg(commCustomerContractID, licensePlate)
+		adminIds, err := s.store.AccountStore.GetAllAdminIDs()
+		if err == nil {
+			for _, id := range adminIds {
+				s.adminNotificationQueue <- s.NewCustomerContractPaymentNotificationMsg(id, commCustomerContractID, licensePlate)
+			}
+		}
 	}()
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})

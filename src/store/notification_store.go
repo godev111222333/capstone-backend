@@ -29,7 +29,7 @@ func (s *NotificationStore) GetByAcctID(acctID, offset, limit int) ([]*model.Not
 		limit = 1000
 	}
 	var res []*model.Notification
-	if err := s.db.Where("account_id = ? and status = ?", acctID, string(model.NotificationStatusActive)).
+	if err := s.db.Debug().Where("account_id = ? and status = ?", acctID, string(model.NotificationStatusActive)).
 		Order("id desc").
 		Offset(offset).
 		Limit(limit).Scan(&res).Error; err != nil {

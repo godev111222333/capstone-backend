@@ -139,16 +139,13 @@ func (s *Server) startAdminSub() {
 		for {
 			select {
 			case msg := <-s.adminNotificationQueue:
-				data := msg.Data.(map[string]interface{})
-				if url, ok := data["redirect_url"].(string); ok {
-					_ = s.store.NotificationStore.Create(&model.Notification{
-						AccountID: msg.AdminAccountID,
-						Title:     msg.Title,
-						Content:   msg.Body,
-						URL:       url,
-						Status:    model.NotificationStatusActive,
-					})
-				}
+				_ = s.store.NotificationStore.Create(&model.Notification{
+					AccountID: msg.AdminAccountID,
+					Title:     msg.Title,
+					Content:   msg.Body,
+					URL:       mapGetString(msg.Data, "redirect_url"),
+					Status:    model.NotificationStatusActive,
+				})
 
 				s.sendMsgToAdmin(msg, AdminNotificationSubsKey)
 				break

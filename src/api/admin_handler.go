@@ -308,6 +308,15 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 
 		if msg != nil {
 			_ = s.notificationPushService.Push(msg)
+
+			notification := &model.Notification{
+				AccountID: car.Account.ID,
+				Title:     msg.Title,
+				Content:   msg.Body,
+				URL:       mapGetString(msg.Data, "screen"),
+				Status:    model.NotificationStatusActive,
+			}
+			_ = s.store.NotificationStore.Create(notification)
 		}
 	}()
 
@@ -548,6 +557,13 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 		}
 
 		_ = s.notificationPushService.Push(msg)
+		_ = s.store.NotificationStore.Create(&model.Notification{
+			AccountID: contract.CustomerID,
+			Title:     msg.Title,
+			Content:   msg.Body,
+			URL:       mapGetString(msg.Data, "screen"),
+			Status:    model.NotificationStatusActive,
+		})
 	}()
 
 	responseSuccess(c, contract)
@@ -683,7 +699,15 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 		}
 
 		phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
-		_ = s.notificationPushService.Push(s.notificationPushService.NewCustomerAdditionalPaymentMsg(contract.ID, expoToken, phone))
+		msg := s.notificationPushService.NewCustomerAdditionalPaymentMsg(contract.ID, expoToken, phone)
+		_ = s.notificationPushService.Push(msg)
+		_ = s.store.NotificationStore.Create(&model.Notification{
+			AccountID: contract.CustomerID,
+			Title:     msg.Title,
+			Content:   msg.Body,
+			URL:       mapGetString(msg.Data, "screen"),
+			Status:    model.NotificationStatusActive,
+		})
 	}()
 
 	responseSuccess(c, gin.H{"payment_url": originURL.PaymentURL})
@@ -923,6 +947,18 @@ func (s *Server) getExpoToken(phone string) string {
 	expoToken, ok := s.expoPushTokens.Load(phone)
 	if ok {
 		return expoToken.(string)
+	}
+
+	return ""
+}
+
+func mapGetString(m interface{}, fieldName string) string {
+	data, ok := m.(map[string]interface{})
+	if ok {
+		value, ok := data[fieldName].(string)
+		if ok {
+			return value
+		}
 	}
 
 	return ""

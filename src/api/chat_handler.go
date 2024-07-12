@@ -277,7 +277,7 @@ func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) bool {
 
 	if authPayload.Role == model.RoleNameAdmin {
 		go func() {
-			conv, err := s.store.ConversationStore.GetByAccID(msg.ConversationID)
+			conv, err := s.store.ConversationStore.GetByID(msg.ConversationID)
 			if err != nil {
 				return
 			}

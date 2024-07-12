@@ -71,7 +71,7 @@ func (s *Server) NewCustomerContractPaymentNotificationMsg(adminID, cusContractI
 		AdminAccountID: adminID,
 		Title:          "Thông báo của khách hàng",
 		Body: fmt.Sprintf(
-			"Một khoản thanh toán của hợp đồng xe biến số %s đã được thanh toán bởi khách hàng",
+			"Một khoản thanh toán của hợp đồng xe biến số %s đã được thanh toán",
 			licensePlate,
 		),
 		Data: map[string]interface{}{
@@ -139,16 +139,17 @@ func (s *Server) startAdminSub() {
 		for {
 			select {
 			case msg := <-s.adminNotificationQueue:
-				s.store.NotificationStore.Create(&model.Notification{
-					AccountID: 1,
-					Account:   nil,
-					Title:     "",
-					Content:   "",
-					URL:       "",
-					Status:    "",
-					CreatedAt: time.Time{},
-					UpdatedAt: time.Time{},
-				})
+				data := msg.Data.(map[string]interface{})
+				if url, ok := data["redirect_url"].(string); ok {
+					_ = s.store.NotificationStore.Create(&model.Notification{
+						AccountID: msg.AdminAccountID,
+						Title:     msg.Title,
+						Content:   msg.Body,
+						URL:       url,
+						Status:    model.NotificationStatusActive,
+					})
+				}
+
 				s.sendMsgToAdmin(msg, AdminNotificationSubsKey)
 				break
 			case msg := <-s.adminNewConversationQueue:

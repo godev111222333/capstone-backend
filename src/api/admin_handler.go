@@ -994,6 +994,7 @@ func (s *Server) HandleAdminMakeMonthlyPartnerPayments(c *gin.Context) {
 
 	for _, contract := range completedContracts {
 		partnerID := contract.Car.PartnerID
+		fmt.Println("partnerID", partnerID)
 		_, existed := partnerPayments[partnerID]
 		if !existed {
 			partnerPayments[partnerID] = []int{}

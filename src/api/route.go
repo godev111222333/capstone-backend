@@ -41,6 +41,7 @@ const (
 	RouteAdminGetCustomerPayments                    = "admin_get_customer_payments"
 	RouteAdminGenerateCustomerPaymentQRCode          = "admin_generate_customer_payment_qr_code"
 	RouteAdminGenerateMultipleCustomerPaymentsQRCode = "admin_generate_multiple_customer_payments_qr_code"
+	RouteAdminGenerateMultiplePartnerPaymentsQRCode  = "admin_generate_multiple_partner_payments_qr_code"
 	RouteAdminCompleteCustomerContract               = "admin_complete_customer_contract"
 	RouteAdminUpdateCustomerContractImageStatus      = "admin_update_customer_contract_image_status"
 	RouteAdminGetFeedbacks                           = "admin_get_feedbacks"
@@ -53,6 +54,7 @@ const (
 	RouteAdminSubscribeNewConversation               = "admin_subscribe_new_conversation"
 	RouteAdminGetStatistic                           = "admin_get_statistic"
 	RouteAdminMakeMonthlyPartnerPayments             = "admin_make_monthly_partner_payments"
+	RouteAdminGetMonthlyPartnerPayments              = "admin_get_monthly_partner_payments"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -309,6 +311,20 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleAdminGenerateMultipleCustomerPayments,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleCustomerAdmin,
+		},
+		RouteAdminGenerateMultiplePartnerPaymentsQRCode: {
+			Path:        "/admin/monthly_partner_payment/multiple/generate_qr",
+			Method:      http.MethodPost,
+			Handler:     s.HandleAdminGenerateMultiplePartnerPayments,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminGetMonthlyPartnerPayments: {
+			Path:        "/admin/monthly_partner_payments",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetMonthlyPartnerPayments,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminCompleteCustomerContract: {
 			Path:        "/admin/contract/complete",

@@ -95,6 +95,8 @@ const (
 	ErrCodeInvalidGetNotificationHistoryRequest               ErrorCode = 10082
 	ErrCodeCacheError                                         ErrorCode = 10083
 	ErrCodeInvalidAdminMakeMonthlyPaymentRequest              ErrorCode = 10084
+	ErrCodeInvalidAdminGetMonthlyPartnerPaymentRequest        ErrorCode = 10085
+	ErrCodeInvalidGenerateMultiplePartnerPaymentsRequest      ErrorCode = 10086
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

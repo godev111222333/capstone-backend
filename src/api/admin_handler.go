@@ -747,6 +747,41 @@ func (s *Server) HandleAdminGenerateMultipleCustomerPayments(c *gin.Context) {
 	responseSuccess(c, gin.H{"payment_url": url})
 }
 
+type generateMultiplePartnerPaymentQRCode struct {
+	PartnerPaymentIDs []int  `json:"partner_payment_ids" binding:"required"`
+	ReturnURL         string `json:"return_url" binding:"required"`
+}
+
+func (s *Server) HandleAdminGenerateMultiplePartnerPayments(c *gin.Context) {
+	req := generateMultiplePartnerPaymentQRCode{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidGenerateMultiplePartnerPaymentsRequest, err)
+		return
+	}
+
+	pendingPayments, err := s.store.PartnerPaymentHistoryStore.GetPendingBatch(req.PartnerPaymentIDs)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	amt := 0
+	ids := make([]int, len(pendingPayments))
+	for i, p := range pendingPayments {
+		amt += p.Amount
+		ids[i] = p.ID
+	}
+
+	txnRef := fmt.Sprintf("%s__%s", PrefixPartnerPayment, time.Now().Format("02150405"))
+	url, err := s.paymentService.GeneratePaymentURL(ids, amt, txnRef, req.ReturnURL)
+	if err != nil {
+		responseCustomErr(c, ErrCodeGenerateQRCode, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"payment_url": url})
+}
+
 type completeCustomerContractRequest struct {
 	CustomerContractID int `json:"customer_contract_id" binding:"required"`
 }
@@ -1041,6 +1076,28 @@ func (s *Server) generatePartnerPaymentQRCode(partnerPaymentID, amount int, retu
 	return s.store.PartnerPaymentHistoryStore.Update(partnerPaymentID, map[string]interface{}{
 		"payment_url": url,
 	})
+}
+
+type AdminGetMonthlyPartnerPayments struct {
+	Pagination
+	StartDate time.Time `form:"start_date" binding:"required"`
+	EndDate   time.Time `form:"end_date" binding:"required"`
+}
+
+func (s *Server) HandleAdminGetMonthlyPartnerPayments(c *gin.Context) {
+	req := AdminGetMonthlyPartnerPayments{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminGetMonthlyPartnerPaymentRequest, err)
+		return
+	}
+
+	payments, err := s.store.PartnerPaymentHistoryStore.GetInTimeRange(req.StartDate, req.EndDate, req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, payments)
 }
 
 func (s *Server) getExpoToken(phone string) string {

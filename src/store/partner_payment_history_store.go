@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -68,4 +69,36 @@ func (s *PartnerPaymentHistoryStore) UpdateMulti(ids []int, values map[string]in
 	}
 
 	return nil
+}
+
+func (s *PartnerPaymentHistoryStore) GetInTimeRange(
+	fromDate, toDate time.Time,
+	offset, limit int) ([]*model.PartnerPaymentHistory, error) {
+	if limit == 0 {
+		limit = 1000
+	}
+
+	var res []*model.PartnerPaymentHistory
+	if err := s.db.Where("created_at >= ? and created_at < ?", fromDate, toDate).Preload("Partner").
+		Order("id desc").
+		Offset(offset).
+		Limit(limit).
+		Find(&res).Error; err != nil {
+		fmt.Printf("PartnerPaymentHistoryStore: GetInTimeRange %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (s *PartnerPaymentHistoryStore) GetPendingBatch(ids []int) ([]*model.PartnerPaymentHistory, error) {
+	var res []*model.PartnerPaymentHistory
+	if err := s.db.Where(
+		"id in ? and status = ?",
+		ids, string(model.PartnerPaymentHistoryStatusPending)).Find(&res).Error; err != nil {
+		fmt.Printf("PartnerPaymentHistoryStore: GetPendingBatch %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
 }

@@ -124,6 +124,11 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
+	if strings.HasPrefix(PrefixPartnerPayment, req.TxnRef) {
+		s.handlePartnerPayments(c, req)
+		return
+	}
+
 	paymentIDs := decodeOrderInfo(req.OrderInfo)
 	if err := s.store.CustomerPaymentStore.UpdateMulti(
 		paymentIDs,
@@ -199,6 +204,39 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 			}
 		}
 	}()
+
+	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
+}
+
+func (s *Server) handlePartnerPayments(c *gin.Context, req VnPayIPNRequest) {
+	paymentIDs := decodeOrderInfo(req.OrderInfo)
+	if err := s.store.PartnerPaymentHistoryStore.UpdateMulti(
+		paymentIDs,
+		map[string]interface{}{"status": string(model.PartnerPaymentHistoryStatusPaid)},
+	); err != nil {
+		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+		return
+	}
+
+	for _, paymentID := range paymentIDs {
+		payment, err := s.store.PartnerPaymentHistoryStore.GetByID(paymentID)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+			return
+		}
+
+		acct, err := s.store.AccountStore.GetByID(payment.PartnerID)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+			return
+		}
+
+		_ = s.notificationPushService.Push(s.notificationPushService.NewReceivingPaymentMsg(
+			payment.Amount,
+			s.getExpoToken(acct.PhoneNumber),
+			acct.PhoneNumber,
+		))
+	}
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})
 }

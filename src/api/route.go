@@ -52,6 +52,7 @@ const (
 	RouteAdminSubscribeNotification                  = "admin_subscribe_notification"
 	RouteAdminSubscribeNewConversation               = "admin_subscribe_new_conversation"
 	RouteAdminGetStatistic                           = "admin_get_statistic"
+	RouteAdminMakeMonthlyPartnerPayments             = "admin_make_monthly_partner_payments"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -533,6 +534,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleGetNotificationHistory,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAll,
+		},
+		RouteAdminMakeMonthlyPartnerPayments: {
+			Path:        "/admin/monthly_partner_payments",
+			Method:      http.MethodPost,
+			Handler:     s.HandleAdminMakeMonthlyPartnerPayments,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 
 		// Temporary API

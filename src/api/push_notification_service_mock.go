@@ -109,17 +109,17 @@ func (mr *MockINotificationPushServiceMockRecorder) NewCustomerAdditionalPayment
 }
 
 // NewReceivingPaymentMsg mocks base method.
-func (m *MockINotificationPushService) NewReceivingPaymentMsg(month, amount int, expoToken, toPhone string) *PushMessage {
+func (m *MockINotificationPushService) NewReceivingPaymentMsg(amount int, expoToken, toPhone string) *PushMessage {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewReceivingPaymentMsg", month, amount, expoToken, toPhone)
+	ret := m.ctrl.Call(m, "NewReceivingPaymentMsg", amount, expoToken, toPhone)
 	ret0, _ := ret[0].(*PushMessage)
 	return ret0
 }
 
 // NewReceivingPaymentMsg indicates an expected call of NewReceivingPaymentMsg.
-func (mr *MockINotificationPushServiceMockRecorder) NewReceivingPaymentMsg(month, amount, expoToken, toPhone any) *gomock.Call {
+func (mr *MockINotificationPushServiceMockRecorder) NewReceivingPaymentMsg(amount, expoToken, toPhone any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReceivingPaymentMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewReceivingPaymentMsg), month, amount, expoToken, toPhone)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReceivingPaymentMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewReceivingPaymentMsg), amount, expoToken, toPhone)
 }
 
 // NewRejectCarMsg mocks base method.

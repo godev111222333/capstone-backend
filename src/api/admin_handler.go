@@ -293,16 +293,16 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		var msg *PushMessage
 		switch req.Action {
 		case ApplicationActionReject:
-			msg = s.notificationPushService.NewRejectCarMsg(car.ID, phone, expoToken)
+			msg = s.notificationPushService.NewRejectCarMsg(car.ID, expoToken, phone)
 			if car.Status == model.CarStatusActive {
-				msg = s.notificationPushService.NewRejectPartnerContractMsg(carID, phone, expoToken)
+				msg = s.notificationPushService.NewRejectPartnerContractMsg(carID, expoToken, phone)
 			}
 			break
 		case ApplicationActionApproveDelivery:
-			msg = s.notificationPushService.NewApproveCarDeliveryMsg(car.ID, phone, expoToken)
+			msg = s.notificationPushService.NewApproveCarDeliveryMsg(car.ID, expoToken, phone)
 			break
 		case ApplicationActionApproveRegister:
-			msg = s.notificationPushService.NewApproveCarRegisterMsg(carID, phone, expoToken)
+			msg = s.notificationPushService.NewApproveCarRegisterMsg(carID, expoToken, phone)
 			break
 		}
 
@@ -964,6 +964,83 @@ func (s *Server) HandleGetNotificationHistory(c *gin.Context) {
 	}
 
 	responseSuccess(c, notis)
+}
+
+type AdminMakeMonthlyPartnerPayments struct {
+	StartDate time.Time `json:"start_date" binding:"required"`
+	EndDate   time.Time `json:"end_date" binding:"required"`
+	ReturnURL string    `json:"return_url" binding:"required"`
+}
+
+func (s *Server) HandleAdminMakeMonthlyPartnerPayments(c *gin.Context) {
+	req := AdminMakeMonthlyPartnerPayments{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminMakeMonthlyPaymentRequest, err)
+		return
+	}
+
+	completedContracts, err := s.store.CustomerContractStore.
+		GetByStatusEndTimeInRange(req.StartDate, req.EndDate, model.CustomerContractStatusCompleted)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	// partnerID -> list of customer contract IDs
+	partnerPayments := make(map[int][]int, 0)
+
+	// partnerID -> needed pay amount
+	amounts := make(map[int]int, 0)
+
+	for _, contract := range completedContracts {
+		partnerID := contract.Car.PartnerID
+		_, existed := partnerPayments[partnerID]
+		if !existed {
+			partnerPayments[partnerID] = []int{}
+		}
+		partnerPayments[partnerID] = append(partnerPayments[partnerID], contract.ID)
+
+		_, existed = amounts[partnerID]
+		if !existed {
+			amounts[partnerID] = 0
+		}
+		amounts[partnerID] += contract.RentPrice * int(100-contract.RevenueSharingPercent) / 100
+	}
+
+	for partnerID, cusContractIds := range partnerPayments {
+		history := &model.PartnerPaymentHistory{
+			PartnerID: partnerID,
+			StartDate: req.StartDate,
+			EndDate:   req.EndDate,
+			Amount:    amounts[partnerID],
+			Status:    model.PartnerPaymentHistoryStatusPending,
+		}
+		if err := s.store.PartnerPaymentHistoryStore.Create(history, cusContractIds); err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		if err := s.generatePartnerPaymentQRCode(history.ID, history.Amount, req.ReturnURL); err != nil {
+			responseCustomErr(c, ErrCodeGenerateQRCode, err)
+			return
+		}
+	}
+
+	responseSuccess(c, gin.H{"status": "generate monthly partner payment successfully"})
+}
+
+const PrefixPartnerPayment = "partner_payment"
+
+func (s *Server) generatePartnerPaymentQRCode(partnerPaymentID, amount int, returnURL string) error {
+	txnRef := fmt.Sprintf("%s__%s", PrefixPartnerPayment, time.Now().Format("02150405"))
+	url, err := s.paymentService.GeneratePaymentURL([]int{partnerPaymentID}, amount, txnRef, returnURL)
+	if err != nil {
+		return err
+	}
+
+	return s.store.PartnerPaymentHistoryStore.Update(partnerPaymentID, map[string]interface{}{
+		"payment_url": url,
+	})
 }
 
 func (s *Server) getExpoToken(phone string) string {

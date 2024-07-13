@@ -15,7 +15,7 @@ type INotificationPushService interface {
 	NewApproveCarDeliveryMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewRejectCarMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewChatMsg(expoToken, toPhone string) *PushMessage
-	NewReceivingPaymentMsg(month, amount int, expoToken, toPhone string) *PushMessage
+	NewReceivingPaymentMsg(amount int, expoToken, toPhone string) *PushMessage
 	NewRejectPartnerContractMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewRejectRentingCarRequestMsg(expoToken, toPhone string) *PushMessage
 	NewApproveRentingCarRequestMsg(expoToken, toPhone string) *PushMessage
@@ -119,13 +119,13 @@ func (s *NotificationPushService) NewChatMsg(expoToken, toPhone string) *PushMes
 	}
 }
 
-func (s *NotificationPushService) NewReceivingPaymentMsg(month, amount int, expoToken, toPhone string) *PushMessage {
+func (s *NotificationPushService) NewReceivingPaymentMsg(amount int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
 		To:    []string{expoToken},
 		Title: "Nhận tiền từ MinhHungCar",
-		Body:  fmt.Sprintf("MinhHungCar thanh toán tiền tháng %d là %d VNĐ", month, amount),
+		Body:  fmt.Sprintf("MinhHungCar thanh toán tiền tháng này là %d VNĐ", amount),
 		Data: map[string]interface{}{
-			"screen":       fmt.Sprintf("%s/chat", s.FrontendURL),
+			"screen":       fmt.Sprintf("%s/index", s.FrontendURL),
 			"phone_number": toPhone,
 		},
 	}

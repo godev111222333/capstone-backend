@@ -339,3 +339,18 @@ func (s *CustomerContractStore) GetFeedbacksByCarID(carID, offset, limit int, st
 
 	return res, int(counter), nil
 }
+
+func (s *CustomerContractStore) GetByStatusEndTimeInRange(
+	fromDate,
+	toDate time.Time, status model.CustomerContractStatus,
+) ([]*model.CustomerContract, error) {
+	var res []*model.CustomerContract
+	if err := s.db.Where("status = ? and end_date >= ? and end_date < ?", string(status), fromDate, toDate).
+		Preload("Car").
+		Scan(&res).Error; err != nil {
+		fmt.Printf("CustomerContractStore: GetByStatusEndTimeInRange %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

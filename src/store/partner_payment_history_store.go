@@ -44,7 +44,7 @@ func (s *PartnerPaymentHistoryStore) Create(history *model.PartnerPaymentHistory
 
 func (s *PartnerPaymentHistoryStore) GetByID(id int) (*model.PartnerPaymentHistory, error) {
 	var res *model.PartnerPaymentHistory
-	if err := s.db.Where("id = ?", id).First(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).First(&res).Error; err != nil {
 		fmt.Printf("PartnerPaymentHistoryStore: GetByID %v\n", err)
 		return nil, err
 	}

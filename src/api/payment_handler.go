@@ -124,6 +124,8 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("req.TxnRef", req.TxnRef)
+
 	if strings.HasPrefix(PrefixPartnerPayment, req.TxnRef) {
 		s.handlePartnerPayments(c, req)
 		return

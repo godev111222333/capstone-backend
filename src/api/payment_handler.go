@@ -210,6 +210,8 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 
 func (s *Server) handlePartnerPayments(c *gin.Context, req VnPayIPNRequest) {
 	paymentIDs := decodeOrderInfo(req.OrderInfo)
+	fmt.Println("req.OrderInfo", req.OrderInfo)
+	fmt.Println("paymentIDs", paymentIDs)
 	if err := s.store.PartnerPaymentHistoryStore.UpdateMulti(
 		paymentIDs,
 		map[string]interface{}{"status": string(model.PartnerPaymentHistoryStatusPaid)},

@@ -444,6 +444,23 @@ func (s *Server) HandlePartnerGetActivityDetail(c *gin.Context) {
 	responseSuccess(c, resp)
 }
 
+func (s *Server) HandlePartnerGetRevenue(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	payments, err := s.store.PartnerPaymentHistoryStore.GetRevenue(acct.ID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, payments)
+}
+
 func (s *Server) fromUUIDToURL(uuid, extension string) string {
 	return s.s3store.Config.BaseURL + uuid + "." + extension
 }

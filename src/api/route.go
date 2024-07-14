@@ -58,6 +58,7 @@ const (
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
+	RouteGetPartnerRevenue                           = "partner_get_revenue"
 	RouteCustomerFindCars                            = "customer_find_cars"
 	RouteCustomerRentCar                             = "customer_rent_car"
 	RouteCustomerUploadDrivingLicenseImages          = "customer_upload_driving_license_images"
@@ -419,6 +420,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/partner/contract",
 			Method:      http.MethodGet,
 			Handler:     s.HandleGetPartnerContractDetail,
+			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
+		},
+		RouteGetPartnerRevenue: {
+			Path:        "/partner/revenue",
+			Method:      http.MethodGet,
+			Handler:     s.HandlePartnerGetRevenue,
 			RequireAuth: true,
 			AuthRoles:   AuthRolePartner,
 		},

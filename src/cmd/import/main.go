@@ -23,8 +23,11 @@ func main() {
 		panic(err)
 	}
 
-	filePath := []string{"etc/car_models/2024.csv", "etc/car_models/2023.csv", "etc/car_models/2022.csv"}
-	for _, path := range filePath {
+	filePaths := make([]string, 0)
+	for year := 2010; year <= 2021; year++ {
+		filePaths = append(filePaths, fmt.Sprintf("etc/car_models/%d.csv", year))
+	}
+	for _, path := range filePaths {
 		models, err := importFromFile(path)
 		if err != nil {
 			panic(err)

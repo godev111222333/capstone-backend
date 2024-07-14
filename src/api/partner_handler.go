@@ -458,7 +458,12 @@ func (s *Server) HandlePartnerGetRevenue(c *gin.Context) {
 		return
 	}
 
-	responseSuccess(c, payments)
+	revenue := 0
+	for _, p := range payments {
+		revenue += p.Amount
+	}
+
+	responseSuccess(c, gin.H{"total_revenue": revenue, "payments:": payments})
 }
 
 func (s *Server) fromUUIDToURL(uuid, extension string) string {

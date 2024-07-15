@@ -152,12 +152,11 @@ func (s *Server) HandleChat(c *gin.Context) {
 				}
 				break
 			case MessageTypeUserJoin:
-				convID, ok := s.handleUserJoinMsg(conn, msg)
+				_, ok := s.handleUserJoinMsg(conn, msg)
 				if !ok {
 					break loop
 				}
 
-				s.adminNewConversationQueue <- ConversationMsg{ConversationID: convID}
 				break
 			case MessageTypeTexting:
 				if !s.handleTextingMsg(conn, msg) {

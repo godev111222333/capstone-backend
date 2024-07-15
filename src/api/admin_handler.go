@@ -1082,6 +1082,7 @@ type AdminGetMonthlyPartnerPayments struct {
 	Pagination
 	StartDate time.Time `form:"start_date" binding:"required"`
 	EndDate   time.Time `form:"end_date" binding:"required"`
+	Status    string    `form:"status"`
 }
 
 func (s *Server) HandleAdminGetMonthlyPartnerPayments(c *gin.Context) {
@@ -1091,7 +1092,14 @@ func (s *Server) HandleAdminGetMonthlyPartnerPayments(c *gin.Context) {
 		return
 	}
 
-	payments, err := s.store.PartnerPaymentHistoryStore.GetInTimeRange(req.StartDate, req.EndDate, req.Offset, req.Limit)
+	status := model.PartnerPaymentHistoryStatusNoFilter
+	if len(req.Status) > 0 {
+		status = model.PartnerPaymentHistoryStatus(req.Status)
+	}
+
+	payments, err := s.store.PartnerPaymentHistoryStore.GetInTimeRange(
+		req.StartDate, req.EndDate, status, req.Offset, req.Limit,
+	)
 	if err != nil {
 		responseGormErr(c, err)
 		return

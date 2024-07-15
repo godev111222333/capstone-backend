@@ -5,8 +5,9 @@ import "time"
 type PartnerPaymentHistoryStatus string
 
 const (
-	PartnerPaymentHistoryStatusPending PartnerPaymentHistoryStatus = "pending"
-	PartnerPaymentHistoryStatusPaid    PartnerPaymentHistoryStatus = "paid"
+	PartnerPaymentHistoryStatusPending  PartnerPaymentHistoryStatus = "pending"
+	PartnerPaymentHistoryStatusPaid     PartnerPaymentHistoryStatus = "paid"
+	PartnerPaymentHistoryStatusNoFilter PartnerPaymentHistoryStatus = "no_filter"
 )
 
 type PartnerPaymentHistory struct {

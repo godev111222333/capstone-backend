@@ -72,20 +72,31 @@ func (s *PartnerPaymentHistoryStore) UpdateMulti(ids []int, values map[string]in
 }
 
 func (s *PartnerPaymentHistoryStore) GetInTimeRange(
-	fromDate, toDate time.Time,
+	fromDate, toDate time.Time, status model.PartnerPaymentHistoryStatus,
 	offset, limit int) ([]*model.PartnerPaymentHistory, error) {
 	if limit == 0 {
 		limit = 1000
 	}
 
 	var res []*model.PartnerPaymentHistory
-	if err := s.db.Where("created_at >= ? and created_at < ?", fromDate, toDate).Preload("Partner").
-		Order("id desc").
-		Offset(offset).
-		Limit(limit).
-		Find(&res).Error; err != nil {
-		fmt.Printf("PartnerPaymentHistoryStore: GetInTimeRange %v\n", err)
-		return nil, err
+	if status == model.PartnerPaymentHistoryStatusNoFilter {
+		if err := s.db.Where("created_at >= ? and created_at < ?", fromDate, toDate).Preload("Partner").
+			Order("id desc").
+			Offset(offset).
+			Limit(limit).
+			Find(&res).Error; err != nil {
+			fmt.Printf("PartnerPaymentHistoryStore: GetInTimeRange %v\n", err)
+			return nil, err
+		}
+	} else {
+		if err := s.db.Where("created_at >= ? and created_at < ? and status = ?", fromDate, toDate, string(status)).Preload("Partner").
+			Order("id desc").
+			Offset(offset).
+			Limit(limit).
+			Find(&res).Error; err != nil {
+			fmt.Printf("PartnerPaymentHistoryStore: GetInTimeRange %v\n", err)
+			return nil, err
+		}
 	}
 
 	return res, nil

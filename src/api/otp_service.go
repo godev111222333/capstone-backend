@@ -11,6 +11,7 @@ import (
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/redis/go-redis/v9"
 	"github.com/twilio/twilio-go"
+	twilioApi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
 const (
@@ -36,25 +37,25 @@ func NewOTPService(
 }
 
 func (s *OTPService) SendOTP(otpType model.OTPType, phoneNumber string) error {
-	//phoneWithPrefix := addPhoneCountryPrefix(phoneNumber)
-	//code := misc.RandomOTP(6)
-	//msgBody := fmt.Sprintf("MinhHungCar verification code: %s. Do not share this code with anyone", code)
-	//param := &twilioApi.CreateMessageParams{}
-	//param.SetFrom(s.cfg.FromNumber)
-	//param.SetTo(phoneWithPrefix)
-	//param.SetBody(msgBody)
-	//
-	//_, err := s.twilioClient.Api.CreateMessage(param)
-	//if err != nil {
-	//	fmt.Printf("OTPService: SentOTP %v\n", err)
-	//	return err
-	//}
+	phoneWithPrefix := addPhoneCountryPrefix(phoneNumber)
+	code := misc.RandomOTP(6)
+	msgBody := fmt.Sprintf("MinhHungCar verification code: %s. Do not share this code with anyone", code)
+	param := &twilioApi.CreateMessageParams{}
+	param.SetFrom(s.cfg.FromNumber)
+	param.SetTo(phoneWithPrefix)
+	param.SetBody(msgBody)
+
+	_, err := s.twilioClient.Api.CreateMessage(param)
+	if err != nil {
+		fmt.Printf("OTPService: SentOTP %v\n", err)
+		return err
+	}
 
 	now := time.Now()
 	otp := &model.OTP{
 		OtpType:     otpType,
 		PhoneNumber: phoneNumber,
-		OTP:         FakeOTP,
+		OTP:         code,
 		Status:      model.OTPStatusSent,
 		ExpiresAt:   now.Add(30 * time.Minute),
 	}

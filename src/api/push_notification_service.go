@@ -18,7 +18,7 @@ type INotificationPushService interface {
 	NewReceivingPaymentMsg(amount int, expoToken, toPhone string) *PushMessage
 	NewRejectPartnerContractMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewRejectRentingCarRequestMsg(expoToken, toPhone string) *PushMessage
-	NewApproveRentingCarRequestMsg(expoToken, toPhone string) *PushMessage
+	NewApproveRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewCustomerAdditionalPaymentMsg(contractID int, expoToken, toPhone string) *PushMessage
 }
 
@@ -155,13 +155,13 @@ func (s *NotificationPushService) NewRejectRentingCarRequestMsg(expoToken, toPho
 	}
 }
 
-func (s *NotificationPushService) NewApproveRentingCarRequestMsg(expoToken, toPhone string) *PushMessage {
+func (s *NotificationPushService) NewApproveRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
 		To:    []string{expoToken},
 		Title: "Yêu cầu thuê xe đã được chấp nhận",
 		Body:  "MinhHungCar đã chấp nhận yêu cầu thuê xe của bạn",
 		Data: map[string]interface{}{
-			"screen":       fmt.Sprintf("%s/trip", s.FrontendURL),
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
 			"phone_number": toPhone,
 		},
 	}

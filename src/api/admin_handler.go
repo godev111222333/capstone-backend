@@ -348,8 +348,12 @@ func (s *Server) checkIfInsertableNewSeat(seatNumber int) (bool, error) {
 	return cur < garageCfg[seatNumberToGarageConfigType(seatNumber)], nil
 }
 
+func convertUTCToGmt7(t time.Time) time.Time {
+	return t.Add(7 * time.Hour)
+}
+
 func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car) error {
-	now := time.Now()
+	now := convertUTCToGmt7(time.Now())
 	year, month, date := now.Date()
 
 	contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
@@ -360,25 +364,27 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 	endYear, endMonth, endDate := contract.EndDate.Date()
 
 	docUUID, err := s.pdfService.Render(RenderTypePartner, map[string]string{
-		"now_date":              strconv.Itoa(date),
-		"now_month":             strconv.Itoa(int(month)),
-		"now_year":              strconv.Itoa(year),
-		"partner_fullname":      partner.LastName + " " + partner.FirstName,
-		"partner_date_of_birth": partner.DateOfBirth.Format(layoutDateMonthYear),
-		"partner_id_card":       partner.IdentificationCardNumber,
-		"partner_address":       "",
-		"brand_model":           car.CarModel.Brand + " " + car.CarModel.Model,
-		"license_plate":         car.LicensePlate,
-		"number_of_seats":       strconv.Itoa(car.CarModel.NumberOfSeats),
-		"car_year":              strconv.Itoa(car.CarModel.Year),
-		"price":                 strconv.Itoa(car.Price),
-		"period":                strconv.Itoa(car.Period),
-		"period_start_date":     strconv.Itoa(startDate),
-		"period_start_month":    strconv.Itoa(int(startMonth)),
-		"period_start_year":     strconv.Itoa(startYear),
-		"period_end_date":       strconv.Itoa(endDate),
-		"period_end_month":      strconv.Itoa(int(endMonth)),
-		"period_end_year":       strconv.Itoa(endYear),
+		"now_date":                strconv.Itoa(date),
+		"now_month":               strconv.Itoa(int(month)),
+		"now_year":                strconv.Itoa(year),
+		"partner_fullname":        partner.LastName + " " + partner.FirstName,
+		"partner_date_of_birth":   partner.DateOfBirth.Format(layoutDateMonthYear),
+		"partner_id_card":         partner.IdentificationCardNumber,
+		"brand_model":             car.CarModel.Brand + " " + car.CarModel.Model,
+		"license_plate":           car.LicensePlate,
+		"number_of_seats":         strconv.Itoa(car.CarModel.NumberOfSeats),
+		"car_year":                strconv.Itoa(car.CarModel.Year),
+		"period":                  strconv.Itoa(car.Period),
+		"period_start_date":       strconv.Itoa(startDate),
+		"period_start_month":      strconv.Itoa(int(startMonth)),
+		"period_start_year":       strconv.Itoa(startYear),
+		"period_end_date":         strconv.Itoa(endDate),
+		"period_end_month":        strconv.Itoa(int(endMonth)),
+		"period_end_year":         strconv.Itoa(endYear),
+		"partner_revenue_percent": strconv.Itoa(int(100 - contract.RevenueSharingPercent)),
+		"partner_bank_number":     contract.BankNumber,
+		"partner_bank_owner":      contract.BankOwner,
+		"partner_bank_name":       contract.BankName,
 	})
 	if err != nil {
 		fmt.Printf("error when rendering partner contract %v\n", err)
@@ -400,10 +406,21 @@ func (s *Server) RenderCustomerContractPDF(
 	customer *model.Account, car *model.Car,
 	contract *model.CustomerContract,
 ) error {
-	nowYear, nowMonth, nowDate := time.Now().Date()
-	startDate, endDate := contract.StartDate, contract.EndDate
+	nowYear, nowMonth, nowDate := convertUTCToGmt7(time.Now()).Date()
+	startDate, endDate := convertUTCToGmt7(contract.StartDate), convertUTCToGmt7(contract.EndDate)
 	startHour, startDay, startMonth, startYear := startDate.Hour(), startDate.Day(), int(startDate.Month()), startDate.Year()
 	endHour, endDay, endMonth, endYear := endDate.Hour(), endDate.Day(), int(endDate.Month()), endDate.Year()
+
+	collateralAmount := contract.CollateralCashAmount
+	if collateralAmount == 0 {
+		rule, err := s.store.ContractRuleStore.GetLast()
+		if err != nil {
+			return err
+		}
+
+		collateralAmount = rule.CollateralCashAmount
+	}
+
 	docUUID, err := s.pdfService.Render(RenderTypeCustomer, map[string]string{
 		"now_date":               strconv.Itoa(nowDate),
 		"now_month":              strconv.Itoa(int(nowMonth)),
@@ -411,12 +428,13 @@ func (s *Server) RenderCustomerContractPDF(
 		"customer_fullname":      customer.LastName + " " + customer.FirstName,
 		"customer_date_of_birth": customer.DateOfBirth.Format(layoutDateMonthYear),
 		"customer_id_card":       customer.IdentificationCardNumber,
-		"customer_address":       "",
 		"brand_model":            car.CarModel.Brand + " " + car.CarModel.Model,
 		"license_plate":          car.LicensePlate,
 		"number_of_seats":        strconv.Itoa(car.CarModel.NumberOfSeats),
 		"car_year":               strconv.Itoa(car.CarModel.Year),
 		"price":                  strconv.Itoa(contract.RentPrice),
+		"prepay_percent":         fmt.Sprintf("%.2f", contract.PrepayPercent),
+		"insurance_percent":      fmt.Sprintf("%.2f", contract.InsurancePercent),
 		"start_hour":             strconv.Itoa(startHour),
 		"start_date":             strconv.Itoa(startDay),
 		"start_month":            strconv.Itoa(startMonth),
@@ -425,6 +443,11 @@ func (s *Server) RenderCustomerContractPDF(
 		"end_date":               strconv.Itoa(endDay),
 		"end_month":              strconv.Itoa(endMonth),
 		"end_year":               strconv.Itoa(endYear),
+		"bank_number":            contract.BankNumber,
+		"bank_name":              contract.BankName,
+		"bank_owner":             contract.BankOwner,
+		"collateral_amount_1":    strconv.Itoa(collateralAmount),
+		"collateral_amount_2":    strconv.Itoa(collateralAmount),
 	})
 	if err != nil {
 		fmt.Printf("error when rendering customer contract %v\n", err)

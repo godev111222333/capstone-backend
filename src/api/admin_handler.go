@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -1132,12 +1133,15 @@ func (s *Server) HandleAdminGetMonthlyPartnerPayments(c *gin.Context) {
 }
 
 func (s *Server) getExpoToken(phone string) string {
-	expoToken, ok := s.expoPushTokens.Load(phone)
-	if ok {
-		return expoToken.(string)
+	expoToken, err := s.redisClient.Get(
+		context.Background(),
+		fmt.Sprintf("%s__%s", ExpoPushTokenCacheKey, phone),
+	).Result()
+	if err != nil {
+		return ""
 	}
 
-	return ""
+	return expoToken
 }
 
 func mapGetString(m interface{}, fieldName string) string {

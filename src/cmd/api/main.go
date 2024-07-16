@@ -52,6 +52,7 @@ func main() {
 		pdfService,
 		paymentService,
 		notificationPushService,
+		redisClient,
 	)
 	go func() {
 		if err := server.Run(); err != nil {

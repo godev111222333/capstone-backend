@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"strings"
 	"sync"
 
@@ -34,7 +35,7 @@ type Server struct {
 	paymentService          IPaymentService
 	notificationPushService INotificationPushService
 
-	expoPushTokens sync.Map
+	redisClient *redis.Client
 
 	bankMetadata []string
 	chatRooms    sync.Map
@@ -55,6 +56,7 @@ func NewServer(
 	pdfService IPDFService,
 	paymentService IPaymentService,
 	notificationPushService INotificationPushService,
+	redisClient *redis.Client,
 ) *Server {
 	route := gin.New()
 	tokenMaker, err := token.NewJWTMaker("12345678901234567890123456789012")
@@ -82,7 +84,7 @@ func NewServer(
 		pdfService,
 		paymentService,
 		notificationPushService,
-		sync.Map{},
+		redisClient,
 		bankMetadata,
 		sync.Map{},
 		sync.Map{},

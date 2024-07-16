@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"mime/multipart"
 	"time"
@@ -319,6 +320,8 @@ type RegisterExpoPushTokenRequest struct {
 	ExpoPushToken string `json:"expo_push_token"`
 }
 
+const ExpoPushTokenCacheKey = "expo"
+
 func (s *Server) HandleRegisterExpoPushToken(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	req := RegisterExpoPushTokenRequest{}
@@ -327,6 +330,15 @@ func (s *Server) HandleRegisterExpoPushToken(c *gin.Context) {
 		return
 	}
 
-	s.expoPushTokens.Store(authPayload.PhoneNumber, req.ExpoPushToken)
+	if statusCmd := s.redisClient.Set(
+		context.Background(),
+		fmt.Sprintf("%s__%s", ExpoPushTokenCacheKey, authPayload.PhoneNumber),
+		req.ExpoPushToken,
+		time.Duration(0),
+	); statusCmd.Err() != nil {
+		responseInternalServerError(c, statusCmd.Err())
+		return
+	}
+
 	responseSuccess(c, gin.H{"status": "register expo push token successfully"})
 }

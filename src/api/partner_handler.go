@@ -200,6 +200,16 @@ func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
 		return nil, err
 	}
 
+	avgRating, err := s.store.CustomerContractStore.GetAverageRating(car.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	totalTrip, err := s.store.CustomerContractStore.GetTotalCompletedContracts(car.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &carResponse{
 		ID:           car.ID,
 		PartnerID:    car.PartnerID,
@@ -213,8 +223,8 @@ func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
 		Status:       car.Status,
 		Images:       images,
 		Caveats:      caveats,
-		Rating:       5.0,
-		TotalTrip:    1000,
+		Rating:       avgRating,
+		TotalTrip:    totalTrip,
 		PeriodCode:   car.Period,
 	}, nil
 }

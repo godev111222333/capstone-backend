@@ -354,3 +354,31 @@ func (s *CustomerContractStore) GetByStatusEndTimeInRange(
 
 	return res, nil
 }
+
+func (s *CustomerContractStore) GetAverageRating(carID int) (float64, error) {
+	var avg struct {
+		Avg float64 `json:"avg"`
+	}
+	rawSql := `
+select avg(feedback_rating) from customer_contracts where status = ? and car_id = ? and feedback_rating > 0
+`
+	if err := s.db.Raw(rawSql, model.CustomerContractStatusCompleted, carID).Scan(&avg).Error; err != nil {
+		fmt.Printf("CustomerContractStore: GetAverageRating %v\n", err)
+		return -1, err
+	}
+
+	return avg.Avg, nil
+}
+
+func (s *CustomerContractStore) GetTotalCompletedContracts(carID int) (int, error) {
+	var count int64
+	err := s.db.Model(model.CustomerContract{}).
+		Where("car_id = ? and status = ?", carID, string(model.CustomerContractStatusCompleted)).
+		Count(&count).Error
+	if err != nil {
+		fmt.Printf("CustomerContractStore: GetTotalCompletedContracts %v\n", err)
+		return -1, err
+	}
+
+	return int(count), nil
+}

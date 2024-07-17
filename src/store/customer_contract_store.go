@@ -367,6 +367,10 @@ select avg(feedback_rating) from customer_contracts where status = ? and car_id 
 		return -1, err
 	}
 
+	if avg.Avg == 0.0 {
+		return 5.0, nil
+	}
+
 	return avg.Avg, nil
 }
 

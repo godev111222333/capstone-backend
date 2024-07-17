@@ -81,7 +81,8 @@ func (s *Server) NewCustomerContractPaymentNotificationMsg(adminID, cusContractI
 }
 
 type ConversationMsg struct {
-	ConversationID int `json:"conversation_id"`
+	ConversationID int    `json:"conversation_id"`
+	Sender         string `json:"sender"`
 }
 
 type AuthMsg struct {

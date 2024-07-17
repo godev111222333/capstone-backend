@@ -159,11 +159,12 @@ func (s *Server) HandleChat(c *gin.Context) {
 
 				break
 			case MessageTypeTexting:
-				if !s.handleTextingMsg(conn, msg) {
+				sender, ok := s.handleTextingMsg(conn, msg)
+				if !ok {
 					break loop
 				}
 
-				s.adminNewConversationQueue <- ConversationMsg{ConversationID: msg.ConversationID}
+				s.adminNewConversationQueue <- ConversationMsg{ConversationID: msg.ConversationID, Sender: sender}
 				break
 			default:
 				fmt.Println("invalid message_type. stop the chat")
@@ -261,17 +262,17 @@ func (s *Server) handleUserJoinMsg(conn *websocket.Conn, msg Message) (int, bool
 	return conv.ID, true
 }
 
-func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) bool {
+func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) (string, bool) {
 	authPayload, err := s.decodeBearerAccessToken(msg.AccessToken)
 	if err != nil {
 		fmt.Println(err)
 		_ = sendError(conn, err)
-		return false
+		return "", false
 	}
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
 		_ = sendError(conn, err)
-		return false
+		return "", false
 	}
 
 	if authPayload.Role == model.RoleNameAdmin {
@@ -295,8 +296,8 @@ func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) bool {
 		Content:        msg.Content,
 	}); err != nil {
 		_ = sendError(conn, err)
-		return false
+		return "", false
 	}
 
-	return true
+	return authPayload.Role, true
 }

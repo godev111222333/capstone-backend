@@ -569,10 +569,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminFindCars: {
-			Path:      "/admin/find_change_cars",
-			Method:    http.MethodGet,
-			Handler:   s.HandleCustomerFindCars,
-			AuthRoles: AuthRoleAdmin,
+			Path:        "/admin/find_change_cars",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCustomerFindCars,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminChangeCar: {
 			Path:        "/admin/customer_contract/change_car",

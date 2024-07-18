@@ -1132,6 +1132,63 @@ func (s *Server) HandleAdminGetMonthlyPartnerPayments(c *gin.Context) {
 	responseSuccess(c, payments)
 }
 
+type AdminChangeCarRequest struct {
+	CustomerContractID int `json:"customer_contract_id" binding:"required"`
+	NewCarID           int `json:"new_car_id" binding:"required"`
+}
+
+func (s *Server) HandleAdminChangeCar(c *gin.Context) {
+	req := AdminChangeCarRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidAdminChangeCarRequest, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if contract.CarID == req.NewCarID {
+		responseCustomErr(c, ErrCodeInvalidAdminChangeCarRequest, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusOrdered {
+		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, err)
+		return
+	}
+
+	isOverlap, err := s.store.CustomerContractStore.IsOverlap(req.NewCarID, contract.StartDate, contract.EndDate)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if isOverlap {
+		responseCustomErr(c, ErrCodeOverlapOtherContract, err)
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, map[string]interface{}{"car_id": req.NewCarID}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.NewCarID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	go func() {
+		_ = s.RenderCustomerContractPDF(contract.Customer, car, contract)
+	}()
+
+	responseSuccess(c, gin.H{"status": "change car successfully"})
+}
+
 func (s *Server) getExpoToken(phone string) string {
 	expoToken, err := s.redisClient.Get(
 		context.Background(),

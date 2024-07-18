@@ -97,6 +97,8 @@ const (
 	ErrCodeInvalidAdminMakeMonthlyPaymentRequest              ErrorCode = 10084
 	ErrCodeInvalidAdminGetMonthlyPartnerPaymentRequest        ErrorCode = 10085
 	ErrCodeInvalidGenerateMultiplePartnerPaymentsRequest      ErrorCode = 10086
+	ErrCodeInvalidAdminChangeCarRequest                       ErrorCode = 10087
+	ErrCodeOverlapOtherContract                               ErrorCode = 10088
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

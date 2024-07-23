@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"io"
 	"os"
 	"os/exec"
@@ -64,6 +65,10 @@ func initTestServer(cfg *misc.GlobalConfig) {
 	if err != nil {
 		panic(err)
 	}
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
+		Password: cfg.Redis.Password,
+	})
 
 	TestServer = NewServer(
 		cfg.ApiServer,
@@ -72,7 +77,7 @@ func initTestServer(cfg *misc.GlobalConfig) {
 		TestS3Store,
 		NewOTPService(cfg.OTP, nil),
 		bankMetadata,
-		nil, nil, nil, nil,
+		nil, nil, nil, redisClient,
 	)
 }
 

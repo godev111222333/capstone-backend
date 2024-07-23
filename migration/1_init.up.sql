@@ -55,19 +55,27 @@ create table car_models
 
 create table cars
 (
-    "id"            serial primary key,
-    "partner_id"    bigint references accounts (id),
-    "car_model_id"  bigint references car_models (id),
-    "license_plate" varchar(255)  not null default '' unique,
-    "parking_lot"   varchar(255)  not null default '',
-    "description"   varchar(1023) not null default '',
-    "fuel"          varchar(255)  not null default '',
-    "motion"        varchar(255)  not null default '',
-    "price"         bigint        not null default 0,
-    "status"        varchar(255)  not null default '',
-    "period"        bigint        not null default 0,
-    "created_at"    timestamptz            DEFAULT (now()),
-    "updated_at"    timestamptz            DEFAULT (now())
+    "id"                      serial primary key,
+    "partner_id"              bigint references accounts (id),
+    "car_model_id"            bigint references car_models (id),
+    "license_plate"           varchar(255)  not null default '' unique,
+    "parking_lot"             varchar(255)  not null default '',
+    "description"             varchar(1023) not null default '',
+    "fuel"                    varchar(255)  not null default '',
+    "motion"                  varchar(255)  not null default '',
+    "price"                   bigint        not null default 0,
+    "status"                  varchar(255)  not null default '',
+    "period"                  bigint        not null default 0,
+    "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
+    "bank_name"               varchar(255)  not null default '',
+    "bank_number"             varchar(255)  not null default '',
+    "bank_owner"              varchar(255)  not null default '',
+    "start_date"              timestamptz            DEFAULT (now()),
+    "end_date"                timestamptz            DEFAULT (now()),
+    "partner_contract_url"    varchar(1023) not null default '',
+    "partner_contract_status" varchar(256)  not null default '',
+    "created_at"              timestamptz            DEFAULT (now()),
+    "updated_at"              timestamptz            DEFAULT (now())
 );
 
 create table "notifications"
@@ -93,33 +101,17 @@ create table "car_images"
     "updated_at" timestamptz            DEFAULT (now())
 );
 
-create table "partner_contracts"
-(
-    "id"                      serial primary key,
-    "car_id"                  bigint references cars (id),
-    "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
-    "bank_name"               varchar(255)  not null default '',
-    "bank_number"             varchar(255)  not null default '',
-    "bank_owner"              varchar(255)  not null default '',
-    "start_date"              timestamptz            DEFAULT (now()),
-    "end_date"                timestamptz            DEFAULT (now()),
-    "url"                     varchar(1023) not null default '',
-    "status"                  varchar(256)  not null default '',
-    "created_at"              timestamptz            DEFAULT (now()),
-    "updated_at"              timestamptz            DEFAULT (now())
-);
-
 create table "partner_payment_histories"
 (
-    "id"         serial primary key,
-    "partner_id" bigint references accounts (id),
-    "start_date" timestamptz           DEFAULT (now()),
-    "end_date"   timestamptz           DEFAULT (now()),
-    "amount"     bigint       not null default 0,
-    "status"     varchar(255) not null default '',
+    "id"          serial primary key,
+    "partner_id"  bigint references accounts (id),
+    "start_date"  timestamptz            DEFAULT (now()),
+    "end_date"    timestamptz            DEFAULT (now()),
+    "amount"      bigint        not null default 0,
+    "status"      varchar(255)  not null default '',
     "payment_url" varchar(1023) not null default '',
-    "created_at" timestamptz           DEFAULT (now()),
-    "updated_at" timestamptz           DEFAULT (now())
+    "created_at"  timestamptz            DEFAULT (now()),
+    "updated_at"  timestamptz            DEFAULT (now())
 );
 
 create table "customer_contracts"
@@ -238,6 +230,6 @@ create table partner_payment_customer_contracts
     "id"                         serial primary key,
     "partner_payment_history_id" bigint references partner_payment_histories (id),
     "customer_contract_id"       bigint references customer_contracts (id),
-    "created_at"                 timestamptz           DEFAULT (now()),
-    "updated_at"                 timestamptz           DEFAULT (now())
+    "created_at"                 timestamptz DEFAULT (now()),
+    "updated_at"                 timestamptz DEFAULT (now())
 );

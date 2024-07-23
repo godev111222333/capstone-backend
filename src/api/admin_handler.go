@@ -226,28 +226,6 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}
 
 		newStatus = string(model.CarStatusApproved)
-		acct, err := s.store.AccountStore.GetByID(car.PartnerID)
-		if err != nil {
-			responseGormErr(c, err)
-			return
-		}
-
-		// Create new partner contract record
-		now := time.Now()
-		contract := &model.PartnerContract{
-			CarID:      req.CarID,
-			BankOwner:  acct.BankOwner,
-			BankName:   acct.BankName,
-			BankNumber: acct.BankNumber,
-			StartDate:  now,
-			EndDate:    now.AddDate(0, car.Period, 0),
-			Status:     model.PartnerContractStatusWaitingForAgreement,
-		}
-		if err := s.store.PartnerContractStore.Create(contract); err != nil {
-			responseInternalServerError(c, err)
-			return
-		}
-
 		go func() {
 			partner, err := s.store.AccountStore.GetByPhoneNumber(car.Account.PhoneNumber)
 			if err != nil {
@@ -272,12 +250,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 			return
 		}
 
-		contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
-		if err != nil {
-			responseGormErr(c, err)
-			return
-		}
-
+		contract := car.ToPartnerContract()
 		if contract == nil {
 			c.JSON(http.StatusNotFound, gin.H{"status": "contract not found"})
 			return
@@ -366,10 +339,12 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 	now := convertUTCToGmt7(time.Now())
 	year, month, date := now.Date()
 
-	contract, err := s.store.PartnerContractStore.GetByCarID(car.ID)
+	car, err := s.store.CarStore.GetByID(car.ID)
 	if err != nil {
 		return err
 	}
+
+	contract := car.ToPartnerContract()
 	startYear, startMonth, startDate := contract.StartDate.Date()
 	endYear, endMonth, endDate := contract.EndDate.Date()
 
@@ -401,9 +376,9 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 		return err
 	}
 
-	if err := s.store.PartnerContractStore.Update(
-		contract.ID,
-		map[string]interface{}{"url": s.fromUUIDToURL(docUUID, model.ExtensionPDF)},
+	if err := s.store.CarStore.Update(
+		car.ID,
+		map[string]interface{}{"partner_contract_url": s.fromUUIDToURL(docUUID, model.ExtensionPDF)},
 	); err != nil {
 		fmt.Printf("error when update partner contract URL %v\n", err)
 		return err

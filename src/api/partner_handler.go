@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -88,23 +89,36 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		return
 	}
 
+	rule, err := s.store.ContractRuleStore.GetLast()
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
 	period, err := strconv.Atoi(req.PeriodCode)
 	if err != nil {
 		responseCustomErr(c, ErrCodeInvalidRegisterCarRequest, err)
 		return
 	}
 
+	now := time.Now()
 	car := &model.Car{
-		PartnerID:    acct.ID,
-		CarModelID:   req.CarModelID,
-		LicensePlate: req.LicensePlate,
-		ParkingLot:   req.ParkingLot,
-		Description:  req.Description,
-		Fuel:         req.Fuel,
-		Motion:       req.Motion,
-		Price:        0,
-		Period:       period,
-		Status:       model.CarStatusPendingApplicationPendingCarImages,
+		PartnerID:             acct.ID,
+		CarModelID:            req.CarModelID,
+		LicensePlate:          req.LicensePlate,
+		ParkingLot:            req.ParkingLot,
+		Description:           req.Description,
+		Fuel:                  req.Fuel,
+		Motion:                req.Motion,
+		Price:                 0,
+		RevenueSharingPercent: rule.RevenueSharingPercent,
+		BankName:              acct.BankName,
+		BankNumber:            acct.BankNumber,
+		BankOwner:             acct.BankOwner,
+		StartDate:             now,
+		EndDate:               now.AddDate(0, period, 0),
+		PartnerContractStatus: model.PartnerContractStatusWaitingForApproval,
+		Status:                model.CarStatusPendingApplicationPendingCarImages,
 	}
 
 	if err := s.store.CarStore.Create(car); err != nil {
@@ -195,7 +209,6 @@ type carResponse struct {
 	Caveats      []string         `json:"caveats"`
 	Rating       float64          `json:"rating"`
 	TotalTrip    int              `json:"total_trip"`
-	PeriodCode   int              `json:"period_code"`
 }
 
 func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
@@ -234,7 +247,6 @@ func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
 		Caveats:      caveats,
 		Rating:       avgRating,
 		TotalTrip:    totalTrip,
-		PeriodCode:   car.Period,
 	}, nil
 }
 
@@ -314,18 +326,12 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	contract, err := s.store.PartnerContractStore.GetByCarID(req.CarID)
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
-	if contract.Status != model.PartnerContractStatusWaitingForAgreement {
+	if car.PartnerContractStatus != model.PartnerContractStatusWaitingForAgreement {
 		responseCustomErr(c, ErrCodeInvalidPartnerContractStatus, errors.New("invalid contract status"))
 		return
 	}
 
-	if contract.Car.ParkingLot == model.ParkingLotGarage {
+	if car.ParkingLot == model.ParkingLotGarage {
 		isValid, err := s.checkIfInsertableNewSeat(car.CarModel.NumberOfSeats)
 		if err != nil {
 			responseGormErr(c, err)
@@ -338,8 +344,8 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		}
 	}
 
-	if err := s.store.PartnerContractStore.Update(contract.ID, map[string]interface{}{
-		"status": string(model.PartnerContractStatusAgreed),
+	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
+		"partner_contract_status": string(model.PartnerContractStatusAgreed),
 	}); err != nil {
 		responseGormErr(c, err)
 		return
@@ -397,13 +403,7 @@ func (s *Server) HandleGetPartnerContractDetail(c *gin.Context) {
 		return
 	}
 
-	contract, err := s.store.PartnerContractStore.GetByCarID(req.CarID)
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
-	responseSuccess(c, contract)
+	responseSuccess(c, car.ToPartnerContract())
 }
 
 type partnerGetActivityDetailRequest struct {

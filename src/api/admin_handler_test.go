@@ -173,19 +173,15 @@ func TestHandleApproveCar(t *testing.T) {
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		partner, _ := seedAccountAndLogin("partner_vip3", "aaa", model.RoleIDPartner)
 		car := &model.Car{
-			PartnerID:    partner.ID,
-			CarModelID:   carModel.ID,
-			LicensePlate: "69A11111",
-			Status:       model.CarStatusWaitingDelivery,
+			PartnerID:             partner.ID,
+			CarModelID:            carModel.ID,
+			LicensePlate:          "69A11111",
+			Status:                model.CarStatusWaitingDelivery,
+			StartDate:             time.Now(),
+			EndDate:               time.Now().AddDate(0, 3, 0),
+			PartnerContractStatus: model.PartnerContractStatusAgreed,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
-		contract := &model.PartnerContract{
-			CarID:     car.ID,
-			StartDate: time.Now(),
-			EndDate:   time.Now().AddDate(0, 3, 0),
-			Status:    model.PartnerContractStatusAgreed,
-		}
-		require.NoError(t, TestDb.PartnerContractStore.Create(contract))
 		accessToken := loginAdmin()
 
 		reqB := adminApproveOrRejectRequest{CarID: car.ID, Action: "approve_delivery"}

@@ -155,6 +155,8 @@ func TestCarStore(t *testing.T) {
 		require.NoError(t, TestDb.AccountStore.Create(partner1))
 		require.NoError(t, TestDb.AccountStore.Create(partner2))
 
+		now := time.Now()
+
 		cars := []*model.Car{
 			{
 				PartnerID:    partner1.ID,
@@ -165,6 +167,7 @@ func TestCarStore(t *testing.T) {
 				Motion:       model.MotionAutomaticTransmission,
 				Price:        100_000,
 				Status:       model.CarStatusActive,
+				EndDate:      now.AddDate(1, 0, 0),
 			},
 			{
 				PartnerID:    partner2.ID,
@@ -175,6 +178,7 @@ func TestCarStore(t *testing.T) {
 				Motion:       model.MotionAutomaticTransmission,
 				Price:        200_000,
 				Status:       model.CarStatusActive,
+				EndDate:      now.AddDate(1, 0, 0),
 			},
 			{
 				PartnerID:    partner2.ID,
@@ -185,6 +189,7 @@ func TestCarStore(t *testing.T) {
 				Motion:       model.MotionManualTransmission,
 				Price:        300_000,
 				Status:       model.CarStatusActive,
+				EndDate:      now.AddDate(1, 0, 0),
 			},
 		}
 		for _, car := range cars {
@@ -194,7 +199,6 @@ func TestCarStore(t *testing.T) {
 		customer := &model.Account{Email: "c1@gmail.com", Password: "c1", RoleID: model.RoleIDCustomer}
 		require.NoError(t, TestDb.AccountStore.Create(customer))
 
-		now := time.Now()
 		customerContracts := []*model.CustomerContract{
 			{
 				CustomerID: customer.ID,

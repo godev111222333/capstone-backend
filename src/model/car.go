@@ -9,6 +9,14 @@ type (
 	Motion     string
 )
 
+type PartnerContractStatus string
+
+const (
+	PartnerContractStatusWaitingForApproval  PartnerContractStatus = "waiting_for_approval"
+	PartnerContractStatusWaitingForAgreement PartnerContractStatus = "waiting_for_agreement"
+	PartnerContractStatusAgreed              PartnerContractStatus = "agreed"
+)
+
 const (
 	ParkingLotHome ParkingLot = "home"
 
@@ -33,21 +41,59 @@ const (
 )
 
 type Car struct {
-	ID           int        `json:"id"`
-	PartnerID    int        `json:"partner_id"`
-	Account      *Account   `json:"account,omitempty" gorm:"foreignKey:PartnerID"`
-	CarModelID   int        `json:"car_model_id"`
-	CarModel     CarModel   `json:"car_model,omitempty"`
-	LicensePlate string     `json:"license_plate"`
-	ParkingLot   ParkingLot `json:"parking_lot"`
-	Description  string     `json:"description"`
-	Fuel         Fuel       `json:"fuel"`
-	Motion       Motion     `json:"motion"`
-	Price        int        `json:"price"`
-	Status       CarStatus  `json:"status"`
-	Period       int        `json:"period"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
+	ID                    int                   `json:"id"`
+	PartnerID             int                   `json:"partner_id"`
+	Account               *Account              `json:"account,omitempty" gorm:"foreignKey:PartnerID"`
+	CarModelID            int                   `json:"car_model_id"`
+	CarModel              CarModel              `json:"car_model,omitempty"`
+	LicensePlate          string                `json:"license_plate"`
+	ParkingLot            ParkingLot            `json:"parking_lot"`
+	Description           string                `json:"description"`
+	Fuel                  Fuel                  `json:"fuel"`
+	Motion                Motion                `json:"motion"`
+	Price                 int                   `json:"price"`
+	Status                CarStatus             `json:"status"`
+	RevenueSharingPercent float64               `json:"revenue_sharing_percent"`
+	BankName              string                `json:"bank_name"`
+	BankNumber            string                `json:"bank_number"`
+	BankOwner             string                `json:"bank_owner"`
+	StartDate             time.Time             `json:"start_date"`
+	EndDate               time.Time             `json:"end_date"`
+	Period                int                   `json:"period"`
+	PartnerContractUrl    string                `json:"partner_contract_url"`
+	PartnerContractStatus PartnerContractStatus `json:"partner_contract_status"`
+	CreatedAt             time.Time             `json:"created_at"`
+	UpdatedAt             time.Time             `json:"updated_at"`
+}
+
+type PartnerContract struct {
+	CarID                 int                   `json:"car_id"`
+	RevenueSharingPercent float64               `json:"revenue_sharing_percent"`
+	BankName              string                `json:"bank_name"`
+	BankNumber            string                `json:"bank_number"`
+	BankOwner             string                `json:"bank_owner"`
+	StartDate             time.Time             `json:"start_date"`
+	EndDate               time.Time             `json:"end_date"`
+	Url                   string                `json:"url"`
+	Status                PartnerContractStatus `json:"status"`
+	CreatedAt             time.Time             `json:"created_at"`
+	UpdatedAt             time.Time             `json:"updated_at"`
+}
+
+func (c *Car) ToPartnerContract() *PartnerContract {
+	return &PartnerContract{
+		CarID:                 c.ID,
+		RevenueSharingPercent: c.RevenueSharingPercent,
+		BankName:              c.BankName,
+		BankNumber:            c.BankNumber,
+		BankOwner:             c.BankOwner,
+		StartDate:             c.StartDate,
+		EndDate:               c.EndDate,
+		Url:                   c.PartnerContractUrl,
+		Status:                c.PartnerContractStatus,
+		CreatedAt:             c.CreatedAt,
+		UpdatedAt:             c.UpdatedAt,
+	}
 }
 
 type CarJoinCarModel struct {
@@ -84,7 +130,6 @@ func (m *CarJoinCarModel) ToCar() *Car {
 		Motion:       m.Motion,
 		Price:        m.Price,
 		Status:       m.Status,
-		Period:       m.Period,
 		CreatedAt:    m.CreatedAt,
 		UpdatedAt:    m.UpdatedAt,
 	}

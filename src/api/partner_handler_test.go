@@ -69,6 +69,9 @@ func TestRegisterCarHandler(t *testing.T) {
 			FirstName:   "Bill Gate",
 			Status:      model.AccountStatusActive,
 			Password:    hashedPassword,
+			BankOwner:   "Bill",
+			BankNumber:  "123123",
+			BankName:    "VCB",
 		}
 		require.NoError(t, TestDb.AccountStore.Create(partner))
 		accessToken := login(partner.PhoneNumber, "0000000").AccessToken
@@ -140,20 +143,16 @@ func TestSignContract(t *testing.T) {
 	carModel := &model.CarModel{Brand: "Ok"}
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 	partner, accessPayload := seedAccountAndLogin("partner1", "aa", model.RoleIDPartner)
+	period := 3
 	car := &model.Car{
-		PartnerID:    partner.ID,
-		CarModelID:   carModel.ID,
-		LicensePlate: "89A8",
+		PartnerID:             partner.ID,
+		CarModelID:            carModel.ID,
+		LicensePlate:          "89A8",
+		StartDate:             time.Now(),
+		EndDate:               time.Now().AddDate(0, period, 0),
+		PartnerContractStatus: model.PartnerContractStatusWaitingForAgreement,
 	}
 	require.NoError(t, TestDb.CarStore.Create(car))
-	period := 3
-	contract := &model.PartnerContract{
-		CarID:     car.ID,
-		StartDate: time.Now(),
-		EndDate:   time.Now().AddDate(0, period, 0),
-		Status:    model.PartnerContractStatusWaitingForAgreement,
-	}
-	require.NoError(t, TestDb.PartnerContractStore.Create(contract))
 
 	route := TestServer.AllRoutes()[RoutePartnerAgreeContract]
 	r := partnerAgreeContractRequest{CarID: car.ID}
@@ -167,7 +166,8 @@ func TestSignContract(t *testing.T) {
 	TestServer.route.ServeHTTP(recorder, req)
 	require.Equal(t, http.StatusOK, recorder.Code)
 
-	updatedContract, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
+	updatedCar, err := TestDb.CarStore.GetByID(car.ID)
+	updatedContract := updatedCar.ToPartnerContract()
 	require.NoError(t, err)
 	require.Equal(t, model.PartnerContractStatusAgreed, updatedContract.Status)
 }
@@ -192,28 +192,24 @@ func TestRenderPartnerContract(t *testing.T) {
 	require.NoError(t, TestDb.AccountStore.Create(partner))
 	carModel := &model.CarModel{Brand: "BMW", Model: "VIP 2", NumberOfSeats: 4, Year: 2024}
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
+	now := time.Now()
 	car := &model.Car{
 		PartnerID:    partner.ID,
 		CarModelID:   carModel.ID,
 		LicensePlate: "96A1",
 		Price:        400_000,
 		Period:       6,
+		StartDate:    now,
+		EndDate:      now.AddDate(0, 6, 0),
 	}
 	require.NoError(t, TestDb.CarStore.Create(car))
-
-	now := time.Now()
-	contract := &model.PartnerContract{
-		CarID:     car.ID,
-		StartDate: now,
-		EndDate:   now.AddDate(0, 6, 0),
-	}
-	require.NoError(t, TestDb.PartnerContractStore.Create(contract))
-	ct, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
+	ct, err := TestDb.CarStore.GetByID(car.ID)
 	require.NoError(t, err)
 
-	require.NoError(t, TestServer.RenderPartnerContractPDF(partner, &ct.Car))
+	require.NoError(t, TestServer.RenderPartnerContractPDF(partner, ct))
 
-	updatedContract, err := TestDb.PartnerContractStore.GetByCarID(car.ID)
+	updatedCar, err := TestDb.CarStore.GetByID(car.ID)
+	updatedContract := updatedCar.ToPartnerContract()
 	require.NoError(t, err)
 	require.NotEmpty(t, updatedContract.Url)
 }

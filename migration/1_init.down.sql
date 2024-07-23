@@ -1,3 +1,4 @@
+drop table if exists partner_payment_customer_contracts;
 drop table if exists driving_license_images;
 drop table if exists contract_rules;
 drop table if exists messages;
@@ -7,7 +8,6 @@ drop table if exists customer_payments;
 drop table if exists customer_contract_images;
 drop table if exists customer_contracts;
 drop table if exists partner_payment_histories;
-drop table if exists partner_contracts;
 drop table if exists payment_informations;
 drop table if exists notifications;
 drop table if exists car_images;

@@ -209,12 +209,13 @@ create table contract_rules
     "prepay_percent"          numeric(3, 1) not null default 0.0,
     "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
     "collateral_cash_amount"  bigint        not null default 0,
+    "max_warning_count"       bigint        not null default 0,
     "created_at"              timestamptz            DEFAULT (now()),
     "updated_at"              timestamptz            DEFAULT (now())
 );
 
-insert into contract_rules(insurance_percent, prepay_percent, revenue_sharing_percent, collateral_cash_amount)
-values (10.0, 30.0, 5, 15000000);
+insert into contract_rules(insurance_percent, prepay_percent, revenue_sharing_percent, collateral_cash_amount, max_warning_count)
+values (10.0, 30.0, 5, 15000000, 3);
 
 create table driving_license_images
 (

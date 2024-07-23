@@ -62,6 +62,7 @@ type Car struct {
 	Period                int                   `json:"period"`
 	PartnerContractUrl    string                `json:"partner_contract_url"`
 	PartnerContractStatus PartnerContractStatus `json:"partner_contract_status"`
+	WarningCount          int                   `json:"warning_count"`
 	CreatedAt             time.Time             `json:"created_at"`
 	UpdatedAt             time.Time             `json:"updated_at"`
 }

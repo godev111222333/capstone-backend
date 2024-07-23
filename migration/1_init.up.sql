@@ -74,6 +74,7 @@ create table cars
     "end_date"                timestamptz            DEFAULT (now()),
     "partner_contract_url"    varchar(1023) not null default '',
     "partner_contract_status" varchar(256)  not null default '',
+    "warning_count"           bigint        not null default 0,
     "created_at"              timestamptz            DEFAULT (now()),
     "updated_at"              timestamptz            DEFAULT (now())
 );

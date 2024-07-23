@@ -264,9 +264,14 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		newStatus = string(model.CarStatusActive)
 	}
 
-	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
+	updateValues := map[string]interface{}{
 		"status": newStatus,
-	}); err != nil {
+	}
+	if req.Action == ApplicationActionApproveRegister {
+		updateValues["partner_contract_status"] = string(model.PartnerContractStatusWaitingForAgreement)
+	}
+
+	if err := s.store.CarStore.Update(car.ID, updateValues); err != nil {
 		responseInternalServerError(c, err)
 		return
 	}

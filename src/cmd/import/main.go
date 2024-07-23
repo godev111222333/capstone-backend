@@ -24,7 +24,7 @@ func main() {
 	}
 
 	filePaths := make([]string, 0)
-	for year := 2010; year <= 2021; year++ {
+	for year := 2010; year <= 2024; year++ {
 		filePaths = append(filePaths, fmt.Sprintf("etc/car_models/%d.csv", year))
 	}
 	for _, path := range filePaths {

@@ -136,7 +136,7 @@ func (s *CustomerContractStore) GetByStatus(
 		res := []*model.CustomerContract{}
 		count := int64(-1)
 		if status == model.CustomerContractStatusNoFilter {
-			err = s.db.Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error
+			err = s.db.Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("end_date desc").Offset(offset).Limit(limit).Find(&res).Error
 			if err == nil {
 				if err := s.db.Model(&model.CustomerContract{}).Count(&count).Error; err != nil {
 					fmt.Printf("CustomerContractStore: GetByStatus %v\n", err)
@@ -144,7 +144,7 @@ func (s *CustomerContractStore) GetByStatus(
 				}
 			}
 		} else {
-			err = s.db.Where("status = ?", string(status)).Preload("Customer").Preload("Car").Preload("Car.CarModel").Offset(offset).Limit(limit).Find(&res).Error
+			err = s.db.Where("status = ?", string(status)).Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("end_date desc").Offset(offset).Limit(limit).Find(&res).Error
 			if err == nil {
 				if err := s.db.Model(&model.CustomerContract{}).Where("status = ?", string(status)).Count(&count).Error; err != nil {
 					fmt.Printf("CustomerContractStore: GetByStatus %v\n", err)

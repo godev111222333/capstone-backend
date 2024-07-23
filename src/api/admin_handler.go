@@ -1178,6 +1178,57 @@ func (s *Server) HandleAdminChangeCar(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "change car successfully"})
 }
 
+func (s *Server) HandleAdminGetContractRule(c *gin.Context) {
+	rule, err := s.store.ContractRuleStore.GetLast()
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, rule)
+}
+
+type AdminUpdateContractRuleRequest struct {
+	RuleID                int     `json:"rule_id" binding:"required"`
+	InsurancePercent      float64 `json:"insurance_percent"`
+	PrepayPercent         float64 `json:"prepay_percent"`
+	RevenueSharingPercent float64 `json:"revenue_sharing_percent"`
+	CollateralCashAmount  int     `json:"collateral_cash_amount"`
+	MaxWarningCount       int     `json:"max_warning_count"`
+}
+
+func (s *Server) HandleAdminUpdateContractRule(c *gin.Context) {
+	req := AdminUpdateContractRuleRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidUpdateContractRuleRequest, err)
+		return
+	}
+
+	updatedValues := make(map[string]interface{}, 0)
+	if req.InsurancePercent > 0 {
+		updatedValues["insurance_percent"] = req.InsurancePercent
+	}
+	if req.PrepayPercent > 0 {
+		updatedValues["prepay_percent"] = req.PrepayPercent
+	}
+	if req.RevenueSharingPercent > 0 {
+		updatedValues["revenue_sharing_percent"] = req.RevenueSharingPercent
+	}
+	if req.CollateralCashAmount > 0 {
+		updatedValues["collateral_cash_amount"] = req.CollateralCashAmount
+	}
+	if req.MaxWarningCount > 0 {
+		updatedValues["max_warning_count"] = req.MaxWarningCount
+	}
+
+	if err := s.store.ContractRuleStore.Update(req.RuleID, updatedValues); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "updated contract rule successfully"})
+}
+
 type AdminUpdateWarningCounter struct {
 	CarID           int `json:"car_id"`
 	NewWarningCount int `json:"new_warning_count"`

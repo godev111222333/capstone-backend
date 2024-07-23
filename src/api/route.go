@@ -58,6 +58,8 @@ const (
 	RouteAdminFindCars                               = "admin_find_cars"
 	RouteAdminChangeCar                              = "admin_change_car"
 	RouteAdminUpdateWarningCount                     = "admin_update_warning_count"
+	RouteAdminGetContractRule                        = "admin_get_contract_rule"
+	RouteAdminUpdateContractRule                     = "admin_update_contract_rule"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -587,6 +589,20 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/warning_count",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminUpdateWarningCount,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminGetContractRule: {
+			Path:        "/admin/contract_rule",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetContractRule,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminUpdateContractRule: {
+			Path:        "/admin/contract_rule",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminUpdateContractRule,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

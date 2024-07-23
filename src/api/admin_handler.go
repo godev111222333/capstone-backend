@@ -1178,6 +1178,53 @@ func (s *Server) HandleAdminChangeCar(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "change car successfully"})
 }
 
+type AdminUpdateWarningCounter struct {
+	CarID           int `json:"car_id"`
+	NewWarningCount int `json:"new_warning_count"`
+}
+
+func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
+	req := AdminUpdateWarningCounter{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidUpdateWarningCounterRequest, err)
+		return
+	}
+
+	if err := s.store.CarStore.Update(req.CarID, map[string]interface{}{
+		"warning_count": req.NewWarningCount,
+	}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	rule, err := s.store.ContractRuleStore.GetLast()
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if req.NewWarningCount > rule.MaxWarningCount {
+		// if exceed max warning count, disable this car
+		if err := s.store.CarStore.Update(req.CarID, map[string]interface{}{
+			"status": string(model.CarStatusInactive),
+		}); err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		car, err := s.store.CarStore.GetByID(req.CarID)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		expoToken, phone := s.getExpoToken(car.Account.PhoneNumber), car.Account.PhoneNumber
+		_ = s.notificationPushService.Push(s.notificationPushService.NewInactiveCarMsg(car.ID, expoToken, phone))
+	}
+
+	responseSuccess(c, gin.H{"status": "update warning count successfully"})
+}
+
 func (s *Server) getExpoToken(phone string) string {
 	expoToken, err := s.redisClient.Get(
 		context.Background(),

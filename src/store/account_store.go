@@ -2,10 +2,11 @@ package store
 
 import (
 	"fmt"
-	"github.com/godev111222333/capstone-backend/src/model"
-	"gorm.io/gorm"
 	"strings"
 	"time"
+
+	"github.com/godev111222333/capstone-backend/src/model"
+	"gorm.io/gorm"
 )
 
 type AccountStore struct {

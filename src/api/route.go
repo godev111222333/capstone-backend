@@ -57,6 +57,7 @@ const (
 	RouteAdminGetMonthlyPartnerPayments              = "admin_get_monthly_partner_payments"
 	RouteAdminFindCars                               = "admin_find_cars"
 	RouteAdminChangeCar                              = "admin_change_car"
+	RouteAdminUpdateWarningCount                     = "admin_update_warning_count"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -579,6 +580,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/customer_contract/change_car",
 			Method:      http.MethodPost,
 			Handler:     s.HandleAdminChangeCar,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminUpdateWarningCount: {
+			Path:        "/admin/warning_count",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminUpdateWarningCount,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

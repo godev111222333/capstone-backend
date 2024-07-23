@@ -14,6 +14,7 @@ type INotificationPushService interface {
 	NewApproveCarRegisterMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewApproveCarDeliveryMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewRejectCarMsg(carID int, expoToken, toPhone string) *PushMessage
+	NewInactiveCarMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewChatMsg(expoToken, toPhone string) *PushMessage
 	NewReceivingPaymentMsg(amount int, expoToken, toPhone string) *PushMessage
 	NewRejectPartnerContractMsg(carID int, expoToken, toPhone string) *PushMessage
@@ -100,6 +101,18 @@ func (s *NotificationPushService) NewRejectCarMsg(carID int, expoToken, toPhone 
 		To:    []string{expoToken},
 		Title: "Xe của bạn không được duyệt!",
 		Body:  "MinhHungCar từ chối yêu cầu đăng kí xe của bạn",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewInactiveCarMsg(carID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Hợp đồng bị hủy",
+		Body:  "Hợp đồng cho thuê xe của bạn đã bị hủy",
 		Data: map[string]interface{}{
 			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
 			"phone_number": toPhone,

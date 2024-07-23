@@ -117,6 +117,7 @@ create table "partner_payment_histories"
     "end_date"   timestamptz           DEFAULT (now()),
     "amount"     bigint       not null default 0,
     "status"     varchar(255) not null default '',
+    "payment_url" varchar(1023) not null default '',
     "created_at" timestamptz           DEFAULT (now()),
     "updated_at" timestamptz           DEFAULT (now())
 );
@@ -230,4 +231,13 @@ create table driving_license_images
     "status"     varchar(255)  not null default '',
     "created_at" timestamptz            DEFAULT (now()),
     "updated_at" timestamptz            DEFAULT (now())
+);
+
+create table partner_payment_customer_contracts
+(
+    "id"                         serial primary key,
+    "partner_payment_history_id" bigint references partner_payment_histories (id),
+    "customer_contract_id"       bigint references customer_contracts (id),
+    "created_at"                 timestamptz           DEFAULT (now()),
+    "updated_at"                 timestamptz           DEFAULT (now())
 );

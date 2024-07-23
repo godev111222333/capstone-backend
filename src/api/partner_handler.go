@@ -73,6 +73,15 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		return
 	}
 
+	isEmpty := func(s string) bool {
+		return len(s) == 0
+	}
+
+	if (isEmpty(acct.BankName) || isEmpty(acct.BankOwner) || isEmpty(acct.BankNumber)) && isEmpty(acct.QRCodeURL) {
+		responseCustomErr(c, ErrCodeMissingPaymentInformation, err)
+		return
+	}
+
 	req := registerCarRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		responseCustomErr(c, ErrCodeInvalidRegisterCarRequest, err)

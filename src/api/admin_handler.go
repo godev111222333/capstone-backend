@@ -226,13 +226,22 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}
 
 		newStatus = string(model.CarStatusApproved)
+		acct, err := s.store.AccountStore.GetByID(car.PartnerID)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
 
 		// Create new partner contract record
+		now := time.Now()
 		contract := &model.PartnerContract{
-			CarID:     req.CarID,
-			StartDate: time.Now(),
-			EndDate:   time.Now().AddDate(0, car.Period, 0),
-			Status:    model.PartnerContractStatusWaitingForAgreement,
+			CarID:      req.CarID,
+			BankOwner:  acct.BankOwner,
+			BankName:   acct.BankName,
+			BankNumber: acct.BankNumber,
+			StartDate:  now,
+			EndDate:    now.AddDate(0, car.Period, 0),
+			Status:     model.PartnerContractStatusWaitingForAgreement,
 		}
 		if err := s.store.PartnerContractStore.Create(contract); err != nil {
 			responseInternalServerError(c, err)

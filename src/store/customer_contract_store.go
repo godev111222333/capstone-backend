@@ -175,7 +175,7 @@ select *
 from customer_contracts
          join accounts on customer_contracts.customer_id = accounts.id
          join cars on customer_contracts.car_id = cars.id
-where concat(accounts.last_name, ' ', accounts.first_name) like ? or cars.license_plate = ? order by customer_contracts.id desc offset ? limit ?
+where accounts.phone_number like ? or cars.license_plate = ? order by customer_contracts.id desc offset ? limit ?
 `
 		err = s.db.Raw(rawSql, likeQuery(searchParam), searchParam, offset, limit).Scan(&joinModel).Error
 		if err == nil {
@@ -184,7 +184,7 @@ select count(*) as count
 from customer_contracts
          join accounts on customer_contracts.customer_id = accounts.id
          join cars on customer_contracts.car_id = cars.id
-where concat(accounts.last_name, ' ', accounts.first_name) like ? or cars.license_plate = ? group by customer_contracts.id;
+where accounts.phone_number like ? or cars.license_plate = ? group by customer_contracts.id;
   `
 			err = s.db.Raw(countSql, likeQuery(searchParam), searchParam).Scan(&counter).Error
 		}
@@ -195,7 +195,7 @@ from customer_contracts
          join accounts on customer_contracts.customer_id = accounts.id
          join cars on customer_contracts.car_id = cars.id
 where customer_contracts.status = ?
-  and (concat(accounts.last_name, ' ', accounts.first_name) like ? or cars.license_plate = ?) order by customer_contracts.id desc offset ? limit ?
+  and (accounts.phone_number like ? or cars.license_plate = ?) order by customer_contracts.id desc offset ? limit ?
 `
 		err = s.db.Raw(rawSql, string(status), likeQuery(searchParam), searchParam, offset, limit).Scan(&joinModel).Error
 		if err == nil {
@@ -205,7 +205,7 @@ from customer_contracts
          join accounts on customer_contracts.customer_id = accounts.id
          join cars on customer_contracts.car_id = cars.id
 where customer_contracts.status = ?
-  and (concat(accounts.last_name, ' ', accounts.first_name) like ? or cars.license_plate = ?) group by customer_contracts.id
+  and (accounts.phone_number like ? or cars.license_plate = ?) group by customer_contracts.id
 `
 			err = s.db.Raw(countSql, string(status), likeQuery(searchParam), searchParam).Scan(&counter).Error
 		}

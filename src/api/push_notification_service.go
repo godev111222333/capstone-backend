@@ -15,6 +15,7 @@ type INotificationPushService interface {
 	NewApproveCarDeliveryMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewRejectCarMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewInactiveCarMsg(carID int, expoToken, toPhone string) *PushMessage
+	NewWarningCountMsg(carID, curCount, maxCount int, expoToken, toPhone string) *PushMessage
 	NewChatMsg(expoToken, toPhone string) *PushMessage
 	NewReceivingPaymentMsg(amount int, expoToken, toPhone string) *PushMessage
 	NewRejectPartnerContractMsg(carID int, expoToken, toPhone string) *PushMessage
@@ -113,6 +114,24 @@ func (s *NotificationPushService) NewInactiveCarMsg(carID int, expoToken, toPhon
 		To:    []string{expoToken},
 		Title: "Hợp đồng bị hủy",
 		Body:  "Hợp đồng cho thuê xe của bạn đã bị hủy",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewWarningCountMsg(
+	carID,
+	curCount,
+	maxCount int,
+	expoToken,
+	toPhone string,
+) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Xe của bạn bị cảnh báo",
+		Body:  fmt.Sprintf("Xe của bạn bị cảnh báo do đi trễ. Nếu vượt quá số lần tối đi, hợp đồng cho thuê xe sẽ bị huỷ. Số lần đi trễ hiện tại: %d, tối đa: %d", curCount, maxCount),
 		Data: map[string]interface{}{
 			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
 			"phone_number": toPhone,

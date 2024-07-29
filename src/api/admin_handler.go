@@ -1254,6 +1254,18 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 		return
 	}
 
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	acct, err := s.store.AccountStore.GetByID(car.PartnerID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
 	if req.NewWarningCount > rule.MaxWarningCount {
 		// if exceed max warning count, disable this car
 		if err := s.store.CarStore.Update(req.CarID, map[string]interface{}{
@@ -1263,14 +1275,17 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 			return
 		}
 
-		car, err := s.store.CarStore.GetByID(req.CarID)
-		if err != nil {
-			responseGormErr(c, err)
-			return
-		}
-
 		expoToken, phone := s.getExpoToken(car.Account.PhoneNumber), car.Account.PhoneNumber
 		_ = s.notificationPushService.Push(s.notificationPushService.NewInactiveCarMsg(car.ID, expoToken, phone))
+	} else {
+		_ = s.notificationPushService.Push(
+			s.notificationPushService.NewWarningCountMsg(
+				car.ID,
+				car.WarningCount,
+				rule.MaxWarningCount,
+				acct.PhoneNumber,
+				s.getExpoToken(acct.PhoneNumber),
+			))
 	}
 
 	responseSuccess(c, gin.H{"status": "update warning count successfully"})

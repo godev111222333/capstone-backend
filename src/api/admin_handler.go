@@ -554,6 +554,17 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 			return
 		}
 
+		car, err := s.store.CarStore.GetByID(contract.CarID)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		if car.Status != model.CarStatusActive {
+			responseCustomErr(c, ErrCodeInvalidCarStatus, err)
+			return
+		}
+
 		newStatus = string(model.CustomerContractStatusRenting)
 	}
 

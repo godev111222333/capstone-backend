@@ -178,6 +178,20 @@ func (mr *MockINotificationPushServiceMockRecorder) NewRejectRentingCarRequestMs
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRejectRentingCarRequestMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewRejectRentingCarRequestMsg), expoToken, toPhone)
 }
 
+// NewWarningCountMsg mocks base method.
+func (m *MockINotificationPushService) NewWarningCountMsg(carID, curCount, maxCount int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewWarningCountMsg", carID, curCount, maxCount, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewWarningCountMsg indicates an expected call of NewWarningCountMsg.
+func (mr *MockINotificationPushServiceMockRecorder) NewWarningCountMsg(carID, curCount, maxCount, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewWarningCountMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewWarningCountMsg), carID, curCount, maxCount, expoToken, toPhone)
+}
+
 // Push mocks base method.
 func (m_2 *MockINotificationPushService) Push(m *PushMessage) error {
 	m_2.ctrl.T.Helper()

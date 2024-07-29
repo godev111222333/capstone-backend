@@ -10,7 +10,8 @@ import (
 	"github.com/godev111222333/capstone-backend/src/model"
 )
 
-const BufferTime = 2 * time.Hour
+const BufferAtHomeTime = 2 * time.Hour
+const BufferAtGarage = time.Hour
 
 type CarStore struct {
 	db *gorm.DB
@@ -178,8 +179,6 @@ func (s *CarStore) FindCars(
 	startDate, endDate time.Time,
 	optionParams map[string]interface{},
 ) ([]*model.Car, error) {
-	startDate = startDate.Add(-BufferTime)
-	endDate = endDate.Add(BufferTime)
 	optionsSQL := make([]string, 0, len(optionParams))
 	if values, ok := optionParams["brands"].([]string); ok {
 		optionsSQL = append(optionsSQL, fmt.Sprintf("brand in %s", quoteString(values)))
@@ -193,37 +192,64 @@ func (s *CarStore) FindCars(
 	if values, ok := optionParams["number_of_seats"].([]int); ok {
 		optionsSQL = append(optionsSQL, fmt.Sprintf("number_of_seats in %s", quoteInt(values)))
 	}
-	if values, ok := optionParams["parking_lots"].([]string); ok {
-		optionsSQL = append(optionsSQL, fmt.Sprintf("parking_lot in %s", quoteString(values)))
-	}
 
 	opt := strings.Join(optionsSQL, " and ")
 	if len(opt) > 0 {
 		opt = opt + ` and`
 	}
 
-	cars := make([]*model.CarJoinCarModel, 0)
-	rawSql := `select cars.*, cars.id as car_id, cm.*
+	searchByParkingLot := func(parkingLot model.ParkingLot, startDate, endDate time.Time) ([]*model.Car, error) {
+		cars := make([]*model.CarJoinCarModel, 0)
+		rawSql := `select cars.*, cars.id as car_id, cm.*
 				from cars inner join car_models cm on cars.car_model_id = cm.id 
-				where ` + opt + ` cars.status = ? and cars.id not in (select car_id from customer_contracts where (customer_contracts.start_date >= ? and ? >= customer_contracts.start_date and (customer_contracts.status = 'ordered' or customer_contracts.status = 'renting' or customer_contracts.status = 'completed')) or cars.end_date < ?)`
-	if err := s.db.Raw(rawSql, string(model.CarStatusActive), startDate, endDate, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
-		fmt.Printf("CarStore: FindCars %v\n", err)
-		return nil, err
-	}
+				where ` + opt + ` cars.parking_lot = ? and cars.status = ? and cars.id not in (select car_id from customer_contracts where (customer_contracts.start_date >= ? and ? >= customer_contracts.start_date and (customer_contracts.status = 'ordered' or customer_contracts.status = 'renting' or customer_contracts.status = 'completed')) or cars.end_date < ?)`
+		if err := s.db.Raw(rawSql, string(parkingLot), string(model.CarStatusActive), startDate, endDate, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
+			fmt.Printf("CarStore: FindCars %v\n", err)
+			return nil, err
+		}
 
-	cars2 := make([]*model.CarJoinCarModel, 0)
-	rawSql = `select cars.*, cars.id as car_id, cm.*
+		cars2 := make([]*model.CarJoinCarModel, 0)
+		rawSql = `select cars.*, cars.id as car_id, cm.*
 				from cars inner join car_models cm on cars.car_model_id = cm.id
-				where ` + opt + ` cars.status = ? and cars.id not in (select car_id from customer_contracts where (? >= customer_contracts.start_date and customer_contracts.end_date >= ? and (customer_contracts.status = 'ordered' or customer_contracts.status = 'renting' or customer_contracts.status = 'completed')) or cars.end_date < ?)`
-	if err := s.db.Raw(rawSql, string(model.CarStatusActive), startDate, startDate, endDate).Preload("CarModel").Find(&cars2).Error; err != nil {
-		fmt.Printf("CarStore: FindCars %v\n", err)
+				where ` + opt + ` cars.parking_lot = ? and cars.status = ? and cars.id not in (select car_id from customer_contracts where (? >= customer_contracts.start_date and customer_contracts.end_date >= ? and (customer_contracts.status = 'ordered' or customer_contracts.status = 'renting' or customer_contracts.status = 'completed')) or cars.end_date < ?)`
+		if err := s.db.Raw(rawSql, string(parkingLot), string(model.CarStatusActive), startDate, startDate, endDate).Preload("CarModel").Find(&cars2).Error; err != nil {
+			fmt.Printf("CarStore: FindCars %v\n", err)
+			return nil, err
+		}
+
+		res := takeDuplicatedCars(cars, cars2)
+		resCars := make([]*model.Car, len(res))
+		for i, r := range res {
+			resCars[i] = r.ToCar()
+		}
+
+		return resCars, nil
+	}
+
+	validCarsAtHome, err := searchByParkingLot(model.ParkingLotHome, startDate.Add(-BufferAtHomeTime), endDate.Add(BufferAtHomeTime))
+	if err != nil {
 		return nil, err
 	}
 
-	res := takeDuplicatedCars(cars, cars2)
-	resCars := make([]*model.Car, len(res))
-	for i, r := range res {
-		resCars[i] = r.ToCar()
+	validCarsAtGarage, err := searchByParkingLot(model.ParkingLotGarage, startDate.Add(-BufferAtGarage), endDate.Add(BufferAtGarage))
+	if err != nil {
+		return nil, err
+	}
+
+	searchParkingLots, ok := optionParams["parking_lots"].([]string)
+	if !ok {
+		return append(validCarsAtGarage, validCarsAtHome...), nil
+	}
+
+	resCars := make([]*model.Car, 0)
+	for _, p := range searchParkingLots {
+		if p == string(model.ParkingLotGarage) {
+			resCars = append(resCars, validCarsAtGarage...)
+		}
+
+		if p == string(model.ParkingLotHome) {
+			resCars = append(resCars, validCarsAtHome...)
+		}
 	}
 
 	return resCars, nil

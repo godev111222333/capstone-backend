@@ -210,6 +210,7 @@ type carResponse struct {
 	Caveats      []string         `json:"caveats"`
 	Rating       float64          `json:"rating"`
 	TotalTrip    int              `json:"total_trip"`
+	WarningCount int              `json:"warning_count"`
 }
 
 func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
@@ -248,6 +249,7 @@ func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
 		Caveats:      caveats,
 		Rating:       avgRating,
 		TotalTrip:    totalTrip,
+		WarningCount: car.WarningCount,
 	}, nil
 }
 

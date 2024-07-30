@@ -40,7 +40,7 @@ func main() {
 
 	pdfService := api.NewPDFService(cfg.PDFService)
 	paymentService := api.NewVnPayService(cfg.VNPay)
-	notificationPushService := api.NewNotificationPushService("")
+	notificationPushService := api.NewNotificationPushService("", dbStore)
 
 	server := api.NewServer(
 		cfg.ApiServer,

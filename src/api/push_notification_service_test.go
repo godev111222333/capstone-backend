@@ -9,8 +9,8 @@ import (
 func TestNewNotificationPushService(t *testing.T) {
 	t.Skip()
 
-	service := NewNotificationPushService("")
-	require.NoError(t, service.Push(&PushMessage{
+	service := NewNotificationPushService("", nil)
+	require.NoError(t, service.Push(1, &PushMessage{
 		To:    []string{},
 		Body:  "Body noti",
 		Title: "Title noti",

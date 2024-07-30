@@ -199,7 +199,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				return
 			}
 
-			_ = s.notificationPushService.Push(s.notificationPushService.NewReturnCollateralAssetMsg(
+			_ = s.notificationPushService.Push(acct.ID, s.notificationPushService.NewReturnCollateralAssetMsg(
 				payment.CustomerContractID,
 				s.getExpoToken(acct.PhoneNumber),
 				acct.PhoneNumber,
@@ -248,11 +248,13 @@ func (s *Server) handlePartnerPayments(c *gin.Context, req VnPayIPNRequest) {
 			return
 		}
 
-		_ = s.notificationPushService.Push(s.notificationPushService.NewReceivingPaymentMsg(
+		msg := s.notificationPushService.NewReceivingPaymentMsg(
 			payment.Amount,
 			s.getExpoToken(acct.PhoneNumber),
 			acct.PhoneNumber,
-		))
+		)
+
+		_ = s.notificationPushService.Push(acct.ID, msg)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"RspCode": "00", "Message": "success"})

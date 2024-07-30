@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/godev111222333/capstone-backend/src/store"
 	"net/http"
+
+	"github.com/godev111222333/capstone-backend/src/model"
 )
 
 var _ INotificationPushService = (*NotificationPushService)(nil)
 
 type INotificationPushService interface {
-	Push(m *PushMessage) error
+	Push(accID int, m *PushMessage) error
 	NewApproveCarRegisterMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewApproveCarDeliveryMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewRejectCarMsg(carID int, expoToken, toPhone string) *PushMessage
@@ -36,16 +39,18 @@ type PushMessage struct {
 type NotificationPushService struct {
 	FrontendURL string
 	ExpoURL     string
+	store       *store.DbStore
 }
 
-func NewNotificationPushService(feURL string) *NotificationPushService {
+func NewNotificationPushService(feURL string, store *store.DbStore) *NotificationPushService {
 	return &NotificationPushService{
 		FrontendURL: feURL,
 		ExpoURL:     "https://exp.host/--/api/v2/push/send",
+		store:       store,
 	}
 }
 
-func (s *NotificationPushService) Push(m *PushMessage) error {
+func (s *NotificationPushService) Push(accID int, m *PushMessage) error {
 	bz, err := json.Marshal(m)
 	if err != nil {
 		fmt.Printf("NotificationPushService: Push %v\n", err)
@@ -71,6 +76,15 @@ func (s *NotificationPushService) Push(m *PushMessage) error {
 		fmt.Println(err)
 		return err
 	}
+
+	notification := &model.Notification{
+		AccountID: accID,
+		Title:     m.Title,
+		Content:   m.Body,
+		URL:       mapGetString(m.Data, "screen"),
+		Status:    model.NotificationStatusActive,
+	}
+	_ = s.store.NotificationStore.Create(notification)
 
 	return nil
 }

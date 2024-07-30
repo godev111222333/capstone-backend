@@ -284,7 +284,7 @@ func (s *Server) handleTextingMsg(conn *websocket.Conn, msg Message) (string, bo
 
 			if conv != nil {
 				phone, expoToken := conv.Account.PhoneNumber, s.getExpoToken(conv.Account.PhoneNumber)
-				_ = s.notificationPushService.Push(s.notificationPushService.NewChatMsg(expoToken, phone))
+				_ = s.notificationPushService.Push(conv.AccountID, s.notificationPushService.NewChatMsg(expoToken, phone))
 			}
 		}()
 	}

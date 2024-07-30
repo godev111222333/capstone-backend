@@ -221,15 +221,15 @@ func (mr *MockINotificationPushServiceMockRecorder) NewWarningCountMsg(carID, cu
 }
 
 // Push mocks base method.
-func (m_2 *MockINotificationPushService) Push(m *PushMessage) error {
+func (m_2 *MockINotificationPushService) Push(accID int, m *PushMessage) error {
 	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "Push", m)
+	ret := m_2.ctrl.Call(m_2, "Push", accID, m)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Push indicates an expected call of Push.
-func (mr *MockINotificationPushServiceMockRecorder) Push(m any) *gomock.Call {
+func (mr *MockINotificationPushServiceMockRecorder) Push(accID, m any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Push", reflect.TypeOf((*MockINotificationPushService)(nil).Push), m)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Push", reflect.TypeOf((*MockINotificationPushService)(nil).Push), accID, m)
 }

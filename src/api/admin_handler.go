@@ -295,16 +295,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}
 
 		if msg != nil {
-			_ = s.notificationPushService.Push(msg)
-
-			notification := &model.Notification{
-				AccountID: car.Account.ID,
-				Title:     msg.Title,
-				Content:   msg.Body,
-				URL:       mapGetString(msg.Data, "screen"),
-				Status:    model.NotificationStatusActive,
-			}
-			_ = s.store.NotificationStore.Create(notification)
+			_ = s.notificationPushService.Push(car.Account.ID, msg)
 		}
 	}()
 
@@ -580,14 +571,7 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 			msg = s.notificationPushService.NewRejectRentingCarRequestMsg(expoToken, phone)
 		}
 
-		_ = s.notificationPushService.Push(msg)
-		_ = s.store.NotificationStore.Create(&model.Notification{
-			AccountID: contract.CustomerID,
-			Title:     msg.Title,
-			Content:   msg.Body,
-			URL:       mapGetString(msg.Data, "screen"),
-			Status:    model.NotificationStatusActive,
-		})
+		_ = s.notificationPushService.Push(contract.CustomerID, msg)
 	}()
 
 	responseSuccess(c, contract)
@@ -724,14 +708,7 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 
 		phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
 		msg := s.notificationPushService.NewCustomerAdditionalPaymentMsg(contract.ID, expoToken, phone)
-		_ = s.notificationPushService.Push(msg)
-		_ = s.store.NotificationStore.Create(&model.Notification{
-			AccountID: contract.CustomerID,
-			Title:     msg.Title,
-			Content:   msg.Body,
-			URL:       mapGetString(msg.Data, "screen"),
-			Status:    model.NotificationStatusActive,
-		})
+		_ = s.notificationPushService.Push(contract.CustomerID, msg)
 	}()
 
 	responseSuccess(c, gin.H{"payment_url": originURL.PaymentURL})
@@ -857,7 +834,7 @@ func (s *Server) HandleAdminCompleteCustomerContract(c *gin.Context) {
 		return
 	}
 
-	_ = s.notificationPushService.Push(s.notificationPushService.NewCompletedCustomerContract(
+	_ = s.notificationPushService.Push(contract.CustomerID, s.notificationPushService.NewCompletedCustomerContract(
 		contract.ID,
 		s.getExpoToken(contract.Customer.PhoneNumber),
 		contract.Customer.PhoneNumber,
@@ -1018,7 +995,7 @@ func (s *Server) HandleAdminUpdateReturnCollateralAsset(c *gin.Context) {
 			return
 		}
 
-		_ = s.notificationPushService.Push(s.notificationPushService.NewReturnCollateralAssetMsg(
+		_ = s.notificationPushService.Push(acct.ID, s.notificationPushService.NewReturnCollateralAssetMsg(
 			contract.ID,
 			s.getExpoToken(acct.PhoneNumber),
 			acct.PhoneNumber,
@@ -1303,15 +1280,15 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 		return
 	}
 
-	_ = s.notificationPushService.Push(
-		s.notificationPushService.NewWarningCountMsg(
-			car.ID,
-			car.WarningCount,
-			rule.MaxWarningCount,
-			acct.PhoneNumber,
-			s.getExpoToken(acct.PhoneNumber),
-		))
+	msg := s.notificationPushService.NewWarningCountMsg(
+		car.ID,
+		car.WarningCount,
+		rule.MaxWarningCount,
+		acct.PhoneNumber,
+		s.getExpoToken(acct.PhoneNumber),
+	)
 
+	_ = s.notificationPushService.Push(car.PartnerID, msg)
 	responseSuccess(c, gin.H{"status": "update warning count successfully"})
 }
 

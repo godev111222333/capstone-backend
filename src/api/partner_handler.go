@@ -111,6 +111,7 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		Fuel:                  req.Fuel,
 		Motion:                req.Motion,
 		Price:                 0,
+		Period:                period,
 		RevenueSharingPercent: rule.RevenueSharingPercent,
 		BankName:              acct.BankName,
 		BankNumber:            acct.BankNumber,

@@ -94,6 +94,20 @@ func (mr *MockINotificationPushServiceMockRecorder) NewChatMsg(expoToken, toPhon
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewChatMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewChatMsg), expoToken, toPhone)
 }
 
+// NewCompletedCustomerContract mocks base method.
+func (m *MockINotificationPushService) NewCompletedCustomerContract(contractID int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewCompletedCustomerContract", contractID, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewCompletedCustomerContract indicates an expected call of NewCompletedCustomerContract.
+func (mr *MockINotificationPushServiceMockRecorder) NewCompletedCustomerContract(contractID, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCompletedCustomerContract", reflect.TypeOf((*MockINotificationPushService)(nil).NewCompletedCustomerContract), contractID, expoToken, toPhone)
+}
+
 // NewCustomerAdditionalPaymentMsg mocks base method.
 func (m *MockINotificationPushService) NewCustomerAdditionalPaymentMsg(contractID int, expoToken, toPhone string) *PushMessage {
 	m.ctrl.T.Helper()
@@ -176,6 +190,20 @@ func (m *MockINotificationPushService) NewRejectRentingCarRequestMsg(expoToken, 
 func (mr *MockINotificationPushServiceMockRecorder) NewRejectRentingCarRequestMsg(expoToken, toPhone any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRejectRentingCarRequestMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewRejectRentingCarRequestMsg), expoToken, toPhone)
+}
+
+// NewReturnCollateralAssetMsg mocks base method.
+func (m *MockINotificationPushService) NewReturnCollateralAssetMsg(contractID int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewReturnCollateralAssetMsg", contractID, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewReturnCollateralAssetMsg indicates an expected call of NewReturnCollateralAssetMsg.
+func (mr *MockINotificationPushServiceMockRecorder) NewReturnCollateralAssetMsg(contractID, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReturnCollateralAssetMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewReturnCollateralAssetMsg), contractID, expoToken, toPhone)
 }
 
 // NewWarningCountMsg mocks base method.

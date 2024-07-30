@@ -22,6 +22,8 @@ type INotificationPushService interface {
 	NewRejectRentingCarRequestMsg(expoToken, toPhone string) *PushMessage
 	NewApproveRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewCustomerAdditionalPaymentMsg(contractID int, expoToken, toPhone string) *PushMessage
+	NewReturnCollateralAssetMsg(contractID int, expoToken, toPhone string) *PushMessage
+	NewCompletedCustomerContract(contractID int, expoToken, toPhone string) *PushMessage
 }
 
 type PushMessage struct {
@@ -204,6 +206,30 @@ func (s *NotificationPushService) NewCustomerAdditionalPaymentMsg(contractID int
 		To:    []string{expoToken},
 		Title: "Phát sinh thêm thanh toán",
 		Body:  "MinhHungCar vừa thêm 1 khoản thanh toán cho chuyến xe của bạn",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewReturnCollateralAssetMsg(contractID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Hoàn trả thế chấp",
+		Body:  "MinhHungCar đã hoàn trả thế chấp cho chuyến xe của bạn!",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewCompletedCustomerContract(contractID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Hoàn thành chuyến xe",
+		Body:  "Chuyến xe của bạn đã hoàn thành cùng với các chi phí đã hoàn tất thanh toán!",
 		Data: map[string]interface{}{
 			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
 			"phone_number": toPhone,

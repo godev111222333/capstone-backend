@@ -857,6 +857,12 @@ func (s *Server) HandleAdminCompleteCustomerContract(c *gin.Context) {
 		return
 	}
 
+	_ = s.notificationPushService.Push(s.notificationPushService.NewCompletedCustomerContract(
+		contract.ID,
+		s.getExpoToken(contract.Customer.PhoneNumber),
+		contract.Customer.PhoneNumber,
+	))
+
 	responseSuccess(c, contract)
 }
 
@@ -997,6 +1003,26 @@ func (s *Server) HandleAdminUpdateReturnCollateralAsset(c *gin.Context) {
 	); err != nil {
 		responseGormErr(c, err)
 		return
+	}
+
+	if req.NewStatus {
+		contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		acct, err := s.store.AccountStore.GetByID(contract.CustomerID)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		_ = s.notificationPushService.Push(s.notificationPushService.NewReturnCollateralAssetMsg(
+			contract.ID,
+			s.getExpoToken(acct.PhoneNumber),
+			acct.PhoneNumber,
+		))
 	}
 
 	responseSuccess(c, gin.H{"status": "update is_return_collateral_asset successfully"})

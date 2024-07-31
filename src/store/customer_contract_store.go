@@ -261,7 +261,7 @@ func (s *CustomerContractStore) SumRevenueForCompletedContracts(startTime, endTi
 	}{}
 	sql := `select SUM(customer_contracts.revenue_sharing_percent * customer_contracts.rent_price / 100)
 from customer_contracts
-where customer_contracts.status = 'completed' and start_date >= ?
+where customer_contracts.status = 'completed' and end_date >= ?
   and end_date < ?`
 
 	if err := s.db.Raw(sql, startTime, endTime).Scan(&sum).Error; err != nil {

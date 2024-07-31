@@ -83,7 +83,7 @@ func (s *Server) HandleAdminGetStatistic(c *gin.Context) {
 		}
 		revenueRecords = append(revenueRecords, RevenueRecord{
 			FromDate: startTime,
-			ToDate:   endTime,
+			ToDate:   endTime.Add(-time.Second),
 			Revenue:  int(dayRevenue),
 		})
 		totalRevenue += int(dayRevenue)

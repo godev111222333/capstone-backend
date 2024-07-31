@@ -9,6 +9,7 @@ type (
 
 const (
 	PaymentTypePrePay               PaymentType   = "pre_pay"
+	PaymentTypeReturnPrepay         PaymentType   = "refund_pre_pay"
 	PaymentTypeRemainingPay         PaymentType   = "remaining_pay"
 	PaymentTypeCollateralCash       PaymentType   = "collateral_cash"
 	PaymentTypeReturnCollateralCash PaymentType   = "return_collateral_cash"

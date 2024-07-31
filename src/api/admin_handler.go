@@ -638,12 +638,18 @@ type customerPaymentResponse struct {
 	Payer string `json:"payer"`
 }
 
+var AdminAsPayer = []model.PaymentType{model.PaymentTypeReturnCollateralCash, model.PaymentTypeReturnPrepay}
+
 func newCustomerPaymentResponse(p *model.CustomerPayment) *customerPaymentResponse {
 	r := &customerPaymentResponse{CustomerPayment: p}
 	payer := model.RoleNameCustomer
-	if p.PaymentType == model.PaymentTypeReturnCollateralCash {
-		payer = model.RoleNameAdmin
+	for _, paymentType := range AdminAsPayer {
+		if p.PaymentType == paymentType {
+			payer = model.RoleNameAdmin
+			break
+		}
 	}
+
 	r.Payer = payer
 	return r
 }

@@ -177,7 +177,7 @@ func (s *CarStore) CountBySeats(seatType int, parkingLot model.ParkingLot, statu
 
 func (s *CarStore) CountByParkingLot(parkingLot model.ParkingLot, status model.CarStatus) (int, error) {
 	var count int64
-	if err := s.db.Where("parking_lot = ? and status = ?", string(parkingLot), string(status)).Count(&count).Error; err != nil {
+	if err := s.db.Model(model.Car{}).Where("parking_lot = ? and status = ?", string(parkingLot), string(status)).Count(&count).Error; err != nil {
 		fmt.Printf("CarStore: CountByParkingLot %v\n", err)
 		return -1, err
 	}

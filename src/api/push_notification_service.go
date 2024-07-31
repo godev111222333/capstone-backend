@@ -147,7 +147,7 @@ func (s *NotificationPushService) NewWarningCountMsg(
 	return &PushMessage{
 		To:    []string{expoToken},
 		Title: "Xe của bạn bị cảnh báo",
-		Body:  fmt.Sprintf("Xe của bạn bị cảnh báo do đi trễ. Nếu vượt quá số lần tối đi, hợp đồng cho thuê xe sẽ bị huỷ. Số lần đi trễ hiện tại: %d, tối đa: %d", curCount, maxCount),
+		Body:  fmt.Sprintf("Xe của bạn bị cảnh báo do đi trễ. Nếu vượt quá số lần tối đa, hợp đồng cho thuê xe có khả năng bị huỷ. Số lần đi trễ hiện tại: %d, tối đa: %d", curCount, maxCount),
 		Data: map[string]interface{}{
 			"screen":       fmt.Sprintf("%s/detail/%d", s.FrontendURL, carID),
 			"phone_number": toPhone,

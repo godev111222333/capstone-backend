@@ -14,14 +14,16 @@ type StatisticRequest struct {
 	TotalActiveCustomersBackOffDay   int `form:"total_active_customers_back_off_day" binding:"required"`
 	RevenueBackOffDay                int `form:"revenue_back_off_day" binding:"required"`
 	RentedCarsBackOffDay             int `form:"rented_cars_back_off_day" binding:"required"`
+	ParkingLotBackOffDay             int `form:"parking_lot_back_off_day" binding:"required"`
 }
 
 type StatisticResponse struct {
-	TotalCustomerContracts int                `json:"total_customer_contracts"`
-	TotalActivePartners    int                `json:"total_active_partners"`
-	TotalActiveCustomers   int                `json:"total_active_customers"`
-	Revenue                float64            `json:"revenue,omitempty"`
-	RentedCars             []*store.RentedCar `json:"rented_cars,omitempty"`
+	TotalCustomerContracts int                      `json:"total_customer_contracts"`
+	TotalActivePartners    int                      `json:"total_active_partners"`
+	TotalActiveCustomers   int                      `json:"total_active_customers"`
+	Revenue                float64                  `json:"revenue,omitempty"`
+	RentedCars             []*store.RentedCar       `json:"rented_cars,omitempty"`
+	ParkingLot             map[model.ParkingLot]int `json:"parking_lot"`
 }
 
 func (s *Server) HandleAdminGetStatistic(c *gin.Context) {
@@ -70,12 +72,29 @@ func (s *Server) HandleAdminGetStatistic(c *gin.Context) {
 		return
 	}
 
+	parkingLots := make(map[model.ParkingLot]int)
+	garageCounter, err := s.store.CarStore.CountByParkingLot(model.ParkingLotGarage, model.CarStatusActive)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+	parkingLots[model.ParkingLotGarage] = garageCounter
+
+	homeCounter, err := s.store.CarStore.CountByParkingLot(model.ParkingLotHome, model.CarStatusActive)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+	parkingLots[model.ParkingLotHome] = homeCounter
+
+	parkingLots[model.ParkingLotGarage] = garageCounter
 	responseSuccess(c, StatisticResponse{
 		TotalCustomerContracts: totalCustomerContracts,
 		TotalActivePartners:    totalActivePartners,
 		TotalActiveCustomers:   totalActiveCustomers,
 		Revenue:                revenue,
 		RentedCars:             rentedCars,
+		ParkingLot:             parkingLots,
 	})
 }
 

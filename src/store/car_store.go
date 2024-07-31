@@ -45,7 +45,7 @@ func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchP
 				return nil, err
 			}
 		} else {
-			if err := s.db.Where("status = ?", "%"+string(status)+"%").
+			if err := s.db.Where("status = ?", string(status)).
 				Offset(offset).Limit(limit).
 				Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
 				fmt.Printf("CarStore: SearchCars %v\n", err)

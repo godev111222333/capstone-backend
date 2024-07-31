@@ -14,7 +14,6 @@ type StatisticRequest struct {
 	TotalActiveCustomersBackOffDay   int `form:"total_active_customers_back_off_day" binding:"required"`
 	RevenueBackOffDay                int `form:"revenue_back_off_day" binding:"required"`
 	RentedCarsBackOffDay             int `form:"rented_cars_back_off_day" binding:"required"`
-	ParkingLotBackOffDay             int `form:"parking_lot_back_off_day" binding:"required"`
 }
 
 type StatisticResponse struct {
@@ -87,7 +86,6 @@ func (s *Server) HandleAdminGetStatistic(c *gin.Context) {
 	}
 	parkingLots[model.ParkingLotHome] = homeCounter
 
-	parkingLots[model.ParkingLotGarage] = garageCounter
 	responseSuccess(c, StatisticResponse{
 		TotalCustomerContracts: totalCustomerContracts,
 		TotalActivePartners:    totalActivePartners,

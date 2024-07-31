@@ -45,7 +45,7 @@ func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchP
 				return nil, err
 			}
 		} else {
-			if err := s.db.Where("status = ?", string(status)).
+			if err := s.db.Where("status like ?", string(status)+"%").
 				Offset(offset).Limit(limit).
 				Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
 				fmt.Printf("CarStore: SearchCars %v\n", err)
@@ -67,9 +67,9 @@ func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchP
 		rawSql := `select *
 from cars
          join accounts on cars.partner_id = accounts.id join car_models on cars.car_model_id = car_models.id
-where cars.status = ?
+where cars.status like ?
   and (car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or concat(accounts.last_name, ' ', accounts.first_name) like ?) order by cars.id desc offset ? limit ?`
-		err = s.db.Raw(rawSql, likeQuery(string(status)), searchParam, searchParam, searchParam, likeQuery(searchParam), offset, limit).Scan(&joinModel).Error
+		err = s.db.Raw(rawSql, string(status)+"%", searchParam, searchParam, searchParam, likeQuery(searchParam), offset, limit).Scan(&joinModel).Error
 	} else {
 		rawSql := `select *
 from cars

@@ -16,11 +16,22 @@ type StatisticRequest struct {
 	RentedCarsBackOffDay             int `form:"rented_cars_back_off_day" binding:"required"`
 }
 
+type RevenueRecord struct {
+	FromDate time.Time `json:"from_date"`
+	ToDate   time.Time `json:"to_date"`
+	Revenue  int       `json:"revenue"`
+}
+
+type RevenueResponse struct {
+	Records      []RevenueRecord `json:"records"`
+	TotalRevenue int             `json:"total_revenue"`
+}
+
 type StatisticResponse struct {
 	TotalCustomerContracts int                      `json:"total_customer_contracts"`
 	TotalActivePartners    int                      `json:"total_active_partners"`
 	TotalActiveCustomers   int                      `json:"total_active_customers"`
-	Revenue                float64                  `json:"revenue,omitempty"`
+	Revenue                RevenueResponse          `json:"revenue"`
 	RentedCars             []*store.RentedCar       `json:"rented_cars,omitempty"`
 	ParkingLot             map[model.ParkingLot]int `json:"parking_lot"`
 }
@@ -59,10 +70,23 @@ func (s *Server) HandleAdminGetStatistic(c *gin.Context) {
 		return
 	}
 
-	revenue, err := s.store.CustomerContractStore.SumRevenueForCompletedContracts(dayToDuration(req.RevenueBackOffDay))
-	if err != nil {
-		responseGormErr(c, err)
-		return
+	totalRevenue := 0
+	now := time.Now()
+	revenueRecords := make([]RevenueRecord, 0)
+	for i := req.RevenueBackOffDay; i >= 1; i-- {
+		startTime := now.Add(-dayToDuration(i))
+		endTime := startTime.Add(dayToDuration(1))
+		dayRevenue, err := s.store.CustomerContractStore.SumRevenueForCompletedContracts(startTime, endTime)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+		revenueRecords = append(revenueRecords, RevenueRecord{
+			FromDate: startTime,
+			ToDate:   endTime,
+			Revenue:  int(dayRevenue),
+		})
+		totalRevenue += int(dayRevenue)
 	}
 
 	rentedCars, err := s.store.CustomerContractStore.CountRentedCars(dayToDuration(req.RentedCarsBackOffDay))
@@ -90,7 +114,7 @@ func (s *Server) HandleAdminGetStatistic(c *gin.Context) {
 		TotalCustomerContracts: totalCustomerContracts,
 		TotalActivePartners:    totalActivePartners,
 		TotalActiveCustomers:   totalActiveCustomers,
-		Revenue:                revenue,
+		Revenue:                RevenueResponse{Records: revenueRecords, TotalRevenue: totalRevenue},
 		RentedCars:             rentedCars,
 		ParkingLot:             parkingLots,
 	})

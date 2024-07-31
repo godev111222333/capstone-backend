@@ -255,16 +255,16 @@ func (s *CustomerContractStore) CountTotalValidCustomerContracts(backoff time.Du
 	return int(count), nil
 }
 
-func (s *CustomerContractStore) SumRevenueForCompletedContracts(timeRange time.Duration) (float64, error) {
+func (s *CustomerContractStore) SumRevenueForCompletedContracts(startTime, endTime time.Time) (float64, error) {
 	sum := struct {
 		Sum float64 `json:"sum"`
 	}{}
 	sql := `select SUM(customer_contracts.revenue_sharing_percent * customer_contracts.rent_price / 100)
 from customer_contracts
-where customer_contracts.status = 'completed'
-  and end_date >= ?`
+where customer_contracts.status = 'completed' and start_date >= ?
+  and end_date < ?`
 
-	if err := s.db.Raw(sql, time.Now().Add(-timeRange)).Scan(&sum).Error; err != nil {
+	if err := s.db.Raw(sql, startTime, endTime).Scan(&sum).Error; err != nil {
 		fmt.Printf("CustomerContractStore: SumRevenueForCompletedContracts %v\n", err)
 		return -1, err
 	}

@@ -11,3 +11,12 @@ func MapGetString(m interface{}, fieldName string) string {
 
 	return ""
 }
+
+func ArrContainsInt(arr []int, element int) bool {
+	for _, ele := range arr {
+		if ele == element {
+			return true
+		}
+	}
+	return false
+}

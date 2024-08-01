@@ -461,7 +461,7 @@ func (s *Server) HandlePartnerGetActivityDetail(c *gin.Context) {
 	for i, contract := range contracts {
 		wNetReceive := &contractWNetReceive{
 			contract,
-			contract.RentPrice * int(100.0-contract.RevenueSharingPercent) / 100}
+			contract.RentPrice * int(100.0-contract.ContractRule.RevenueSharingPercent) / 100}
 		resp[i] = wNetReceive
 	}
 

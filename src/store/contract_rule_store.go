@@ -26,6 +26,15 @@ func (s *ContractRuleStore) GetLast() (*model.ContractRule, error) {
 	return res, nil
 }
 
+func (s *ContractRuleStore) Create(rule *model.ContractRule) error {
+	if err := s.db.Create(rule).Error; err != nil {
+		fmt.Printf("ContractRuleStore: Create %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *ContractRuleStore) Update(id int, values map[string]interface{}) error {
 	if err := s.db.Model(model.ContractRule{}).Where("id = ?", id).Updates(values).Error; err != nil {
 		fmt.Printf("ContractRuleStore: Update %v\n", err)

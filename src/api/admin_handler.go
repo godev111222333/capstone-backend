@@ -415,8 +415,8 @@ func (s *Server) RenderCustomerContractPDF(
 		"number_of_seats":        strconv.Itoa(car.CarModel.NumberOfSeats),
 		"car_year":               strconv.Itoa(car.CarModel.Year),
 		"price":                  strconv.Itoa(contract.RentPrice),
-		"prepay_percent":         fmt.Sprintf("%.2f", contract.PrepayPercent),
-		"insurance_percent":      fmt.Sprintf("%.2f", contract.InsurancePercent),
+		"prepay_percent":         fmt.Sprintf("%.2f", contract.ContractRule.PrepayPercent),
+		"insurance_percent":      fmt.Sprintf("%.2f", contract.ContractRule.InsurancePercent),
 		"start_hour":             strconv.Itoa(startHour),
 		"start_date":             strconv.Itoa(startDay),
 		"start_month":            strconv.Itoa(startMonth),
@@ -1073,7 +1073,7 @@ func (s *Server) HandleAdminMakeMonthlyPartnerPayments(c *gin.Context) {
 		if !existed {
 			amounts[partnerID] = 0
 		}
-		amounts[partnerID] += contract.RentPrice * int(100-contract.RevenueSharingPercent) / 100
+		amounts[partnerID] += contract.RentPrice * int(100-contract.ContractRule.RevenueSharingPercent) / 100
 	}
 
 	for partnerID, cusContractIds := range partnerPayments {
@@ -1209,45 +1209,33 @@ func (s *Server) HandleAdminGetContractRule(c *gin.Context) {
 	responseSuccess(c, rule)
 }
 
-type AdminUpdateContractRuleRequest struct {
-	RuleID                int     `json:"rule_id" binding:"required"`
-	InsurancePercent      float64 `json:"insurance_percent"`
-	PrepayPercent         float64 `json:"prepay_percent"`
-	RevenueSharingPercent float64 `json:"revenue_sharing_percent"`
-	CollateralCashAmount  int     `json:"collateral_cash_amount"`
-	MaxWarningCount       int     `json:"max_warning_count"`
+type AdminCreateContractRuleRequest struct {
+	InsurancePercent      float64 `json:"insurance_percent" binding:"required"`
+	PrepayPercent         float64 `json:"prepay_percent" binding:"required"`
+	RevenueSharingPercent float64 `json:"revenue_sharing_percent" binding:"required"`
+	CollateralCashAmount  int     `json:"collateral_cash_amount" binding:"required"`
+	MaxWarningCount       int     `json:"max_warning_count" binding:"required"`
 }
 
-func (s *Server) HandleAdminUpdateContractRule(c *gin.Context) {
-	req := AdminUpdateContractRuleRequest{}
+func (s *Server) HandleAdminCreateContractRule(c *gin.Context) {
+	req := AdminCreateContractRuleRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		responseCustomErr(c, ErrCodeInvalidUpdateContractRuleRequest, err)
+		responseCustomErr(c, ErrCodeInvalidCreateContractRuleRequest, err)
 		return
 	}
 
-	updatedValues := make(map[string]interface{}, 0)
-	if req.InsurancePercent > 0 {
-		updatedValues["insurance_percent"] = req.InsurancePercent
-	}
-	if req.PrepayPercent > 0 {
-		updatedValues["prepay_percent"] = req.PrepayPercent
-	}
-	if req.RevenueSharingPercent > 0 {
-		updatedValues["revenue_sharing_percent"] = req.RevenueSharingPercent
-	}
-	if req.CollateralCashAmount > 0 {
-		updatedValues["collateral_cash_amount"] = req.CollateralCashAmount
-	}
-	if req.MaxWarningCount > 0 {
-		updatedValues["max_warning_count"] = req.MaxWarningCount
-	}
-
-	if err := s.store.ContractRuleStore.Update(req.RuleID, updatedValues); err != nil {
+	if err := s.store.ContractRuleStore.Create(&model.ContractRule{
+		InsurancePercent:      req.InsurancePercent,
+		PrepayPercent:         req.PrepayPercent,
+		RevenueSharingPercent: req.RevenueSharingPercent,
+		CollateralCashAmount:  req.CollateralCashAmount,
+		MaxWarningCount:       req.MaxWarningCount,
+	}); err != nil {
 		responseGormErr(c, err)
 		return
 	}
 
-	responseSuccess(c, gin.H{"status": "updated contract rule successfully"})
+	responseSuccess(c, gin.H{"status": "created contract rule successfully"})
 }
 
 type AdminUpdateWarningCounter struct {

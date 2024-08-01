@@ -52,7 +52,7 @@ func (s *CustomerContractStore) IsOverlap(carID int, desiredStartDate time.Time,
 
 func (s *CustomerContractStore) FindByID(id int) (*model.CustomerContract, error) {
 	res := &model.CustomerContract{}
-	if err := s.db.Where("id = ?", id).Preload("Customer").Preload("Car").Preload("Car.CarModel").First(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("ContractRule").First(res).Error; err != nil {
 		fmt.Printf("CustomerContractStore: FindByID %v\n", err)
 		return nil, err
 	}
@@ -75,7 +75,8 @@ func (s *CustomerContractStore) FindByCarID(
 		if err := s.db.Where("car_id = ?", carID).
 			Preload("Customer").
 			Preload("Car").
-			Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			Preload("Car.CarModel").
+			Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: FindByCarID %v\n", err)
 			return nil, err
 		}
@@ -83,7 +84,8 @@ func (s *CustomerContractStore) FindByCarID(
 		if err := s.db.Where("car_id = ? and status = ?", carID, string(status)).
 			Preload("Customer").
 			Preload("Car").
-			Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			Preload("Car.CarModel").
+			Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: FindByCarID %v\n", err)
 			return nil, err
 		}
@@ -107,12 +109,12 @@ func (s *CustomerContractStore) GetByCustomerID(cusID int, status model.Customer
 	}
 
 	if status == model.CustomerContractStatusNoFilter {
-		if err := s.db.Where("customer_id = ?", cusID).Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		if err := s.db.Where("customer_id = ?", cusID).Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
 			return nil, err
 		}
 	} else {
-		if err := s.db.Where("customer_id = ? and status like ?", cusID, "%"+string(status)+"%").Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		if err := s.db.Where("customer_id = ? and status like ?", cusID, "%"+string(status)+"%").Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
 			return nil, err
 		}

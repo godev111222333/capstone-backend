@@ -199,27 +199,31 @@ func TestCarStore(t *testing.T) {
 		customer := &model.Account{Email: "c1@gmail.com", Password: "c1", RoleID: model.RoleIDCustomer}
 		require.NoError(t, TestDb.AccountStore.Create(customer))
 
+		contractRuleID := 1
 		customerContracts := []*model.CustomerContract{
 			{
-				CustomerID: customer.ID,
-				CarID:      cars[0].CarModelID,
-				StartDate:  now.Add(10 * time.Hour),
-				EndDate:    now.Add(10 * time.Hour * time.Duration(3)),
-				Status:     model.CustomerContractStatusOrdered,
+				CustomerID:     customer.ID,
+				CarID:          cars[0].CarModelID,
+				StartDate:      now.Add(10 * time.Hour),
+				EndDate:        now.Add(10 * time.Hour * time.Duration(3)),
+				Status:         model.CustomerContractStatusOrdered,
+				ContractRuleID: contractRuleID,
 			},
 			{
-				CustomerID: customer.ID,
-				CarID:      cars[0].CarModelID,
-				StartDate:  now.Add(10 * time.Hour * time.Duration(7)),
-				EndDate:    now.Add(10 * time.Hour * time.Duration(9)),
-				Status:     model.CustomerContractStatusOrdered,
+				CustomerID:     customer.ID,
+				CarID:          cars[0].CarModelID,
+				StartDate:      now.Add(10 * time.Hour * time.Duration(7)),
+				EndDate:        now.Add(10 * time.Hour * time.Duration(9)),
+				Status:         model.CustomerContractStatusOrdered,
+				ContractRuleID: contractRuleID,
 			},
 			{
-				CustomerID: customer.ID,
-				CarID:      cars[0].CarModelID,
-				StartDate:  now.Add(10 * time.Hour * time.Duration(15)),
-				EndDate:    now.Add(10 * time.Hour * time.Duration(20)),
-				Status:     model.CustomerContractStatusWaitingContractPayment,
+				CustomerID:     customer.ID,
+				CarID:          cars[0].CarModelID,
+				StartDate:      now.Add(10 * time.Hour * time.Duration(15)),
+				EndDate:        now.Add(10 * time.Hour * time.Duration(20)),
+				Status:         model.CustomerContractStatusWaitingContractPayment,
+				ContractRuleID: contractRuleID,
 			},
 		}
 

@@ -129,7 +129,12 @@ func TestServer_HandleCustomerGiveFeedback(t *testing.T) {
 	car := &model.Car{CarModelID: carModel.ID, LicensePlate: "kdjkas", PartnerID: partner.ID}
 	require.NoError(t, TestDb.CarStore.Create(car))
 	customer, authPayload := seedAccountAndLogin("2233", "xxxx", model.RoleIDCustomer)
-	cusContract := &model.CustomerContract{CustomerID: customer.ID, CarID: car.ID, Status: model.CustomerContractStatusCompleted}
+	cusContract := &model.CustomerContract{
+		CustomerID:     customer.ID,
+		CarID:          car.ID,
+		Status:         model.CustomerContractStatusCompleted,
+		ContractRuleID: 1,
+	}
 	require.NoError(t, TestDb.CustomerContractStore.Create(cusContract))
 
 	route := TestServer.AllRoutes()[RouteCustomerGiveFeedback]

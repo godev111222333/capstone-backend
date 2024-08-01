@@ -115,6 +115,22 @@ create table "partner_payment_histories"
     "updated_at"  timestamptz            DEFAULT (now())
 );
 
+create table contract_rules
+(
+    "id"                      serial primary key,
+    "insurance_percent"       numeric(3, 1) not null default 0.0,
+    "prepay_percent"          numeric(3, 1) not null default 0.0,
+    "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
+    "collateral_cash_amount"  bigint        not null default 0,
+    "max_warning_count"       bigint        not null default 0,
+    "created_at"              timestamptz            DEFAULT (now()),
+    "updated_at"              timestamptz            DEFAULT (now())
+);
+
+insert into contract_rules(insurance_percent, prepay_percent, revenue_sharing_percent, collateral_cash_amount,
+                           max_warning_count)
+values (10.0, 30.0, 5, 15000000, 3);
+
 create table "customer_contracts"
 (
     "id"                         serial primary key,
@@ -133,9 +149,7 @@ create table "customer_contracts"
     "bank_name"                  varchar(255)  not null default '',
     "bank_number"                varchar(255)  not null default '',
     "bank_owner"                 varchar(255)  not null default '',
-    "insurance_percent"          numeric(3, 1) not null default 0.0,
-    "prepay_percent"             numeric(3, 1) not null default 0.0,
-    "revenue_sharing_percent"    numeric(3, 1) not null default 0.0,
+    "contract_rule_id"           bigint references contract_rules (id),
     "feedback_content"           varchar(1023) not null default '',
     "feedback_rating"            bigint        not null default 0,
     "feedback_status"            varchar(255)  not null default '',
@@ -201,21 +215,6 @@ create table messages
     "created_at"      timestamptz            DEFAULT (now()),
     "updated_at"      timestamptz            DEFAULT (now())
 );
-
-create table contract_rules
-(
-    "id"                      serial primary key,
-    "insurance_percent"       numeric(3, 1) not null default 0.0,
-    "prepay_percent"          numeric(3, 1) not null default 0.0,
-    "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
-    "collateral_cash_amount"  bigint        not null default 0,
-    "max_warning_count"       bigint        not null default 0,
-    "created_at"              timestamptz            DEFAULT (now()),
-    "updated_at"              timestamptz            DEFAULT (now())
-);
-
-insert into contract_rules(insurance_percent, prepay_percent, revenue_sharing_percent, collateral_cash_amount, max_warning_count)
-values (10.0, 30.0, 5, 15000000, 3);
 
 create table driving_license_images
 (

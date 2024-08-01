@@ -595,11 +595,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminGetCustomerContractRule: {
-			Path:        "/admin/customer_contract_rule",
+			Path:        "/customer_contract_rule",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetCustomerContractRule,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleCustomerAdmin,
 		},
 		RouteAdminGetPartnerContractRule: {
 			Path:        "/admin/partner_contract_rule",

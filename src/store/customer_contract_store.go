@@ -52,7 +52,7 @@ func (s *CustomerContractStore) IsOverlap(carID int, desiredStartDate time.Time,
 
 func (s *CustomerContractStore) FindByID(id int) (*model.CustomerContract, error) {
 	res := &model.CustomerContract{}
-	if err := s.db.Where("id = ?", id).Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("ContractRule").First(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("CustomerContractRule").First(res).Error; err != nil {
 		fmt.Printf("CustomerContractStore: FindByID %v\n", err)
 		return nil, err
 	}
@@ -76,7 +76,8 @@ func (s *CustomerContractStore) FindByCarID(
 			Preload("Customer").
 			Preload("Car").
 			Preload("Car.CarModel").
-			Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			Preload("Car.PartnerContractRule").
+			Preload("CustomerContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: FindByCarID %v\n", err)
 			return nil, err
 		}
@@ -85,7 +86,8 @@ func (s *CustomerContractStore) FindByCarID(
 			Preload("Customer").
 			Preload("Car").
 			Preload("Car.CarModel").
-			Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+			Preload("Car.PartnerContractRule").
+			Preload("CustomerContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: FindByCarID %v\n", err)
 			return nil, err
 		}
@@ -109,12 +111,12 @@ func (s *CustomerContractStore) GetByCustomerID(cusID int, status model.Customer
 	}
 
 	if status == model.CustomerContractStatusNoFilter {
-		if err := s.db.Where("customer_id = ?", cusID).Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		if err := s.db.Where("customer_id = ?", cusID).Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("CustomerContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
 			return nil, err
 		}
 	} else {
-		if err := s.db.Where("customer_id = ? and status like ?", cusID, "%"+string(status)+"%").Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("ContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
+		if err := s.db.Where("customer_id = ? and status like ?", cusID, "%"+string(status)+"%").Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("CustomerContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res).Error; err != nil {
 			fmt.Printf("CustomerContractStore: GetByCustomerID %v\n", err)
 			return nil, err
 		}
@@ -138,7 +140,7 @@ func (s *CustomerContractStore) GetByStatus(
 		res := []*model.CustomerContract{}
 		count := int64(-1)
 		if status == model.CustomerContractStatusNoFilter {
-			err = s.db.Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("end_date desc").Offset(offset).Limit(limit).Find(&res).Error
+			err = s.db.Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("CustomerContractRule").Order("end_date desc").Offset(offset).Limit(limit).Find(&res).Error
 			if err == nil {
 				if err := s.db.Model(&model.CustomerContract{}).Count(&count).Error; err != nil {
 					fmt.Printf("CustomerContractStore: GetByStatus %v\n", err)
@@ -146,7 +148,7 @@ func (s *CustomerContractStore) GetByStatus(
 				}
 			}
 		} else {
-			err = s.db.Where("status = ?", string(status)).Preload("Customer").Preload("Car").Preload("Car.CarModel").Order("end_date desc").Offset(offset).Limit(limit).Find(&res).Error
+			err = s.db.Where("status = ?", string(status)).Preload("Customer").Preload("Car").Preload("Car.CarModel").Preload("CustomerContractRule").Order("end_date desc").Offset(offset).Limit(limit).Find(&res).Error
 			if err == nil {
 				if err := s.db.Model(&model.CustomerContract{}).Where("status = ?", string(status)).Count(&count).Error; err != nil {
 					fmt.Printf("CustomerContractStore: GetByStatus %v\n", err)
@@ -349,6 +351,7 @@ func (s *CustomerContractStore) GetByStatusEndTimeInRange(
 	var res []*model.CustomerContract
 	if err := s.db.Model(model.CustomerContract{}).Where("status = ? and end_date >= ? and end_date < ?", string(status), fromDate, toDate).
 		Preload("Car").
+		Preload("Car.PartnerContractRule").
 		Find(&res).Error; err != nil {
 		fmt.Printf("CustomerContractStore: GetByStatusEndTimeInRange %v\n", err)
 		return nil, err

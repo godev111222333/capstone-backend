@@ -112,11 +112,12 @@ func TestUpdateRentalPriceHandler(t *testing.T) {
 		}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		car := &model.Car{
-			PartnerID:    acct.ID,
-			CarModelID:   carModel.ID,
-			Price:        100_000,
-			Status:       model.CarStatusPendingApplicationPendingPrice,
-			LicensePlate: "123123122",
+			PartnerID:             acct.ID,
+			CarModelID:            carModel.ID,
+			Price:                 100_000,
+			Status:                model.CarStatusPendingApplicationPendingPrice,
+			LicensePlate:          "123123122",
+			PartnerContractRuleID: 1,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
 
@@ -152,6 +153,7 @@ func TestSignContract(t *testing.T) {
 		StartDate:             time.Now(),
 		EndDate:               time.Now().AddDate(0, period, 0),
 		PartnerContractStatus: model.PartnerContractStatusWaitingForAgreement,
+		PartnerContractRuleID: 1,
 	}
 	require.NoError(t, TestDb.CarStore.Create(car))
 
@@ -195,13 +197,14 @@ func TestRenderPartnerContract(t *testing.T) {
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 	now := time.Now()
 	car := &model.Car{
-		PartnerID:    partner.ID,
-		CarModelID:   carModel.ID,
-		LicensePlate: "96A1",
-		Price:        400_000,
-		Period:       6,
-		StartDate:    now,
-		EndDate:      now.AddDate(0, 6, 0),
+		PartnerID:             partner.ID,
+		CarModelID:            carModel.ID,
+		LicensePlate:          "96A1",
+		Price:                 400_000,
+		Period:                6,
+		StartDate:             now,
+		EndDate:               now.AddDate(0, 6, 0),
+		PartnerContractRuleID: 1,
 	}
 	require.NoError(t, TestDb.CarStore.Create(car))
 	ct, err := TestDb.CarStore.GetByID(car.ID)
@@ -236,11 +239,12 @@ func TestRenderCustomerContract(t *testing.T) {
 	carModel := &model.CarModel{Brand: "BMW", Model: "VIP 2", NumberOfSeats: 4, Year: 2024}
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 	car := &model.Car{
-		PartnerID:    partner.ID,
-		CarModelID:   carModel.ID,
-		LicensePlate: "96A1",
-		Price:        400_000,
-		Period:       6,
+		PartnerID:             partner.ID,
+		CarModelID:            carModel.ID,
+		LicensePlate:          "96A1",
+		Price:                 400_000,
+		Period:                6,
+		PartnerContractRuleID: 1,
 	}
 	require.NoError(t, TestDb.CarStore.Create(car))
 	var err error

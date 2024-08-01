@@ -25,12 +25,13 @@ func TestCustomerHandler_FindCars(t *testing.T) {
 	require.NoError(t, TestDb.CarModelStore.Create(carModels))
 	partner := &model.Account{RoleID: model.RoleIDPartner, Email: "pn1@gmail@gmail.com", Status: model.AccountStatusActive}
 	require.NoError(t, TestDb.AccountStore.Create(partner))
+	PartnerContractRuleID := 1
 	cars := []*model.Car{
-		{PartnerID: partner.ID, CarModelID: carModels[0].ID, Status: model.CarStatusActive, LicensePlate: "232222", ParkingLot: model.ParkingLotHome},
-		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusActive, LicensePlate: "242222", ParkingLot: model.ParkingLotGarage},
-		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusActive, LicensePlate: "252222", ParkingLot: model.ParkingLotHome},
-		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusRejected, LicensePlate: "262222", ParkingLot: model.ParkingLotGarage},
-		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusWaitingDelivery, LicensePlate: "272222", ParkingLot: model.ParkingLotHome},
+		{PartnerID: partner.ID, CarModelID: carModels[0].ID, Status: model.CarStatusActive, LicensePlate: "232222", ParkingLot: model.ParkingLotHome, PartnerContractRuleID: PartnerContractRuleID},
+		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusActive, LicensePlate: "242222", ParkingLot: model.ParkingLotGarage, PartnerContractRuleID: PartnerContractRuleID},
+		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusActive, LicensePlate: "252222", ParkingLot: model.ParkingLotHome, PartnerContractRuleID: PartnerContractRuleID},
+		{PartnerID: partner.ID, CarModelID: carModels[1].ID, Status: model.CarStatusRejected, LicensePlate: "262222", ParkingLot: model.ParkingLotGarage, PartnerContractRuleID: PartnerContractRuleID},
+		{PartnerID: partner.ID, CarModelID: carModels[2].ID, Status: model.CarStatusWaitingDelivery, LicensePlate: "272222", ParkingLot: model.ParkingLotHome, PartnerContractRuleID: PartnerContractRuleID},
 	}
 	for _, c := range cars {
 		require.NoError(t, TestDb.CarStore.Create(c))
@@ -90,7 +91,7 @@ func TestServer_HandleCustomerCalculateRentPricing(t *testing.T) {
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 	partner := &model.Account{FirstName: "pppppp", RoleID: model.RoleIDPartner, Status: model.AccountStatusActive, PhoneNumber: "9123192391239"}
 	require.NoError(t, TestDb.AccountStore.Create(partner))
-	car := &model.Car{CarModelID: carModel.ID, Price: 100_000, PartnerID: partner.ID}
+	car := &model.Car{CarModelID: carModel.ID, Price: 100_000, PartnerID: partner.ID, PartnerContractRuleID: 1}
 	require.NoError(t, TestDb.CarStore.Create(car))
 
 	route := TestServer.AllRoutes()[RouteCustomerCalculateRentingPrice]
@@ -126,14 +127,14 @@ func TestServer_HandleCustomerGiveFeedback(t *testing.T) {
 	carModel := &model.CarModel{Brand: "BMW"}
 	require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 	partner, _ := seedAccountAndLogin("12231", "xxxx", model.RoleIDPartner)
-	car := &model.Car{CarModelID: carModel.ID, LicensePlate: "kdjkas", PartnerID: partner.ID}
+	car := &model.Car{CarModelID: carModel.ID, LicensePlate: "kdjkas", PartnerID: partner.ID, PartnerContractRuleID: 1}
 	require.NoError(t, TestDb.CarStore.Create(car))
 	customer, authPayload := seedAccountAndLogin("2233", "xxxx", model.RoleIDCustomer)
 	cusContract := &model.CustomerContract{
-		CustomerID:     customer.ID,
-		CarID:          car.ID,
-		Status:         model.CustomerContractStatusCompleted,
-		ContractRuleID: 1,
+		CustomerID:             customer.ID,
+		CarID:                  car.ID,
+		Status:                 model.CustomerContractStatusCompleted,
+		CustomerContractRuleID: 1,
 	}
 	require.NoError(t, TestDb.CustomerContractStore.Create(cusContract))
 

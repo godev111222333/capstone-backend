@@ -89,7 +89,7 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		return
 	}
 
-	rule, err := s.store.ContractRuleStore.GetLast()
+	rule, err := s.store.PartnerContractRuleStore.GetLast()
 	if err != nil {
 		responseGormErr(c, err)
 		return
@@ -112,7 +112,7 @@ func (s *Server) HandleRegisterCar(c *gin.Context) {
 		Motion:                req.Motion,
 		Price:                 0,
 		Period:                period,
-		RevenueSharingPercent: rule.RevenueSharingPercent,
+		PartnerContractRuleID: rule.ID,
 		BankName:              acct.BankName,
 		BankNumber:            acct.BankNumber,
 		BankOwner:             acct.BankOwner,
@@ -461,7 +461,7 @@ func (s *Server) HandlePartnerGetActivityDetail(c *gin.Context) {
 	for i, contract := range contracts {
 		wNetReceive := &contractWNetReceive{
 			contract,
-			contract.RentPrice * int(100.0-contract.ContractRule.RevenueSharingPercent) / 100}
+			contract.RentPrice * int(100.0-contract.Car.PartnerContractRule.RevenueSharingPercent) / 100}
 		resp[i] = wNetReceive
 	}
 

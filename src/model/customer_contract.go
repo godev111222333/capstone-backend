@@ -37,14 +37,13 @@ type CustomerContract struct {
 	RentPrice               int                    `json:"rent_price"`
 	InsuranceAmount         int                    `json:"insurance_amount"`
 	CollateralType          CollateralType         `json:"collateral_type"`
-	CollateralCashAmount    int                    `json:"collateral_cash_amount"`
 	IsReturnCollateralAsset bool                   `json:"is_return_collateral_asset"`
 	Url                     string                 `json:"url"`
 	BankName                string                 `json:"bank_name"`
 	BankNumber              string                 `json:"bank_number"`
 	BankOwner               string                 `json:"bank_owner"`
-	ContractRuleID          int                    `json:"contract_rule_id"`
-	ContractRule            ContractRule           `gorm:"foreignKey:ContractRuleID" json:"contract_rule,omitempty"`
+	CustomerContractRuleID  int                    `json:"customer_contract_rule_id"`
+	CustomerContractRule    CustomerContractRule   `gorm:"foreignKey:CustomerContractRuleID" json:"customer_contract_rule,omitempty"`
 	FeedbackContent         string                 `json:"feedback_content"`
 	FeedbackRating          int                    `json:"feedback_rating"`
 	FeedbackStatus          FeedBackStatus         `json:"feedback_status"`

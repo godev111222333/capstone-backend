@@ -209,17 +209,13 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	rule, err := s.store.ContractRuleStore.GetLast()
+	rule, err := s.store.CustomerContractRuleStore.GetLast()
 	if err != nil {
 		responseGormErr(c, err)
 		return
 	}
 
 	pricing := calculateRentPrice(car, rule, req.StartDate, req.EndDate)
-	collateralCash := 0
-	if req.CollateralType == model.CollateralTypeCash {
-		collateralCash = rule.CollateralCashAmount
-	}
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
 		CarID:                   req.CarID,
@@ -229,8 +225,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		Status:                  model.CustomerContractStatusWaitingContractAgreement,
 		InsuranceAmount:         pricing.TotalInsuranceAmount,
 		CollateralType:          req.CollateralType,
-		CollateralCashAmount:    collateralCash,
-		ContractRuleID:          rule.ID,
+		CustomerContractRuleID:  rule.ID,
 		BankName:                customer.BankName,
 		BankNumber:              customer.BankNumber,
 		BankOwner:               customer.BankOwner,
@@ -291,7 +286,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	rule, err := s.store.ContractRuleStore.GetLast()
+	rule, err := s.store.CustomerContractRuleStore.GetLast()
 	if err != nil {
 		responseGormErr(c, err)
 		return
@@ -310,28 +305,14 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 		return
 	}
 
-	// if this is collateral cash type, combine prepay + collateral pay into one payment_url
-	if contract.CollateralType == model.CollateralTypeCash && contract.CollateralCashAmount > 0 {
-		collateralPayment, err := s.generateCustomerContractPaymentQRCode(
-			contract.ID, contract.CollateralCashAmount, model.PaymentTypeCollateralCash, req.ReturnURL, "")
+	// if this is collateral cash type, pre-generate collateral payment
+	if contract.CollateralType == model.CollateralTypeCash && contract.CustomerContractRule.CollateralCashAmount > 0 {
+		_, err := s.generateCustomerContractPaymentQRCode(
+			contract.ID, contract.CustomerContractRule.CollateralCashAmount, model.PaymentTypeCollateralCash, req.ReturnURL, "")
 		if err != nil {
 			responseCustomErr(c, ErrCodeGenerateQRCode, err)
 			return
 		}
-
-		combined, err := s.paymentService.GeneratePaymentURL(
-			[]int{prepayPayment.ID, collateralPayment.ID},
-			prepayPayment.Amount+collateralPayment.Amount,
-			time.Now().Format("02150405"),
-			req.ReturnURL,
-		)
-		if err != nil {
-			responseCustomErr(c, ErrCodeGenerateQRCode, err)
-			return
-		}
-
-		responseSuccess(c, gin.H{"payment_url": combined})
-		return
 	}
 
 	responseSuccess(c, gin.H{"payment_url": prepayPayment.PaymentURL})
@@ -458,7 +439,7 @@ func (s *Server) HandleCustomerCalculateRentPricing(c *gin.Context) {
 		return
 	}
 
-	rule, err := s.store.ContractRuleStore.GetLast()
+	rule, err := s.store.CustomerContractRuleStore.GetLast()
 	if err != nil {
 		responseGormErr(c, err)
 		return
@@ -613,7 +594,7 @@ type RentPricing struct {
 	PrepaidAmount        int `json:"prepaid_amount"`
 }
 
-func calculateRentPrice(car *model.Car, rule *model.ContractRule, startDate, endDate time.Time) *RentPricing {
+func calculateRentPrice(car *model.Car, rule *model.CustomerContractRule, startDate, endDate time.Time) *RentPricing {
 	totalRentPriceAmount := car.Price * int(((endDate.Sub(startDate)).Hours())/24.0)
 	totalInsuranceAmount := float64(totalRentPriceAmount) * rule.InsurancePercent / 100.0
 	return &RentPricing{

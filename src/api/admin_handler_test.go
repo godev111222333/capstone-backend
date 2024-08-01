@@ -61,10 +61,11 @@ func TestAdminHandler_GetCar(t *testing.T) {
 	require.NoError(t, TestServer.store.CarModelStore.Create([]*model.CarModel{carModel}))
 	partner, _ := seedAccountAndLogin("parter@gmail.com", "aa", model.RoleIDPartner)
 	car := &model.Car{
-		PartnerID:    partner.ID,
-		CarModelID:   carModel.ID,
-		LicensePlate: "59A33",
-		Status:       model.CarStatusActive,
+		PartnerID:             partner.ID,
+		CarModelID:            carModel.ID,
+		LicensePlate:          "59A33",
+		Status:                model.CarStatusActive,
+		PartnerContractRuleID: 1,
 	}
 	require.NoError(t, TestDb.CarStore.Create(car))
 
@@ -103,10 +104,11 @@ func TestHandleApproveCar(t *testing.T) {
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		partner, _ := seedAccountAndLogin("partner_vip", "aaa", model.RoleIDPartner)
 		car := &model.Car{
-			PartnerID:    partner.ID,
-			CarModelID:   carModel.ID,
-			LicensePlate: "69A1",
-			Status:       model.CarStatusPendingApproval,
+			PartnerID:             partner.ID,
+			CarModelID:            carModel.ID,
+			LicensePlate:          "69A1",
+			Status:                model.CarStatusPendingApproval,
+			PartnerContractRuleID: 1,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
 		accessToken := loginAdmin()
@@ -141,10 +143,11 @@ func TestHandleApproveCar(t *testing.T) {
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		partner, _ := seedAccountAndLogin("partner_vip2", "aaa", model.RoleIDPartner)
 		car := &model.Car{
-			PartnerID:    partner.ID,
-			CarModelID:   carModel.ID,
-			LicensePlate: "69A12",
-			Status:       model.CarStatusPendingApproval,
+			PartnerID:             partner.ID,
+			CarModelID:            carModel.ID,
+			LicensePlate:          "69A12",
+			Status:                model.CarStatusPendingApproval,
+			PartnerContractRuleID: 1,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
 		accessToken := loginAdmin()
@@ -181,6 +184,7 @@ func TestHandleApproveCar(t *testing.T) {
 			StartDate:             time.Now(),
 			EndDate:               time.Now().AddDate(0, 3, 0),
 			PartnerContractStatus: model.PartnerContractStatusAgreed,
+			PartnerContractRuleID: 1,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
 		accessToken := loginAdmin()

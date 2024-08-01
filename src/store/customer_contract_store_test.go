@@ -16,30 +16,30 @@ func TestCustomerContractStore(t *testing.T) {
 	require.NoError(t, TestDb.AccountStore.Create(partner))
 	customer := &model.Account{PhoneNumber: "0002", Status: model.AccountStatusActive, RoleID: model.RoleIDCustomer}
 	require.NoError(t, TestDb.AccountStore.Create(customer))
-	car := &model.Car{PartnerID: partner.ID, CarModelID: carModel.ID, LicensePlate: "8xxx", Status: model.CarStatusActive}
+	car := &model.Car{PartnerID: partner.ID, CarModelID: carModel.ID, LicensePlate: "8xxx", Status: model.CarStatusActive, PartnerContractRuleID: 1}
 	require.NoError(t, TestDb.CarStore.Create(car))
 	contractRuleID := 1
 
 	// order from 10h -> 13h
 	now := time.Now()
 	contract := &model.CustomerContract{
-		CustomerID:     customer.ID,
-		CarID:          car.ID,
-		StartDate:      now.Add(10 * time.Hour),
-		EndDate:        now.Add(13 * time.Hour),
-		Status:         model.CustomerContractStatusOrdered,
-		ContractRuleID: contractRuleID,
+		CustomerID:             customer.ID,
+		CarID:                  car.ID,
+		StartDate:              now.Add(10 * time.Hour),
+		EndDate:                now.Add(13 * time.Hour),
+		Status:                 model.CustomerContractStatusOrdered,
+		CustomerContractRuleID: contractRuleID,
 	}
 	require.NoError(t, TestDb.CustomerContractStore.Create(contract))
 
 	// order from 18 -> 22h
 	contract = &model.CustomerContract{
-		CustomerID:     customer.ID,
-		CarID:          car.ID,
-		StartDate:      now.Add(18 * time.Hour),
-		EndDate:        now.Add(22 * time.Hour),
-		Status:         model.CustomerContractStatusOrdered,
-		ContractRuleID: contractRuleID,
+		CustomerID:             customer.ID,
+		CarID:                  car.ID,
+		StartDate:              now.Add(18 * time.Hour),
+		EndDate:                now.Add(22 * time.Hour),
+		Status:                 model.CustomerContractStatusOrdered,
+		CustomerContractRuleID: contractRuleID,
 	}
 	require.NoError(t, TestDb.CustomerContractStore.Create(contract))
 

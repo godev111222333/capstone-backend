@@ -95,7 +95,7 @@ where car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or 
 
 func (s *CarStore) GetByID(id int) (*model.Car, error) {
 	res := &model.Car{}
-	if err := s.db.Where("id = ?", id).Preload("Account").Preload("CarModel").First(res).Error; err != nil {
+	if err := s.db.Where("id = ?", id).Preload("Account").Preload("CarModel").Preload("PartnerContractRule").First(res).Error; err != nil {
 		return nil, err
 	}
 	return res, nil
@@ -109,9 +109,9 @@ func (s *CarStore) GetByPartner(partnerID, offset, limit int, status model.CarSt
 
 	var row *gorm.DB
 	if status == model.CarStatusNoFilter {
-		row = s.db.Where("partner_id = ?", partnerID).Preload("Account").Preload("CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res)
+		row = s.db.Where("partner_id = ?", partnerID).Preload("Account").Preload("CarModel").Preload("PartnerContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res)
 	} else {
-		row = s.db.Where("partner_id = ? and status like ?", partnerID, "%"+string(status)+"%").Preload("Account").Preload("CarModel").Order("id desc").Offset(offset).Limit(limit).Find(&res)
+		row = s.db.Where("partner_id = ? and status like ?", partnerID, "%"+string(status)+"%").Preload("Account").Preload("CarModel").Preload("PartnerContractRule").Order("id desc").Offset(offset).Limit(limit).Find(&res)
 	}
 	if err := row.Error; err != nil {
 		fmt.Printf("CarStore: GetByPartner %v\n", err)

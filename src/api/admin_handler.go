@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/godev111222333/capstone-backend/src/service"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
@@ -393,9 +394,9 @@ func (s *Server) RenderCustomerContractPDF(
 	startHour, startDay, startMonth, startYear := startDate.Hour(), startDate.Day(), int(startDate.Month()), startDate.Year()
 	endHour, endDay, endMonth, endYear := endDate.Hour(), endDate.Day(), int(endDate.Month()), endDate.Year()
 
-	collateralAmount := contract.CollateralCashAmount
+	collateralAmount := contract.CustomerContractRule.CollateralCashAmount
 	if collateralAmount == 0 {
-		rule, err := s.store.ContractRuleStore.GetLast()
+		rule, err := s.store.CustomerContractRuleStore.GetLast()
 		if err != nil {
 			return err
 		}
@@ -415,8 +416,8 @@ func (s *Server) RenderCustomerContractPDF(
 		"number_of_seats":        strconv.Itoa(car.CarModel.NumberOfSeats),
 		"car_year":               strconv.Itoa(car.CarModel.Year),
 		"price":                  strconv.Itoa(contract.RentPrice),
-		"prepay_percent":         fmt.Sprintf("%.2f", contract.ContractRule.PrepayPercent),
-		"insurance_percent":      fmt.Sprintf("%.2f", contract.ContractRule.InsurancePercent),
+		"prepay_percent":         fmt.Sprintf("%.2f", contract.CustomerContractRule.PrepayPercent),
+		"insurance_percent":      fmt.Sprintf("%.2f", contract.CustomerContractRule.InsurancePercent),
 		"start_hour":             strconv.Itoa(startHour),
 		"start_date":             strconv.Itoa(startDay),
 		"start_month":            strconv.Itoa(startMonth),
@@ -1073,7 +1074,7 @@ func (s *Server) HandleAdminMakeMonthlyPartnerPayments(c *gin.Context) {
 		if !existed {
 			amounts[partnerID] = 0
 		}
-		amounts[partnerID] += contract.RentPrice * int(100-contract.ContractRule.RevenueSharingPercent) / 100
+		amounts[partnerID] += contract.RentPrice * int(100-contract.Car.PartnerContractRule.RevenueSharingPercent) / 100
 	}
 
 	for partnerID, cusContractIds := range partnerPayments {
@@ -1199,8 +1200,8 @@ func (s *Server) HandleAdminChangeCar(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "change car successfully"})
 }
 
-func (s *Server) HandleAdminGetContractRule(c *gin.Context) {
-	rule, err := s.store.ContractRuleStore.GetLast()
+func (s *Server) HandleAdminGetCustomerContractRule(c *gin.Context) {
+	rule, err := s.store.CustomerContractRuleStore.GetLast()
 	if err != nil {
 		responseGormErr(c, err)
 		return
@@ -1209,33 +1210,62 @@ func (s *Server) HandleAdminGetContractRule(c *gin.Context) {
 	responseSuccess(c, rule)
 }
 
-type AdminCreateContractRuleRequest struct {
-	InsurancePercent      float64 `json:"insurance_percent" binding:"required"`
-	PrepayPercent         float64 `json:"prepay_percent" binding:"required"`
-	RevenueSharingPercent float64 `json:"revenue_sharing_percent" binding:"required"`
-	CollateralCashAmount  int     `json:"collateral_cash_amount" binding:"required"`
-	MaxWarningCount       int     `json:"max_warning_count" binding:"required"`
-}
-
-func (s *Server) HandleAdminCreateContractRule(c *gin.Context) {
-	req := AdminCreateContractRuleRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		responseCustomErr(c, ErrCodeInvalidCreateContractRuleRequest, err)
+func (s *Server) HandleAdminGetPartnerContractRule(c *gin.Context) {
+	rule, err := s.store.PartnerContractRuleStore.GetLast()
+	if err != nil {
+		responseGormErr(c, err)
 		return
 	}
 
-	if err := s.store.ContractRuleStore.Create(&model.ContractRule{
-		InsurancePercent:      req.InsurancePercent,
-		PrepayPercent:         req.PrepayPercent,
+	responseSuccess(c, rule)
+}
+
+type AdminCreateCustomerContractRuleRequest struct {
+	InsurancePercent     float64 `json:"insurance_percent" binding:"required"`
+	PrepayPercent        float64 `json:"prepay_percent" binding:"required"`
+	CollateralCashAmount int     `json:"collateral_cash_amount" binding:"required"`
+}
+
+func (s *Server) HandleAdminCreateCustomerContractRule(c *gin.Context) {
+	req := AdminCreateCustomerContractRuleRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidCreateCustomerContractRuleRequest, err)
+		return
+	}
+
+	if err := s.store.CustomerContractRuleStore.Create(&model.CustomerContractRule{
+		InsurancePercent:     req.InsurancePercent,
+		PrepayPercent:        req.PrepayPercent,
+		CollateralCashAmount: req.CollateralCashAmount,
+	}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "created customer contract rule successfully"})
+}
+
+type AdminCreatePartnerContractRuleRequest struct {
+	RevenueSharingPercent float64 `json:"revenue_sharing_percent" binding:"required"`
+	MaxWarningCount       int     `json:"max_warning_count" binding:"required"`
+}
+
+func (s *Server) HandleAdminCreatePartnerContractRule(c *gin.Context) {
+	req := AdminCreatePartnerContractRuleRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidCreatePartnerContractRuleRequest, err)
+		return
+	}
+
+	if err := s.store.PartnerContractRuleStore.Create(&model.PartnerContractRule{
 		RevenueSharingPercent: req.RevenueSharingPercent,
-		CollateralCashAmount:  req.CollateralCashAmount,
 		MaxWarningCount:       req.MaxWarningCount,
 	}); err != nil {
 		responseGormErr(c, err)
 		return
 	}
 
-	responseSuccess(c, gin.H{"status": "created contract rule successfully"})
+	responseSuccess(c, gin.H{"status": "created partner contract rule successfully"})
 }
 
 type AdminUpdateWarningCounter struct {
@@ -1257,12 +1287,6 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 		return
 	}
 
-	rule, err := s.store.ContractRuleStore.GetLast()
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
 	car, err := s.store.CarStore.GetByID(req.CarID)
 	if err != nil {
 		responseGormErr(c, err)
@@ -1278,7 +1302,7 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 	msg := s.notificationPushService.NewWarningCountMsg(
 		car.ID,
 		car.WarningCount,
-		rule.MaxWarningCount,
+		car.PartnerContractRule.MaxWarningCount,
 		acct.PhoneNumber,
 		s.getExpoToken(acct.PhoneNumber),
 	)

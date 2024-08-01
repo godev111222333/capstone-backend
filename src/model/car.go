@@ -53,7 +53,8 @@ type Car struct {
 	Motion                Motion                `json:"motion"`
 	Price                 int                   `json:"price"`
 	Status                CarStatus             `json:"status"`
-	RevenueSharingPercent float64               `json:"revenue_sharing_percent"`
+	PartnerContractRuleID int                   `json:"partner_contract_rule_id"`
+	PartnerContractRule   PartnerContractRule   `json:"partner_contract_rule" gorm:"foreignKey:PartnerContractRuleID"`
 	BankName              string                `json:"bank_name"`
 	BankNumber            string                `json:"bank_number"`
 	BankOwner             string                `json:"bank_owner"`
@@ -70,6 +71,7 @@ type Car struct {
 type PartnerContract struct {
 	CarID                 int                   `json:"car_id"`
 	RevenueSharingPercent float64               `json:"revenue_sharing_percent"`
+	MaxWarningCount       int                   `json:"max_warning_count"`
 	BankName              string                `json:"bank_name"`
 	BankNumber            string                `json:"bank_number"`
 	BankOwner             string                `json:"bank_owner"`
@@ -84,7 +86,8 @@ type PartnerContract struct {
 func (c *Car) ToPartnerContract() *PartnerContract {
 	return &PartnerContract{
 		CarID:                 c.ID,
-		RevenueSharingPercent: c.RevenueSharingPercent,
+		RevenueSharingPercent: c.PartnerContractRule.RevenueSharingPercent,
+		MaxWarningCount:       c.PartnerContractRule.MaxWarningCount,
 		BankName:              c.BankName,
 		BankNumber:            c.BankNumber,
 		BankOwner:             c.BankOwner,
@@ -98,41 +101,45 @@ func (c *Car) ToPartnerContract() *PartnerContract {
 }
 
 type CarJoinCarModel struct {
-	CarID         int        `json:"car_id"`
-	CarModelID    int        `json:"car_model_id"`
-	CarModel      CarModel   `json:"car_model" gorm:"foreignKey:CarModelID"`
-	PartnerID     int        `json:"partner_id"`
-	Brand         string     `json:"brand"`
-	Model         string     `json:"model"`
-	Year          int        `json:"year"`
-	NumberOfSeats int        `json:"number_of_seats"`
-	LicensePlate  string     `json:"license_plate"`
-	ParkingLot    ParkingLot `json:"parking_lot"`
-	Description   string     `json:"description"`
-	Fuel          Fuel       `json:"fuel"`
-	Motion        Motion     `json:"motion"`
-	Price         int        `json:"price"`
-	Status        CarStatus  `json:"status"`
-	Period        int        `json:"period"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at"`
+	CarID                 int                 `json:"car_id"`
+	CarModelID            int                 `json:"car_model_id"`
+	CarModel              CarModel            `json:"car_model" gorm:"foreignKey:CarModelID"`
+	PartnerID             int                 `json:"partner_id"`
+	Brand                 string              `json:"brand"`
+	Model                 string              `json:"model"`
+	Year                  int                 `json:"year"`
+	NumberOfSeats         int                 `json:"number_of_seats"`
+	LicensePlate          string              `json:"license_plate"`
+	ParkingLot            ParkingLot          `json:"parking_lot"`
+	Description           string              `json:"description"`
+	Fuel                  Fuel                `json:"fuel"`
+	Motion                Motion              `json:"motion"`
+	Price                 int                 `json:"price"`
+	Status                CarStatus           `json:"status"`
+	Period                int                 `json:"period"`
+	PartnerContractRuleID int                 `json:"partner_contract_rule_id"`
+	PartnerContractRule   PartnerContractRule `json:"partner_contract_rule" gorm:"foreignKey:PartnerContractRuleID"`
+	CreatedAt             time.Time           `json:"created_at"`
+	UpdatedAt             time.Time           `json:"updated_at"`
 }
 
 func (m *CarJoinCarModel) ToCar() *Car {
 	return &Car{
-		ID:           m.CarID,
-		PartnerID:    m.PartnerID,
-		CarModelID:   m.CarModelID,
-		CarModel:     m.CarModel,
-		LicensePlate: m.LicensePlate,
-		ParkingLot:   m.ParkingLot,
-		Description:  m.Description,
-		Fuel:         m.Fuel,
-		Motion:       m.Motion,
-		Price:        m.Price,
-		Status:       m.Status,
-		CreatedAt:    m.CreatedAt,
-		UpdatedAt:    m.UpdatedAt,
+		ID:                    m.CarID,
+		PartnerID:             m.PartnerID,
+		CarModelID:            m.CarModelID,
+		CarModel:              m.CarModel,
+		LicensePlate:          m.LicensePlate,
+		ParkingLot:            m.ParkingLot,
+		Description:           m.Description,
+		Fuel:                  m.Fuel,
+		Motion:                m.Motion,
+		Price:                 m.Price,
+		Status:                m.Status,
+		PartnerContractRule:   m.PartnerContractRule,
+		PartnerContractRuleID: m.PartnerContractRuleID,
+		CreatedAt:             m.CreatedAt,
+		UpdatedAt:             m.UpdatedAt,
 	}
 }
 

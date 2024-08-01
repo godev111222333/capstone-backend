@@ -27,15 +27,16 @@ func TestCarStore(t *testing.T) {
 		}
 		require.NoError(t, TestDb.AccountStore.Create(partner))
 		car := &model.Car{
-			PartnerID:    partner.ID,
-			CarModelID:   carModel.ID,
-			LicensePlate: "7777",
-			ParkingLot:   model.ParkingLotHome,
-			Description:  "Beautiful car",
-			Fuel:         model.FuelElectricity,
-			Motion:       model.MotionAutomaticTransmission,
-			Price:        550_000,
-			Status:       model.CarStatusActive,
+			PartnerID:             partner.ID,
+			CarModelID:            carModel.ID,
+			LicensePlate:          "7777",
+			ParkingLot:            model.ParkingLotHome,
+			Description:           "Beautiful car",
+			Fuel:                  model.FuelElectricity,
+			Motion:                model.MotionAutomaticTransmission,
+			Price:                 550_000,
+			Status:                model.CarStatusActive,
+			PartnerContractRuleID: 1,
 		}
 		require.NoError(t, TestDb.CarStore.Create(car))
 	})
@@ -55,25 +56,28 @@ func TestCarStore(t *testing.T) {
 
 		for i := 1; i <= 2; i++ {
 			car := &model.Car{
-				PartnerID:    partner.ID,
-				CarModelID:   carModel.ID,
-				LicensePlate: "86A" + strconv.Itoa(i),
-				Status:       model.CarStatusActive,
+				PartnerID:             partner.ID,
+				CarModelID:            carModel.ID,
+				LicensePlate:          "86A" + strconv.Itoa(i),
+				Status:                model.CarStatusActive,
+				PartnerContractRuleID: 1,
 			}
 			require.NoError(t, TestDb.CarStore.Create(car))
 		}
 		cars := []*model.Car{
 			{
-				PartnerID:    partner.ID,
-				CarModelID:   carModel.ID,
-				LicensePlate: "86AX1",
-				Status:       model.CarStatusPendingApproval,
+				PartnerID:             partner.ID,
+				CarModelID:            carModel.ID,
+				LicensePlate:          "86AX1",
+				Status:                model.CarStatusPendingApproval,
+				PartnerContractRuleID: 1,
 			},
 			{
-				PartnerID:    partner.ID,
-				CarModelID:   carModel.ID,
-				LicensePlate: "86AX2",
-				Status:       model.CarStatusPendingApplicationPendingCarImages,
+				PartnerID:             partner.ID,
+				CarModelID:            carModel.ID,
+				LicensePlate:          "86AX2",
+				Status:                model.CarStatusPendingApplicationPendingCarImages,
+				PartnerContractRuleID: 1,
 			},
 		}
 		for _, car := range cars {
@@ -106,20 +110,22 @@ func TestCarStore(t *testing.T) {
 
 		for i := 1; i <= 5; i++ {
 			car := &model.Car{
-				PartnerID:    partner.ID,
-				CarModelID:   carModel.ID,
-				LicensePlate: "51A" + strconv.Itoa(i),
-				Status:       model.CarStatusActive,
+				PartnerID:             partner.ID,
+				CarModelID:            carModel.ID,
+				LicensePlate:          "51A" + strconv.Itoa(i),
+				Status:                model.CarStatusActive,
+				PartnerContractRuleID: 1,
 			}
 			require.NoError(t, TestDb.CarStore.Create(car))
 		}
 
 		for i := 1; i <= 3; i++ {
 			car := &model.Car{
-				PartnerID:    partner.ID,
-				CarModelID:   carModel.ID,
-				LicensePlate: "xxxx-" + strconv.Itoa(i),
-				Status:       model.CarStatusPendingApproval,
+				PartnerID:             partner.ID,
+				CarModelID:            carModel.ID,
+				LicensePlate:          "xxxx-" + strconv.Itoa(i),
+				Status:                model.CarStatusPendingApproval,
+				PartnerContractRuleID: 1,
 			}
 			require.NoError(t, TestDb.CarStore.Create(car))
 		}
@@ -159,37 +165,40 @@ func TestCarStore(t *testing.T) {
 
 		cars := []*model.Car{
 			{
-				PartnerID:    partner1.ID,
-				CarModelID:   carModels[0].ID,
-				LicensePlate: "86B1",
-				ParkingLot:   model.ParkingLotGarage,
-				Fuel:         model.FuelElectricity,
-				Motion:       model.MotionAutomaticTransmission,
-				Price:        100_000,
-				Status:       model.CarStatusActive,
-				EndDate:      now.AddDate(1, 0, 0),
+				PartnerID:             partner1.ID,
+				CarModelID:            carModels[0].ID,
+				LicensePlate:          "86B1",
+				ParkingLot:            model.ParkingLotGarage,
+				Fuel:                  model.FuelElectricity,
+				Motion:                model.MotionAutomaticTransmission,
+				Price:                 100_000,
+				Status:                model.CarStatusActive,
+				EndDate:               now.AddDate(1, 0, 0),
+				PartnerContractRuleID: 1,
 			},
 			{
-				PartnerID:    partner2.ID,
-				CarModelID:   carModels[1].ID,
-				LicensePlate: "86B2",
-				ParkingLot:   model.ParkingLotHome,
-				Fuel:         model.FuelElectricity,
-				Motion:       model.MotionAutomaticTransmission,
-				Price:        200_000,
-				Status:       model.CarStatusActive,
-				EndDate:      now.AddDate(1, 0, 0),
+				PartnerID:             partner2.ID,
+				CarModelID:            carModels[1].ID,
+				LicensePlate:          "86B2",
+				ParkingLot:            model.ParkingLotHome,
+				Fuel:                  model.FuelElectricity,
+				Motion:                model.MotionAutomaticTransmission,
+				Price:                 200_000,
+				Status:                model.CarStatusActive,
+				EndDate:               now.AddDate(1, 0, 0),
+				PartnerContractRuleID: 1,
 			},
 			{
-				PartnerID:    partner2.ID,
-				CarModelID:   carModels[2].ID,
-				LicensePlate: "86B3",
-				ParkingLot:   model.ParkingLotGarage,
-				Fuel:         model.FuelGas,
-				Motion:       model.MotionManualTransmission,
-				Price:        300_000,
-				Status:       model.CarStatusActive,
-				EndDate:      now.AddDate(1, 0, 0),
+				PartnerID:             partner2.ID,
+				CarModelID:            carModels[2].ID,
+				LicensePlate:          "86B3",
+				ParkingLot:            model.ParkingLotGarage,
+				Fuel:                  model.FuelGas,
+				Motion:                model.MotionManualTransmission,
+				Price:                 300_000,
+				Status:                model.CarStatusActive,
+				EndDate:               now.AddDate(1, 0, 0),
+				PartnerContractRuleID: 1,
 			},
 		}
 		for _, car := range cars {
@@ -202,28 +211,28 @@ func TestCarStore(t *testing.T) {
 		contractRuleID := 1
 		customerContracts := []*model.CustomerContract{
 			{
-				CustomerID:     customer.ID,
-				CarID:          cars[0].CarModelID,
-				StartDate:      now.Add(10 * time.Hour),
-				EndDate:        now.Add(10 * time.Hour * time.Duration(3)),
-				Status:         model.CustomerContractStatusOrdered,
-				ContractRuleID: contractRuleID,
+				CustomerID:             customer.ID,
+				CarID:                  cars[0].CarModelID,
+				StartDate:              now.Add(10 * time.Hour),
+				EndDate:                now.Add(10 * time.Hour * time.Duration(3)),
+				Status:                 model.CustomerContractStatusOrdered,
+				CustomerContractRuleID: contractRuleID,
 			},
 			{
-				CustomerID:     customer.ID,
-				CarID:          cars[0].CarModelID,
-				StartDate:      now.Add(10 * time.Hour * time.Duration(7)),
-				EndDate:        now.Add(10 * time.Hour * time.Duration(9)),
-				Status:         model.CustomerContractStatusOrdered,
-				ContractRuleID: contractRuleID,
+				CustomerID:             customer.ID,
+				CarID:                  cars[0].CarModelID,
+				StartDate:              now.Add(10 * time.Hour * time.Duration(7)),
+				EndDate:                now.Add(10 * time.Hour * time.Duration(9)),
+				Status:                 model.CustomerContractStatusOrdered,
+				CustomerContractRuleID: contractRuleID,
 			},
 			{
-				CustomerID:     customer.ID,
-				CarID:          cars[0].CarModelID,
-				StartDate:      now.Add(10 * time.Hour * time.Duration(15)),
-				EndDate:        now.Add(10 * time.Hour * time.Duration(20)),
-				Status:         model.CustomerContractStatusWaitingContractPayment,
-				ContractRuleID: contractRuleID,
+				CustomerID:             customer.ID,
+				CarID:                  cars[0].CarModelID,
+				StartDate:              now.Add(10 * time.Hour * time.Duration(15)),
+				EndDate:                now.Add(10 * time.Hour * time.Duration(20)),
+				Status:                 model.CustomerContractStatusWaitingContractPayment,
+				CustomerContractRuleID: contractRuleID,
 			},
 		}
 

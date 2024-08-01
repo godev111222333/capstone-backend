@@ -58,8 +58,10 @@ const (
 	RouteAdminFindCars                               = "admin_find_cars"
 	RouteAdminChangeCar                              = "admin_change_car"
 	RouteAdminUpdateWarningCount                     = "admin_update_warning_count"
-	RouteAdminGetContractRule                        = "admin_get_contract_rule"
-	RouteAdminCreateContractRule                     = "admin_update_contract_rule"
+	RouteAdminGetCustomerContractRule                = "admin_get_customer_contract_rule"
+	RouteAdminGetPartnerContractRule                 = "admin_get_partner_contract_rule"
+	RouteAdminCreateCustomerContractRule             = "admin_create_customer_contract_rule"
+	RouteAdminCreatePartnerContractRule              = "admin_create_partner_contract_rule"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -592,17 +594,31 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
-		RouteAdminGetContractRule: {
-			Path:        "/admin/contract_rule",
+		RouteAdminGetCustomerContractRule: {
+			Path:        "/admin/customer_contract_rule",
 			Method:      http.MethodGet,
-			Handler:     s.HandleAdminGetContractRule,
+			Handler:     s.HandleAdminGetCustomerContractRule,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
-		RouteAdminCreateContractRule: {
-			Path:        "/admin/contract_rule",
+		RouteAdminGetPartnerContractRule: {
+			Path:        "/admin/partner_contract_rule",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetPartnerContractRule,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminCreateCustomerContractRule: {
+			Path:        "/admin/customer_contract_rule",
 			Method:      http.MethodPost,
-			Handler:     s.HandleAdminCreateContractRule,
+			Handler:     s.HandleAdminCreateCustomerContractRule,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminCreatePartnerContractRule: {
+			Path:        "/admin/partner_contract_rule",
+			Method:      http.MethodPost,
+			Handler:     s.HandleAdminCreatePartnerContractRule,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

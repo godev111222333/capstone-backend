@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/godev111222333/capstone-backend/src/misc"
 	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/gorilla/websocket"
 )
@@ -144,7 +145,7 @@ func (s *Server) startAdminSub() {
 					AccountID: msg.AdminAccountID,
 					Title:     msg.Title,
 					Content:   msg.Body,
-					URL:       mapGetString(msg.Data, "redirect_url"),
+					URL:       misc.MapGetString(msg.Data, "redirect_url"),
 					Status:    model.NotificationStatusActive,
 				})
 

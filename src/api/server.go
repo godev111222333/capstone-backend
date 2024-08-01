@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/redis/go-redis/v9"
 	"strings"
 	"sync"
@@ -30,10 +31,10 @@ type Server struct {
 	s3store                 *store.S3Store
 	tokenMaker              token.Maker
 	hashVerifier            *misc.HashVerifier
-	otpService              *OTPService
-	pdfService              IPDFService
+	otpService              *service.OTPService
+	pdfService              service.IPDFService
 	paymentService          IPaymentService
-	notificationPushService INotificationPushService
+	notificationPushService service.INotificationPushService
 
 	redisClient *redis.Client
 
@@ -51,11 +52,11 @@ func NewServer(
 	feCfg *misc.FEConfig,
 	store *store.DbStore,
 	s3Store *store.S3Store,
-	otpService *OTPService,
+	otpService *service.OTPService,
 	bankMetadata []string,
-	pdfService IPDFService,
+	pdfService service.IPDFService,
 	paymentService IPaymentService,
-	notificationPushService INotificationPushService,
+	notificationPushService service.INotificationPushService,
 	redisClient *redis.Client,
 ) *Server {
 	route := gin.New()

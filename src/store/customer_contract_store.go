@@ -386,3 +386,16 @@ func (s *CustomerContractStore) GetTotalCompletedContracts(carID int) (int, erro
 
 	return int(count), nil
 }
+
+func (s *CustomerContractStore) GetIncomingRentingCustomerContracts(
+	backoff time.Duration,
+) ([]*model.CustomerContract, error) {
+	res := make([]*model.CustomerContract, 0)
+	now := time.Now()
+	if err := s.db.Where("start_date >= ? and status = ?", now.Add(-backoff), model.CustomerContractStatusOrdered).Find(&res).Error; err != nil {
+		fmt.Printf("CustomerContractStore: GetIncomingRentingCustomerContracts %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}

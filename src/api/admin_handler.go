@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"net/http"
 	"strconv"
 	"time"
@@ -278,7 +279,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 
 	go func() {
 		carID, phone, expoToken := car.ID, car.Account.PhoneNumber, s.getExpoToken(car.Account.PhoneNumber)
-		var msg *PushMessage
+		var msg *service.PushMessage
 		switch req.Action {
 		case ApplicationActionReject:
 			msg = s.notificationPushService.NewRejectCarMsg(car.ID, expoToken, phone)
@@ -344,7 +345,7 @@ func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car
 	startYear, startMonth, startDate := contract.StartDate.Date()
 	endYear, endMonth, endDate := contract.EndDate.Date()
 
-	docUUID, err := s.pdfService.Render(RenderTypePartner, map[string]string{
+	docUUID, err := s.pdfService.Render(service.RenderTypePartner, map[string]string{
 		"now_date":                strconv.Itoa(date),
 		"now_month":               strconv.Itoa(int(month)),
 		"now_year":                strconv.Itoa(year),
@@ -402,7 +403,7 @@ func (s *Server) RenderCustomerContractPDF(
 		collateralAmount = rule.CollateralCashAmount
 	}
 
-	docUUID, err := s.pdfService.Render(RenderTypeCustomer, map[string]string{
+	docUUID, err := s.pdfService.Render(service.RenderTypeCustomer, map[string]string{
 		"now_date":               strconv.Itoa(nowDate),
 		"now_month":              strconv.Itoa(int(nowMonth)),
 		"now_year":               strconv.Itoa(nowYear),
@@ -1308,16 +1309,4 @@ func (s *Server) getExpoToken(phone string) string {
 	}
 
 	return expoToken
-}
-
-func mapGetString(m interface{}, fieldName string) string {
-	data, ok := m.(map[string]interface{})
-	if ok {
-		value, ok := data[fieldName].(string)
-		if ok {
-			return value
-		}
-	}
-
-	return ""
 }

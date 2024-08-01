@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/redis/go-redis/v9"
 	"os"
 	"os/signal"
@@ -31,16 +32,16 @@ func main() {
 		Password: cfg.Redis.Password,
 	})
 
-	otpService := api.NewOTPService(cfg.OTP, redisClient)
+	otpService := service.NewOTPService(cfg.OTP, redisClient)
 	s3Store := store.NewS3Store(cfg.AWS)
 	bankMetadata, err := misc.LoadBankMetadata("etc/converted_banks.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	pdfService := api.NewPDFService(cfg.PDFService)
+	pdfService := service.NewPDFService(cfg.PDFService)
 	paymentService := api.NewVnPayService(cfg.VNPay)
-	notificationPushService := api.NewNotificationPushService("", dbStore)
+	notificationPushService := service.NewNotificationPushService("", dbStore)
 
 	server := api.NewServer(
 		cfg.ApiServer,

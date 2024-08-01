@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"go.uber.org/mock/gomock"
 	"io"
 	"net/http"
@@ -90,7 +91,7 @@ func TestAdminHandler_GetCar(t *testing.T) {
 
 func TestHandleApproveCar(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockNotificationService := NewMockINotificationPushService(ctrl)
+	mockNotificationService := service.NewMockINotificationPushService(ctrl)
 	mockNotificationService.EXPECT().Push(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 	mockNotificationService.EXPECT().NewRejectCarMsg(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockNotificationService.EXPECT().NewApproveCarRegisterMsg(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)

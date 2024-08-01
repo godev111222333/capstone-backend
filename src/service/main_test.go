@@ -1,4 +1,4 @@
-package api
+package service
 
 import (
 	"fmt"
@@ -8,9 +8,7 @@ import (
 	"testing"
 
 	"github.com/godev111222333/capstone-backend/src/misc"
-	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/godev111222333/capstone-backend/src/store"
-	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -19,7 +17,6 @@ const (
 
 var (
 	TestDb       *store.DbStore
-	TestServer   *Server
 	TestS3Store  *store.S3Store
 	TestConfig   *misc.GlobalConfig
 	TestFeConfig *misc.FEConfig
@@ -42,7 +39,6 @@ func TestMain(m *testing.M) {
 	TestS3Store = store.NewS3Store(cfg.AWS)
 	dbConfig := cfg.Database
 	initTestDb(dbConfig)
-	initTestServer(cfg)
 	code := m.Run()
 	os.Exit(code)
 }
@@ -59,27 +55,6 @@ func initTestDb(cfg *misc.DatabaseConfig) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func initTestServer(cfg *misc.GlobalConfig) {
-	bankMetadata, err := misc.LoadBankMetadata("../../etc/converted_banks.txt")
-	if err != nil {
-		panic(err)
-	}
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
-		Password: cfg.Redis.Password,
-	})
-
-	TestServer = NewServer(
-		cfg.ApiServer,
-		TestFeConfig,
-		TestDb,
-		TestS3Store,
-		service.NewOTPService(cfg.OTP, nil),
-		bankMetadata,
-		nil, nil, nil, redisClient,
-	)
 }
 
 func ResetDb(cfg *misc.DatabaseConfig) error {

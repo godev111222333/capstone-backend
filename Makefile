@@ -1,6 +1,6 @@
 gen:
 	go generate ./...
-	mockgen -source src/api/push_notification_service.go -destination=src/api/push_notification_service_mock.go -package=api
+	mockgen -source src/service/push_notification_service.go -destination=src/service/push_notification_service_mock.go -package=service
 
 import:
 	go run src/cmd/import/main.go

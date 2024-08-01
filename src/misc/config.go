@@ -47,6 +47,10 @@ type PDFServiceConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
+type BackgroundJobConfig struct {
+	RentingBackoff time.Duration `yaml:"renting_backoff"`
+}
+
 type VNPayConfig struct {
 	PayURL     string `yaml:"pay_url"`
 	HashSecret string `yaml:"hash_secret"`
@@ -59,13 +63,14 @@ type VNPayConfig struct {
 }
 
 type GlobalConfig struct {
-	Database   *DatabaseConfig   `yaml:"database"`
-	ApiServer  *ApiServerConfig  `yaml:"api_server"`
-	AWS        *AWSConfig        `yaml:"aws"`
-	OTP        *OTPConfig        `yaml:"otp"`
-	PDFService *PDFServiceConfig `yaml:"pdf_service"`
-	VNPay      *VNPayConfig      `yaml:"vn_pay"`
-	Redis      *RedisConfig      `yaml:"redis"`
+	Database      *DatabaseConfig      `yaml:"database"`
+	ApiServer     *ApiServerConfig     `yaml:"api_server"`
+	AWS           *AWSConfig           `yaml:"aws"`
+	OTP           *OTPConfig           `yaml:"otp"`
+	PDFService    *PDFServiceConfig    `yaml:"pdf_service"`
+	VNPay         *VNPayConfig         `yaml:"vn_pay"`
+	BackgroundJob *BackgroundJobConfig `yaml:"background_job"`
+	Redis         *RedisConfig         `yaml:"redis"`
 }
 
 type FEConfig struct {

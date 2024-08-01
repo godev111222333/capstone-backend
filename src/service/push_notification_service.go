@@ -1,13 +1,14 @@
-package api
+package service
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/godev111222333/capstone-backend/src/store"
 	"net/http"
 
+	"github.com/godev111222333/capstone-backend/src/misc"
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/store"
 )
 
 var _ INotificationPushService = (*NotificationPushService)(nil)
@@ -81,7 +82,7 @@ func (s *NotificationPushService) Push(accID int, m *PushMessage) error {
 		AccountID: accID,
 		Title:     m.Title,
 		Content:   m.Body,
-		URL:       mapGetString(m.Data, "screen"),
+		URL:       misc.MapGetString(m.Data, "screen"),
 		Status:    model.NotificationStatusActive,
 	}
 	_ = s.store.NotificationStore.Create(notification)

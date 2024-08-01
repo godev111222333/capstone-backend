@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
@@ -176,7 +177,7 @@ func TestRenderPartnerContract(t *testing.T) {
 	t.Skip()
 
 	previousPdfService := TestServer.pdfService
-	TestServer.pdfService = NewPDFService(TestConfig.PDFService)
+	TestServer.pdfService = service.NewPDFService(TestConfig.PDFService)
 	defer func() {
 		TestServer.pdfService = previousPdfService
 	}()
@@ -218,7 +219,7 @@ func TestRenderCustomerContract(t *testing.T) {
 	t.Skip()
 
 	previousPdfService := TestServer.pdfService
-	TestServer.pdfService = NewPDFService(TestConfig.PDFService)
+	TestServer.pdfService = service.NewPDFService(TestConfig.PDFService)
 	defer func() {
 		TestServer.pdfService = previousPdfService
 	}()

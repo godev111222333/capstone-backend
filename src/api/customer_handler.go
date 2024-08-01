@@ -236,6 +236,12 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
+	contract, err = s.store.CustomerContractStore.FindByID(contract.ID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
 	go func() {
 		_ = s.RenderCustomerContractPDF(customer, car, contract)
 	}()

@@ -1299,6 +1299,21 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 		return
 	}
 
+	if car.WarningCount > car.PartnerContractRule.MaxWarningCount {
+		msg := s.notificationPushService.NewInactiveCarMsg(car.ID, s.getExpoToken(car.Account.PhoneNumber), car.Account.PhoneNumber)
+		_ = s.notificationPushService.Push(car.Account.ID, msg)
+
+		if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
+			"status": model.CarStatusInactive,
+		}); err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		responseSuccess(c, gin.H{"status": "update warning count successfully. Car status changed to inactive"})
+		return
+	}
+
 	msg := s.notificationPushService.NewWarningCountMsg(
 		car.ID,
 		car.WarningCount,

@@ -24,7 +24,7 @@ type INotificationPushService interface {
 	NewReceivingPaymentMsg(amount int, expoToken, toPhone string) *PushMessage
 	NewRejectPartnerContractMsg(carID int, expoToken, toPhone string) *PushMessage
 	NewRentingContract(carID, cusContractID int, expoToken, toPhone string) *PushMessage
-	NewReplaceByOtherCar(carID, cusContractID int, expoToken, toPhone string) *PushMessage
+	NewReplaceByOtherCar(carID int, expoToken, toPhone string) *PushMessage
 	NewReplaceByCar(carID, cusContractID int, expoToken, toPhone string) *PushMessage
 	NewRejectRentingCarRequestMsg(expoToken, toPhone string) *PushMessage
 	NewApproveRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage
@@ -206,13 +206,13 @@ func (s *NotificationPushService) NewRentingContract(carID, cusContractID int, e
 	}
 }
 
-func (s *NotificationPushService) NewReplaceByOtherCar(carID, cusContractID int, expoToken, toPhone string) *PushMessage {
+func (s *NotificationPushService) NewReplaceByOtherCar(carID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
 		To:    []string{expoToken},
 		Title: "Xe của bạn vừa bị thay thế!",
 		Body:  "MinhHungCar vừa thay thế xe của bạn bằng một chiếc xe khác trong một hợp đồng thuê xe",
 		Data: map[string]interface{}{
-			"screen":       fmt.Sprintf("%s/activityDetail?carID=%d&activityID=%d", s.FrontendURL, carID, cusContractID),
+			"screen":       fmt.Sprintf("%s/history?carID=%d", s.FrontendURL, carID),
 			"phone_number": toPhone,
 		},
 	}

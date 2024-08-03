@@ -1207,7 +1207,6 @@ func (s *Server) HandleAdminChangeCar(c *gin.Context) {
 	oldPartner := contract.Car.Account
 	oldPartnerMsg := s.notificationPushService.NewReplaceByOtherCar(
 		contract.CarID,
-		req.CustomerContractID,
 		s.getExpoToken(oldPartner.PhoneNumber),
 		oldPartner.PhoneNumber,
 	)

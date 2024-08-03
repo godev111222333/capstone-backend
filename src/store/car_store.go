@@ -40,14 +40,14 @@ func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchP
 		if status == model.CarStatusNoFilter {
 			if err := s.db.
 				Offset(offset).Limit(limit).
-				Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
+				Order("ID desc").Preload("Account").Preload("PartnerContractRule").Preload("CarModel").Find(&res).Error; err != nil {
 				fmt.Printf("CarStore: SearchCars %v\n", err)
 				return nil, err
 			}
 		} else {
 			if err := s.db.Where("status like ?", string(status)+"%").
 				Offset(offset).Limit(limit).
-				Order("ID desc").Preload("Account").Preload("CarModel").Find(&res).Error; err != nil {
+				Order("ID desc").Preload("Account").Preload("PartnerContractRule").Preload("CarModel").Find(&res).Error; err != nil {
 				fmt.Printf("CarStore: SearchCars %v\n", err)
 				return nil, err
 			}
@@ -57,23 +57,24 @@ func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchP
 	}
 
 	joinModel := []struct {
-		Car      *model.Car      `gorm:"embedded"`
-		Account  *model.Account  `gorm:"embedded"`
-		CarModel *model.CarModel `gorm:"embedded"`
+		Car                 *model.Car                 `gorm:"embedded"`
+		Account             *model.Account             `gorm:"embedded"`
+		CarModel            *model.CarModel            `gorm:"embedded"`
+		PartnerContractRule *model.PartnerContractRule `gorm:"embedded"`
 	}{}
 	var err error
 
 	if status != model.CarStatusNoFilter {
 		rawSql := `select *
 from cars
-         join accounts on cars.partner_id = accounts.id join car_models on cars.car_model_id = car_models.id
+         join accounts on cars.partner_id = accounts.id join car_models on cars.car_model_id = car_models.id join partner_contract_rules on partner_contract_rules.id = cars.partner_contract_rule_id
 where cars.status like ?
   and (car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or concat(accounts.last_name, ' ', accounts.first_name) like ?) order by cars.id desc offset ? limit ?`
 		err = s.db.Raw(rawSql, string(status)+"%", searchParam, searchParam, searchParam, likeQuery(searchParam), offset, limit).Scan(&joinModel).Error
 	} else {
 		rawSql := `select *
 from cars
-         join accounts on cars.partner_id = accounts.id join car_models on cars.car_model_id = car_models.id
+         join accounts on cars.partner_id = accounts.id join car_models on cars.car_model_id = car_models.id join partner_contract_rules on partner_contract_rules.id = cars.partner_contract_rule_id
 where car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or concat(accounts.last_name, ' ', accounts.first_name) like ? order by cars.id desc offset ? limit ?`
 		err = s.db.Raw(rawSql, searchParam, searchParam, searchParam, likeQuery(searchParam), offset, limit).Scan(&joinModel).Error
 	}
@@ -87,6 +88,7 @@ where car_models.brand = ? or car_models.model = ? or cars.license_plate = ? or 
 	for i, record := range joinModel {
 		searchRes[i] = record.Car
 		searchRes[i].CarModel = *record.CarModel
+		searchRes[i].PartnerContractRule = *record.PartnerContractRule
 		searchRes[i].Account = record.Account
 	}
 

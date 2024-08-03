@@ -196,22 +196,23 @@ type Pagination struct {
 }
 
 type carResponse struct {
-	ID           int              `json:"id"`
-	PartnerID    int              `json:"partner_id"`
-	CarModel     model.CarModel   `json:"car_model"`
-	LicensePlate string           `json:"license_plate"`
-	ParkingLot   model.ParkingLot `json:"parking_lot"`
-	Description  string           `json:"description"`
-	Fuel         model.Fuel       `json:"fuel"`
-	Motion       model.Motion     `json:"motion"`
-	Price        int              `json:"price"`
-	Status       model.CarStatus  `json:"status"`
-	Images       []string         `json:"images"`
-	Caveats      []string         `json:"caveats"`
-	Rating       float64          `json:"rating"`
-	TotalTrip    int              `json:"total_trip"`
-	WarningCount int              `json:"warning_count"`
-	Period       int              `json:"period"`
+	ID                  int                       `json:"id"`
+	PartnerID           int                       `json:"partner_id"`
+	CarModel            model.CarModel            `json:"car_model"`
+	LicensePlate        string                    `json:"license_plate"`
+	ParkingLot          model.ParkingLot          `json:"parking_lot"`
+	Description         string                    `json:"description"`
+	Fuel                model.Fuel                `json:"fuel"`
+	Motion              model.Motion              `json:"motion"`
+	Price               int                       `json:"price"`
+	Status              model.CarStatus           `json:"status"`
+	Images              []string                  `json:"images"`
+	Caveats             []string                  `json:"caveats"`
+	Rating              float64                   `json:"rating"`
+	TotalTrip           int                       `json:"total_trip"`
+	WarningCount        int                       `json:"warning_count"`
+	Period              int                       `json:"period"`
+	PartnerContractRule model.PartnerContractRule `json:"partner_contract_rule"`
 }
 
 func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
@@ -236,22 +237,23 @@ func (s *Server) newCarResponse(car *model.Car) (*carResponse, error) {
 	}
 
 	return &carResponse{
-		ID:           car.ID,
-		PartnerID:    car.PartnerID,
-		CarModel:     car.CarModel,
-		LicensePlate: car.LicensePlate,
-		ParkingLot:   car.ParkingLot,
-		Description:  car.Description,
-		Fuel:         car.Fuel,
-		Motion:       car.Motion,
-		Price:        car.Price,
-		Status:       car.Status,
-		Images:       images,
-		Caveats:      caveats,
-		Rating:       avgRating,
-		TotalTrip:    totalTrip,
-		WarningCount: car.WarningCount,
-		Period:       car.Period,
+		ID:                  car.ID,
+		PartnerID:           car.PartnerID,
+		CarModel:            car.CarModel,
+		LicensePlate:        car.LicensePlate,
+		ParkingLot:          car.ParkingLot,
+		Description:         car.Description,
+		Fuel:                car.Fuel,
+		Motion:              car.Motion,
+		Price:               car.Price,
+		Status:              car.Status,
+		Images:              images,
+		Caveats:             caveats,
+		Rating:              avgRating,
+		TotalTrip:           totalTrip,
+		WarningCount:        car.WarningCount,
+		Period:              car.Period,
+		PartnerContractRule: car.PartnerContractRule,
 	}, nil
 }
 

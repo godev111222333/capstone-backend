@@ -16,8 +16,7 @@ import (
 )
 
 const (
-	layoutDateMonthYear  = "01/02/2006"
-	IsEnableAutoInactive = false
+	layoutDateMonthYear = "01/02/2006"
 )
 
 type getCarsRequest struct {
@@ -1318,7 +1317,7 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 		return
 	}
 
-	if IsEnableAutoInactive && car.WarningCount > car.PartnerContractRule.MaxWarningCount {
+	if car.WarningCount > car.PartnerContractRule.MaxWarningCount {
 		msg := s.notificationPushService.NewInactiveCarMsg(car.ID, s.getExpoToken(car.Account.PhoneNumber), car.Account.PhoneNumber)
 		_ = s.notificationPushService.Push(car.Account.ID, msg)
 

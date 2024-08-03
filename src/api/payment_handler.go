@@ -163,6 +163,20 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				return
 			}
 
+			partner, err := s.store.AccountStore.GetByID(payment.CustomerContract.Car.PartnerID)
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				return
+			}
+
+			msg := s.notificationPushService.NewRentingContract(
+				payment.CustomerContract.CarID,
+				payment.CustomerContractID,
+				s.getExpoToken(partner.PhoneNumber),
+				partner.PhoneNumber,
+			)
+			_ = s.notificationPushService.Push(partner.ID, msg)
+
 			adminIds, err := s.store.AccountStore.GetAllAdminIDs()
 			if err == nil {
 				for _, id := range adminIds {

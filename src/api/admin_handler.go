@@ -1196,6 +1196,23 @@ func (s *Server) HandleAdminChangeCar(c *gin.Context) {
 		return
 	}
 
+	newPartnerMsg := s.notificationPushService.NewReplaceByCar(
+		car.ID,
+		req.CustomerContractID,
+		s.getExpoToken(car.Account.PhoneNumber),
+		car.Account.PhoneNumber,
+	)
+	_ = s.notificationPushService.Push(car.Account.ID, newPartnerMsg)
+
+	oldPartner := contract.Car.Account
+	oldPartnerMsg := s.notificationPushService.NewReplaceByOtherCar(
+		contract.CarID,
+		req.CustomerContractID,
+		s.getExpoToken(oldPartner.PhoneNumber),
+		oldPartner.PhoneNumber,
+	)
+	_ = s.notificationPushService.Push(oldPartner.ID, oldPartnerMsg)
+
 	go func() {
 		_ = s.RenderCustomerContractPDF(contract.Customer, car, contract)
 	}()

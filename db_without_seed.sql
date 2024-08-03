@@ -44,30 +44,39 @@ create table car_models
     "updated_at"      timestamptz           DEFAULT (now())
 );
 
-create table cars
+create table partner_contract_rules
 (
     "id"                      serial primary key,
-    "partner_id"              bigint references accounts (id),
-    "car_model_id"            bigint references car_models (id),
-    "license_plate"           varchar(255)  not null default '' unique,
-    "parking_lot"             varchar(255)  not null default '',
-    "description"             varchar(1023) not null default '',
-    "fuel"                    varchar(255)  not null default '',
-    "motion"                  varchar(255)  not null default '',
-    "price"                   bigint        not null default 0,
-    "status"                  varchar(255)  not null default '',
-    "period"                  bigint        not null default 0,
     "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
-    "bank_name"               varchar(255)  not null default '',
-    "bank_number"             varchar(255)  not null default '',
-    "bank_owner"              varchar(255)  not null default '',
-    "start_date"              timestamptz            DEFAULT (now()),
-    "end_date"                timestamptz            DEFAULT (now()),
-    "partner_contract_url"    varchar(1023) not null default '',
-    "partner_contract_status" varchar(256)  not null default '',
-    "warning_count"           bigint        not null default 0,
+    "max_warning_count"       bigint        not null default 0,
     "created_at"              timestamptz            DEFAULT (now()),
     "updated_at"              timestamptz            DEFAULT (now())
+);
+
+create table cars
+(
+    "id"                       serial primary key,
+    "partner_id"               bigint references accounts (id),
+    "car_model_id"             bigint references car_models (id),
+    "license_plate"            varchar(255)  not null default '' unique,
+    "parking_lot"              varchar(255)  not null default '',
+    "description"              varchar(1023) not null default '',
+    "fuel"                     varchar(255)  not null default '',
+    "motion"                   varchar(255)  not null default '',
+    "price"                    bigint        not null default 0,
+    "status"                   varchar(255)  not null default '',
+    "period"                   bigint        not null default 0,
+    "partner_contract_rule_id" bigint references partner_contract_rules (id),
+    "bank_name"                varchar(255)  not null default '',
+    "bank_number"              varchar(255)  not null default '',
+    "bank_owner"               varchar(255)  not null default '',
+    "start_date"               timestamptz            DEFAULT (now()),
+    "end_date"                 timestamptz            DEFAULT (now()),
+    "partner_contract_url"     varchar(1023) not null default '',
+    "partner_contract_status"  varchar(256)  not null default '',
+    "warning_count"            bigint        not null default 0,
+    "created_at"               timestamptz            DEFAULT (now()),
+    "updated_at"               timestamptz            DEFAULT (now())
 );
 
 create table "notifications"
@@ -106,27 +115,34 @@ create table "partner_payment_histories"
     "updated_at"  timestamptz            DEFAULT (now())
 );
 
+create table customer_contract_rules
+(
+    "id"                     serial primary key,
+    "insurance_percent"      numeric(3, 1) not null default 0.0,
+    "prepay_percent"         numeric(3, 1) not null default 0.0,
+    "collateral_cash_amount" bigint        not null default 0,
+    "created_at"             timestamptz            DEFAULT (now()),
+    "updated_at"             timestamptz            DEFAULT (now())
+);
+
 create table "customer_contracts"
 (
     "id"                         serial primary key,
     "customer_id"                bigint references accounts (id),
     "car_id"                     bigint references cars (id),
-    "rent_price"                 bigint        not null default 0,
     "start_date"                 timestamptz            default (now()),
     "end_date"                   timestamptz            default (now()),
     "status"                     varchar(255)  not null default '',
     "reason"                     varchar(1023) not null default '',
+    "rent_price"                 bigint        not null default 0,
     "insurance_amount"           bigint        not null default 0,
     "collateral_type"            varchar(255)  not null default '',
-    "collateral_cash_amount"     bigint        not null default 0,
     "is_return_collateral_asset" boolean                default false,
     "url"                        varchar(1023) not null default '',
     "bank_name"                  varchar(255)  not null default '',
     "bank_number"                varchar(255)  not null default '',
     "bank_owner"                 varchar(255)  not null default '',
-    "insurance_percent"          numeric(3, 1) not null default 0.0,
-    "prepay_percent"             numeric(3, 1) not null default 0.0,
-    "revenue_sharing_percent"    numeric(3, 1) not null default 0.0,
+    "customer_contract_rule_id"  bigint references customer_contract_rules (id),
     "feedback_content"           varchar(1023) not null default '',
     "feedback_rating"            bigint        not null default 0,
     "feedback_status"            varchar(255)  not null default '',
@@ -184,18 +200,6 @@ create table messages
     "content"         varchar(1023) not null default '',
     "created_at"      timestamptz            DEFAULT (now()),
     "updated_at"      timestamptz            DEFAULT (now())
-);
-
-create table contract_rules
-(
-    "id"                      serial primary key,
-    "insurance_percent"       numeric(3, 1) not null default 0.0,
-    "prepay_percent"          numeric(3, 1) not null default 0.0,
-    "revenue_sharing_percent" numeric(3, 1) not null default 0.0,
-    "collateral_cash_amount"  bigint        not null default 0,
-    "max_warning_count"       bigint        not null default 0,
-    "created_at"              timestamptz            DEFAULT (now()),
-    "updated_at"              timestamptz            DEFAULT (now())
 );
 
 create table driving_license_images

@@ -1,4 +1,4 @@
-package main
+package seeder
 
 import (
 	"os"
@@ -31,7 +31,7 @@ func (cci *CustomerContractImage) toCustomerContractImageDB() *model.CustomerCon
 	}
 }
 
-func seedCustomerContractImages(dbStore *store.DbStore) error {
+func SeedCustomerContractImages(dbStore *store.DbStore) error {
 	images := make([]*CustomerContractImage, 0)
 	customerContractImageFile, err := os.OpenFile(toFilePath(CustomerContractImagesFile), os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {

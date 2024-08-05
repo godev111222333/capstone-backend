@@ -1,4 +1,4 @@
-package main
+package seeder
 
 import (
 	"os"
@@ -32,7 +32,7 @@ func (ci *CarImage) ToDbCarImage() *model.CarImage {
 	}
 }
 
-func seedCarImages(dbStore *store.DbStore) error {
+func SeedCarImages(dbStore *store.DbStore) error {
 	images := make([]*CarImage, 0)
 	carImageFile, err := os.OpenFile(toFilePath(CarImagesFile), os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {

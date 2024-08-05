@@ -1,0 +1,19 @@
+id,customer_id,car_id,rent_price,start_date,end_date,status,reason,insurance_amount,collateral_type,is_return_collateral_asset,url,bank_name,bank_number,bank_owner,customer_contract_rule_id,feedback_content,feedback_rating,feedback_status,created_at,updated_at
+1,2,4,500000,2024-07-01 12:33:00,2024-07-02 12:33:00,completed,,52500,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,2,good,5,active,2024-06-04 12:33:00,2024-06-04 12:33:00
+2,12,5,1584000,2024-07-02 12:33:00,2024-07-03 12:33:00,completed,,158400,motorbike,TRUE,,Ngân hàng ANZ Vi?t Nam - ANZ,135792468,Nguyen Hong Tri,3,,0,,2024-06-05 12:33:00,2024-06-05 12:33:00
+3,2,4,500000,2024-07-03 12:33:00,2024-07-04 12:33:00,completed,,50000,cash,TRUE,,Ngân hàng ANZ Vi?t Nam - ANZ,123123123,Son Le,3,,0,,2024-06-06 12:33:00,2024-06-06 12:33:00
+4,4,9,1014000,2024-07-04 12:33:00,2024-07-05 12:33:00,completed,,106470,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,,0,,2024-06-07 12:33:00,2024-06-07 12:33:00
+5,4,6,1190000,2024-07-05 12:33:00,2024-07-06 12:33:00,completed,,124950,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,good,5,active,2024-06-08 12:33:00,2024-06-08 12:33:00
+6,8,6,1190000,2024-07-06 12:33:00,2024-07-07 12:33:00,completed,,124950,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,,0,,2024-06-09 12:33:00,2024-06-09 12:33:00
+7,8,10,318000,2024-07-07 12:33:00,2024-07-08 12:33:00,completed,,33390,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,,0,,2024-06-10 12:33:00,2024-06-10 12:33:00
+8,2,10,318000,2024-07-08 12:33:00,2024-07-09 12:33:00,completed,,33390,motorbike,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,2,,0,,2024-06-11 12:33:00,2024-06-11 12:33:00
+9,8,5,1584000,2024-07-09 12:33:00,2024-07-10 12:33:00,completed,,166320,motorbike,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,2,good,5,active,2024-06-12 12:33:00,2024-06-12 12:33:00
+10,12,9,1014000,2024-07-10 12:33:00,2024-07-11 12:33:00,completed,,106470,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,,0,,2024-06-13 12:33:00,2024-06-13 12:33:00
+11,12,9,1014000,2024-07-11 12:33:00,2024-07-12 12:33:00,completed,,106470,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,good,5,active,2024-06-14 12:33:00,2024-06-14 12:33:00
+12,4,6,1190000,2024-07-12 12:33:00,2024-07-13 12:33:00,completed,,124950,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,,0,,2024-06-15 12:33:00,2024-06-15 12:33:00
+13,12,9,1014000,2024-07-13 12:33:00,2024-07-14 12:33:00,completed,,106470,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,,0,,2024-06-16 12:33:00,2024-06-16 12:33:00
+14,2,4,500000,2024-07-14 12:33:00,2024-07-15 12:33:00,completed,,52500,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,4,,0,,2024-06-17 12:33:00,2024-06-17 12:33:00
+15,12,5,1584000,2024-07-15 12:33:00,2024-07-16 12:33:00,completed,,158400,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,5,,0,,2024-06-18 12:33:00,2024-06-18 12:33:00
+16,4,9,1014000,2024-08-04 12:33:00,2024-08-05 12:33:00,completed,,106470,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,2,,0,,2024-06-19 12:33:00,2024-06-19 12:33:00
+17,2,4,500000,2024-08-06 09:00:00,2024-08-07 09:00:00,ordered,,52500,cash,FALSE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,2,,0,,2024-08-06 09:00:00,2024-08-06 09:00:00
+18,12,5,1584000,2024-08-05 11:00:00,2024-08-06 11:00:00,renting,,158400,cash,FALSE,,Ngân hàng Nam Á - Nam A Bank,150688688,Nguyen Huu Thanh Tâm,3,,0,,2024-08-05 11:00:00,2024-08-05 11:00:00

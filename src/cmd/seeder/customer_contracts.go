@@ -1,4 +1,4 @@
-package main
+package seeder
 
 import (
 	"os"
@@ -61,7 +61,7 @@ func (cc *CustomerContract) ToDbCustomerContract() *model.CustomerContract {
 	}
 }
 
-func seedCustomerContract(server *api.Server, dbStore *store.DbStore) error {
+func SeedCustomerContract(server *api.Server, dbStore *store.DbStore) error {
 	customerContracts := make([]*CustomerContract, 0)
 	customerContractFile, err := os.OpenFile(toFilePath(CustomerContractsFile), os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {

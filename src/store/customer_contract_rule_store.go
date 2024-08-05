@@ -35,6 +35,15 @@ func (s *CustomerContractRuleStore) Create(rule *model.CustomerContractRule) err
 	return nil
 }
 
+func (s *CustomerContractRuleStore) CreateBatch(rules []*model.CustomerContractRule) error {
+	if err := s.db.Create(rules).Error; err != nil {
+		fmt.Printf("CustomerContractRuleStore: CreateBatch %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *CustomerContractRuleStore) Update(id int, values map[string]interface{}) error {
 	if err := s.db.Model(model.CustomerContractRule{}).Where("id = ?", id).Updates(values).Error; err != nil {
 		fmt.Printf("CustomerContractRuleStore: Update %v\n", err)

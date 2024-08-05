@@ -3,7 +3,7 @@ gen:
 	mockgen -source src/service/push_notification_service.go -destination=src/service/push_notification_service_mock.go -package=service
 
 seed:
-	go run src/cmd/seeder/main.go
+	go run src/cmd/seeder/cmd/main.go
 
 import:
 	go run src/cmd/import/main.go

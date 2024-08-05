@@ -6,12 +6,6 @@ create table roles
     "created_at" timestamptz           DEFAULT (now()),
     "updated_at" timestamptz           DEFAULT (now())
 );
-insert into roles(role_name, role_code)
-values ('admin', 'AD');
-insert into roles(role_name, role_code)
-values ('customer', 'CS');
-insert into roles(role_name, role_code)
-values ('partner', 'PN');
 
 create table accounts
 (
@@ -35,8 +29,6 @@ create table accounts
     "updated_at"                 timestamptz            DEFAULT (now())
 );
 
-insert into accounts(role_id, phone_number, password, status)
-values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
 
 create unique index unique_email on accounts (email) where email != '';
 create unique index unique_identification_card_number on accounts (identification_card_number) where identification_card_number != '';
@@ -61,8 +53,6 @@ create table partner_contract_rules
     "created_at"              timestamptz            DEFAULT (now()),
     "updated_at"              timestamptz            DEFAULT (now())
 );
-insert into partner_contract_rules(revenue_sharing_percent, max_warning_count)
-values (5, 3);
 
 create table cars
 (
@@ -136,9 +126,6 @@ create table customer_contract_rules
     "updated_at"             timestamptz            DEFAULT (now())
 );
 
-insert into customer_contract_rules(insurance_percent, prepay_percent, collateral_cash_amount)
-values (10.0, 30.0, 15000000);
-
 create table "customer_contracts"
 (
     "id"                         serial primary key,
@@ -197,13 +184,6 @@ create table garage_configs
     "updated_at" timestamptz           DEFAULT (now())
 );
 
-insert into garage_configs(type, maximum)
-values ('MAX_4_SEATS', 10);
-insert into garage_configs(type, maximum)
-values ('MAX_7_SEATS', 5);
-insert into garage_configs(type, maximum)
-values ('MAX_15_SEATS', 3);
-
 create table conversations
 (
     "id"         serial primary key,
@@ -241,3 +221,27 @@ create table partner_payment_customer_contracts
     "created_at"                 timestamptz DEFAULT (now()),
     "updated_at"                 timestamptz DEFAULT (now())
 );
+
+insert into roles(role_name, role_code)
+values ('admin', 'AD');
+insert into roles(role_name, role_code)
+values ('customer', 'CS');
+insert into roles(role_name, role_code)
+values ('partner', 'PN');
+--
+-- insert into accounts(role_id, phone_number, password, status)
+-- values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
+--
+-- insert into customer_contract_rules(insurance_percent, prepay_percent, collateral_cash_amount)
+-- values (10.0, 30.0, 15000000);
+--
+-- insert into partner_contract_rules(revenue_sharing_percent, max_warning_count)
+-- values (5, 3);
+
+insert into garage_configs(type, maximum)
+values ('MAX_4_SEATS', 10);
+insert into garage_configs(type, maximum)
+values ('MAX_7_SEATS', 5);
+insert into garage_configs(type, maximum)
+values ('MAX_15_SEATS', 3);
+

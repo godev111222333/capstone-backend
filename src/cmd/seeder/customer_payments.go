@@ -1,4 +1,4 @@
-package main
+package seeder
 
 import (
 	"os"
@@ -38,7 +38,7 @@ func (cp *CustomerPayment) ToCustomerPaymentDb() *model.CustomerPayment {
 	}
 }
 
-func seedCustomerPayments(server *api.Server, dbStore *store.DbStore) error {
+func SeedCustomerPayments(server *api.Server, dbStore *store.DbStore) error {
 	payments := make([]*CustomerPayment, 0)
 	cusPaymentFile, err := os.OpenFile(toFilePath(CustomerPaymentsFile), os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {

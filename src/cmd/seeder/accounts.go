@@ -1,4 +1,4 @@
-package main
+package seeder
 
 import (
 	"os"
@@ -10,24 +10,24 @@ import (
 )
 
 type Account struct {
-	ID                       int                 `json:"id" csv:"id"`
-	RoleID                   model.RoleID        `json:"role_id" csv:"role_id"`
-	FirstName                string              `json:"first_name" csv:"first_name"`
-	LastName                 string              `json:"last_name" csv:"last_name"`
-	PhoneNumber              string              `json:"phone_number" csv:"phone_number"`
-	Email                    string              `json:"email" csv:"email"`
-	IdentificationCardNumber string              `json:"identification_card_number" csv:"identification_card_number"`
-	Password                 string              `json:"password" csv:"password"`
-	AvatarURL                string              `json:"avatar_url" csv:"avatar_url"`
-	DrivingLicense           string              `json:"driving_license" csv:"driving_license"`
-	Status                   model.AccountStatus `json:"status" csv:"status"`
-	DateOfBirth              DateTime            `json:"date_of_birth" csv:"date_of_birth"`
-	BankNumber               string              `json:"bank_number" csv:"bank_number"`
-	BankOwner                string              `json:"bank_owner" csv:"bank_owner"`
-	BankName                 string              `json:"bank_name" csv:"bank_name"`
-	QRCodeURL                string              `json:"qr_code_url" csv:"qr_code_url"`
-	CreatedAt                DateTime            `json:"created_at" csv:"created_at"`
-	UpdatedAt                DateTime            `json:"updated_at" csv:"updated_at"`
+	ID                       int                 `csv:"id"`
+	RoleID                   model.RoleID        `csv:"role_id"`
+	FirstName                string              `csv:"first_name"`
+	LastName                 string              `csv:"last_name"`
+	PhoneNumber              string              `csv:"phone_number"`
+	Email                    string              `csv:"email"`
+	IdentificationCardNumber string              `csv:"identification_card_number"`
+	Password                 string              `csv:"password"`
+	AvatarURL                string              `csv:"avatar_url"`
+	DrivingLicense           string              `csv:"driving_license"`
+	Status                   model.AccountStatus `csv:"status"`
+	DateOfBirth              DateTime            `csv:"date_of_birth"`
+	BankNumber               string              `csv:"bank_number"`
+	BankOwner                string              `csv:"bank_owner"`
+	BankName                 string              `csv:"bank_name"`
+	QRCodeURL                string              `csv:"qr_code_url"`
+	CreatedAt                DateTime            `csv:"created_at"`
+	UpdatedAt                DateTime            `csv:"updated_at"`
 }
 
 func (a *Account) ToDbAccount() *model.Account {
@@ -53,7 +53,7 @@ func (a *Account) ToDbAccount() *model.Account {
 	}
 }
 
-func seedAccounts(dbStore *store.DbStore) error {
+func SeedAccounts(dbStore *store.DbStore) error {
 	accounts := make([]*Account, 0)
 	accountFile, err := os.OpenFile(toFilePath(AccountsFile), os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {

@@ -2,37 +2,15 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/redis/go-redis/v9"
 
 	"github.com/godev111222333/capstone-backend/src/api"
+	"github.com/godev111222333/capstone-backend/src/cmd/seeder"
 	"github.com/godev111222333/capstone-backend/src/misc"
 	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/godev111222333/capstone-backend/src/store"
 )
-
-const (
-	DateTimeLayout = "2006-01-02 15:04:05"
-)
-
-type DateTime struct {
-	time.Time
-}
-
-func (date *DateTime) MarshalCSV() (string, error) {
-	return date.Time.Add(7 * time.Hour).Format(DateTimeLayout), nil
-}
-
-func (date *DateTime) UnmarshalCSV(csv string) (err error) {
-	date.Time, err = time.Parse(DateTimeLayout, csv)
-	date.Time = date.Time.Add(-7 * time.Hour)
-	return err
-}
-
-func toFilePath(file string) string {
-	return fmt.Sprintf("etc/seed/%s", file)
-}
 
 func main() {
 	cfg, err := misc.LoadConfig("config.yaml")
@@ -79,27 +57,35 @@ func main() {
 		redisClient,
 	)
 
-	if err := seedAccounts(dbStore); err != nil {
+	if err := seeder.SeedAccounts(dbStore); err != nil {
 		panic(err)
 	}
 
-	if err := seedCars(server, dbStore); err != nil {
+	if err := seeder.SeedCustomerContractRules(dbStore); err != nil {
 		panic(err)
 	}
 
-	if err := seedCarImages(dbStore); err != nil {
+	if err := seeder.SeedPartnerContractRule(dbStore); err != nil {
 		panic(err)
 	}
 
-	if err := seedCustomerContract(server, dbStore); err != nil {
+	if err := seeder.SeedCars(server, dbStore); err != nil {
 		panic(err)
 	}
 
-	if err := seedCustomerContractImages(dbStore); err != nil {
+	if err := seeder.SeedCarImages(dbStore); err != nil {
 		panic(err)
 	}
 
-	if err := seedCustomerPayments(server, dbStore); err != nil {
+	if err := seeder.SeedCustomerContract(server, dbStore); err != nil {
+		panic(err)
+	}
+
+	if err := seeder.SeedCustomerContractImages(dbStore); err != nil {
+		panic(err)
+	}
+
+	if err := seeder.SeedCustomerPayments(server, dbStore); err != nil {
 		panic(err)
 	}
 

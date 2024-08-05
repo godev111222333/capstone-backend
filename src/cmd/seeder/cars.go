@@ -1,4 +1,4 @@
-package main
+package seeder
 
 import (
 	"os"
@@ -63,7 +63,7 @@ func (c *Car) ToDbCar() *model.Car {
 	}
 }
 
-func seedCars(server *api.Server, dbStore *store.DbStore) error {
+func SeedCars(server *api.Server, dbStore *store.DbStore) error {
 	cars := make([]*Car, 0)
 	accountFile, err := os.OpenFile(toFilePath(CarsFile), os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {

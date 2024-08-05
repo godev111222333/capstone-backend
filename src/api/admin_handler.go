@@ -337,6 +337,10 @@ func convertUTCToGmt7(t time.Time) time.Time {
 
 func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car) error {
 	now := convertUTCToGmt7(time.Now())
+	return s.internalRenderPartnerContractPDF(partner, car, now)
+}
+
+func (s *Server) internalRenderPartnerContractPDF(partner *model.Account, car *model.Car, now time.Time) error {
 	year, month, date := now.Date()
 
 	car, err := s.store.CarStore.GetByID(car.ID)
@@ -391,7 +395,13 @@ func (s *Server) RenderCustomerContractPDF(
 	customer *model.Account, car *model.Car,
 	contract *model.CustomerContract,
 ) error {
-	nowYear, nowMonth, nowDate := convertUTCToGmt7(time.Now()).Date()
+	return s.internalRenderCustomerContractPDF(customer, car, contract, time.Now())
+}
+
+func (s *Server) internalRenderCustomerContractPDF(
+	customer *model.Account, car *model.Car,
+	contract *model.CustomerContract, now time.Time) error {
+	nowYear, nowMonth, nowDate := convertUTCToGmt7(now).Date()
 	startDate, endDate := convertUTCToGmt7(contract.StartDate), convertUTCToGmt7(contract.EndDate)
 	startHour, startDay, startMonth, startYear := startDate.Hour(), startDate.Day(), int(startDate.Month()), startDate.Year()
 	endHour, endDay, endMonth, endYear := endDate.Hour(), endDate.Day(), int(endDate.Month()), endDate.Year()
@@ -1361,7 +1371,8 @@ func (s *Server) HandleSeedPartnerPDF(c *gin.Context) {
 		return
 	}
 
-	if err := s.RenderPartnerContractPDF(car.Account, car); err != nil {
+	now := car.CreatedAt.Add(-time.Hour)
+	if err := s.internalRenderPartnerContractPDF(car.Account, car, now); err != nil {
 		responseCustomErr(c, -1, err)
 		return
 	}
@@ -1385,7 +1396,8 @@ func (s *Server) HandleSeedCustomerPDF(c *gin.Context) {
 		return
 	}
 
-	if err := s.RenderCustomerContractPDF(contract.Customer, &contract.Car, contract); err != nil {
+	now := contract.StartDate.Add(-time.Hour)
+	if err := s.internalRenderCustomerContractPDF(contract.Customer, &contract.Car, contract, now); err != nil {
 		responseCustomErr(c, -1, err)
 		return
 	}

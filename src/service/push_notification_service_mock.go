@@ -192,6 +192,48 @@ func (mr *MockINotificationPushServiceMockRecorder) NewRejectRentingCarRequestMs
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRejectRentingCarRequestMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewRejectRentingCarRequestMsg), expoToken, toPhone)
 }
 
+// NewRentingContract mocks base method.
+func (m *MockINotificationPushService) NewRentingContract(carID, cusContractID int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewRentingContract", carID, cusContractID, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewRentingContract indicates an expected call of NewRentingContract.
+func (mr *MockINotificationPushServiceMockRecorder) NewRentingContract(carID, cusContractID, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRentingContract", reflect.TypeOf((*MockINotificationPushService)(nil).NewRentingContract), carID, cusContractID, expoToken, toPhone)
+}
+
+// NewReplaceByCar mocks base method.
+func (m *MockINotificationPushService) NewReplaceByCar(carID, cusContractID int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewReplaceByCar", carID, cusContractID, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewReplaceByCar indicates an expected call of NewReplaceByCar.
+func (mr *MockINotificationPushServiceMockRecorder) NewReplaceByCar(carID, cusContractID, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplaceByCar", reflect.TypeOf((*MockINotificationPushService)(nil).NewReplaceByCar), carID, cusContractID, expoToken, toPhone)
+}
+
+// NewReplaceByOtherCar mocks base method.
+func (m *MockINotificationPushService) NewReplaceByOtherCar(carID int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewReplaceByOtherCar", carID, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewReplaceByOtherCar indicates an expected call of NewReplaceByOtherCar.
+func (mr *MockINotificationPushServiceMockRecorder) NewReplaceByOtherCar(carID, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplaceByOtherCar", reflect.TypeOf((*MockINotificationPushService)(nil).NewReplaceByOtherCar), carID, expoToken, toPhone)
+}
+
 // NewReturnCollateralAssetMsg mocks base method.
 func (m *MockINotificationPushService) NewReturnCollateralAssetMsg(contractID int, expoToken, toPhone string) *PushMessage {
 	m.ctrl.T.Helper()

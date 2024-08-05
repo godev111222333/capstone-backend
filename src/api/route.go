@@ -630,5 +630,17 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.updateAdminReturnURL,
 			RequireAuth: false,
 		},
+		"seed_partner_contract_url": {
+			Path:        "/seed/partner_contract",
+			Method:      http.MethodPost,
+			Handler:     s.HandleSeedPartnerPDF,
+			RequireAuth: false,
+		},
+		"seed_customer_contract_url": {
+			Path:        "/seed/customer_contract",
+			Method:      http.MethodPost,
+			Handler:     s.HandleSeedCustomerPDF,
+			RequireAuth: true,
+		},
 	}
 }

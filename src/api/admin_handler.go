@@ -1344,6 +1344,55 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "update warning count successfully"})
 }
 
+type seedPartnerPDFRequest struct {
+	CarID int `json:"car_id"`
+}
+
+func (s *Server) HandleSeedPartnerPDF(c *gin.Context) {
+	req := seedPartnerPDFRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, -1, err)
+		return
+	}
+
+	car, err := s.store.CarStore.GetByID(req.CarID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if err := s.RenderPartnerContractPDF(car.Account, car); err != nil {
+		responseCustomErr(c, -1, err)
+		return
+	}
+	responseSuccess(c, gin.H{"status": "seed partner contract OK"})
+}
+
+type seedCustomerPDFRequest struct {
+	CustomerContractID int `json:"customer_contract_id"`
+}
+
+func (s *Server) HandleSeedCustomerPDF(c *gin.Context) {
+	req := seedCustomerPDFRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, -1, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if err := s.RenderCustomerContractPDF(contract.Customer, &contract.Car, contract); err != nil {
+		responseCustomErr(c, -1, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "seed customer contract OK"})
+}
+
 func (s *Server) getExpoToken(phone string) string {
 	expoToken, err := s.redisClient.Get(
 		context.Background(),

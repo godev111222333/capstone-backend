@@ -1346,8 +1346,8 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 		car.ID,
 		car.WarningCount,
 		car.PartnerContractRule.MaxWarningCount,
-		acct.PhoneNumber,
 		s.getExpoToken(acct.PhoneNumber),
+		acct.PhoneNumber,
 	)
 
 	_ = s.notificationPushService.Push(car.PartnerID, msg)

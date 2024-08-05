@@ -89,5 +89,28 @@ func main() {
 		panic(err)
 	}
 
+	if err := setSequenceValues(dbStore); err != nil {
+		panic(err)
+	}
+
 	fmt.Println("Seed data from CSV done!")
+}
+
+func setSequenceValues(dbStore *store.DbStore) error {
+	sqls := []string{
+		`select setval('accounts_id_seq', (select MAX(id) from accounts))`,
+		`select setval('cars_id_seq', (select MAX(id) from cars))`,
+		`select setval('car_images_id_seq', (select MAX(id) from car_images))`,
+		`select setval('customer_contracts_id_seq', (select MAX(id) from customer_contracts))`,
+		`select setval('customer_contract_rules_id_seq', (select MAX(id) from customer_contract_rules))`,
+		`select setval('partner_contract_rules_id_seq', (select MAX(id) from partner_contract_rules))`,
+		`select setval('customer_payments_id_seq', (select MAX(id) from customer_payments))`,
+	}
+	for _, sql := range sqls {
+		if err := dbStore.DB.Raw(sql).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

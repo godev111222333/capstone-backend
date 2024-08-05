@@ -190,7 +190,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				return
 			}
 
-			_, err = s.generateCustomerContractPaymentQRCode(
+			_, err = s.GenerateCustomerContractPaymentQRCode(
 				contract.ID,
 				payment.Amount,
 				model.PaymentTypeReturnCollateralCash,

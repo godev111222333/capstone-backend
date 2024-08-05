@@ -25,6 +25,15 @@ func (s *CustomerContractStore) Create(c *model.CustomerContract) error {
 	return nil
 }
 
+func (s *CustomerContractStore) CreateBatch(c []*model.CustomerContract) error {
+	if err := s.db.Create(c).Error; err != nil {
+		fmt.Printf("CustomerContractStore: CreateBatch %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *CustomerContractStore) IsOverlap(carID int, desiredStartDate time.Time, desiredEndDate time.Time) (bool, error) {
 	// 1. case start_date >= desiredStartDate
 	counter := struct {

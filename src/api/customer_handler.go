@@ -299,7 +299,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	}
 
 	pricing := calculateRentPrice(&contract.Car, rule, contract.StartDate, contract.EndDate)
-	prepayPayment, err := s.generateCustomerContractPaymentQRCode(
+	prepayPayment, err := s.GenerateCustomerContractPaymentQRCode(
 		contract.ID,
 		pricing.PrepaidAmount,
 		model.PaymentTypePrePay,
@@ -313,7 +313,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 
 	// if this is collateral cash type, pre-generate collateral payment
 	if contract.CollateralType == model.CollateralTypeCash && contract.CustomerContractRule.CollateralCashAmount > 0 {
-		_, err := s.generateCustomerContractPaymentQRCode(
+		_, err := s.GenerateCustomerContractPaymentQRCode(
 			contract.ID, contract.CustomerContractRule.CollateralCashAmount, model.PaymentTypeCollateralCash, req.ReturnURL, "")
 		if err != nil {
 			responseCustomErr(c, ErrCodeGenerateQRCode, err)
@@ -324,7 +324,7 @@ func (s *Server) HandleCustomerAgreeContract(c *gin.Context) {
 	responseSuccess(c, gin.H{"payment_url": prepayPayment.PaymentURL})
 }
 
-func (s *Server) generateCustomerContractPaymentQRCode(
+func (s *Server) GenerateCustomerContractPaymentQRCode(
 	contractID int,
 	amount int,
 	paymentType model.PaymentType,
@@ -342,7 +342,7 @@ func (s *Server) generateCustomerContractPaymentQRCode(
 		return nil, err
 	}
 
-	url, err := s.paymentService.GeneratePaymentURL([]int{payment.ID}, amount, time.Now().Format("02150405"), returnURL)
+	url, err := s.PaymentService.GeneratePaymentURL([]int{payment.ID}, amount, time.Now().Format("02150405"), returnURL)
 	if err != nil {
 		return nil, err
 	}

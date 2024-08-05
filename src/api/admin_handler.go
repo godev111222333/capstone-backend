@@ -337,10 +337,10 @@ func convertUTCToGmt7(t time.Time) time.Time {
 
 func (s *Server) RenderPartnerContractPDF(partner *model.Account, car *model.Car) error {
 	now := convertUTCToGmt7(time.Now())
-	return s.internalRenderPartnerContractPDF(partner, car, now)
+	return s.InternalRenderPartnerContractPDF(partner, car, now)
 }
 
-func (s *Server) internalRenderPartnerContractPDF(partner *model.Account, car *model.Car, now time.Time) error {
+func (s *Server) InternalRenderPartnerContractPDF(partner *model.Account, car *model.Car, now time.Time) error {
 	year, month, date := now.Date()
 
 	car, err := s.store.CarStore.GetByID(car.ID)
@@ -395,10 +395,10 @@ func (s *Server) RenderCustomerContractPDF(
 	customer *model.Account, car *model.Car,
 	contract *model.CustomerContract,
 ) error {
-	return s.internalRenderCustomerContractPDF(customer, car, contract, time.Now())
+	return s.InternalRenderCustomerContractPDF(customer, car, contract, time.Now())
 }
 
-func (s *Server) internalRenderCustomerContractPDF(
+func (s *Server) InternalRenderCustomerContractPDF(
 	customer *model.Account, car *model.Car,
 	contract *model.CustomerContract, now time.Time) error {
 	nowYear, nowMonth, nowDate := convertUTCToGmt7(now).Date()
@@ -708,7 +708,7 @@ func (s *Server) HandleAdminGenerateCustomerPaymentQRCode(c *gin.Context) {
 		return
 	}
 
-	originURL, err := s.generateCustomerContractPaymentQRCode(
+	originURL, err := s.GenerateCustomerContractPaymentQRCode(
 		req.CustomerContractID,
 		req.Amount,
 		req.PaymentType,
@@ -759,7 +759,7 @@ func (s *Server) HandleAdminGenerateMultipleCustomerPayments(c *gin.Context) {
 		ids[i] = p.ID
 	}
 
-	url, err := s.paymentService.GeneratePaymentURL(ids, amt, time.Now().Format("02150405"), req.ReturnURL)
+	url, err := s.PaymentService.GeneratePaymentURL(ids, amt, time.Now().Format("02150405"), req.ReturnURL)
 	if err != nil {
 		responseCustomErr(c, ErrCodeGenerateQRCode, err)
 		return
@@ -794,7 +794,7 @@ func (s *Server) HandleAdminGenerateMultiplePartnerPayments(c *gin.Context) {
 	}
 
 	txnRef := fmt.Sprintf("%s__%s", PrefixPartnerPayment, time.Now().Format("02150405"))
-	url, err := s.paymentService.GeneratePaymentURL(ids, amt, txnRef, req.ReturnURL)
+	url, err := s.PaymentService.GeneratePaymentURL(ids, amt, txnRef, req.ReturnURL)
 	if err != nil {
 		responseCustomErr(c, ErrCodeGenerateQRCode, err)
 		return
@@ -1115,7 +1115,7 @@ const PrefixPartnerPayment = "partner_payment"
 
 func (s *Server) generatePartnerPaymentQRCode(partnerPaymentID, amount int, returnURL string) error {
 	txnRef := fmt.Sprintf("%s__%s", PrefixPartnerPayment, time.Now().Format("02150405"))
-	url, err := s.paymentService.GeneratePaymentURL([]int{partnerPaymentID}, amount, txnRef, returnURL)
+	url, err := s.PaymentService.GeneratePaymentURL([]int{partnerPaymentID}, amount, txnRef, returnURL)
 	if err != nil {
 		return err
 	}
@@ -1352,57 +1352,6 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 
 	_ = s.notificationPushService.Push(car.PartnerID, msg)
 	responseSuccess(c, gin.H{"status": "update warning count successfully"})
-}
-
-type seedPartnerPDFRequest struct {
-	CarID int `json:"car_id"`
-}
-
-func (s *Server) HandleSeedPartnerPDF(c *gin.Context) {
-	req := seedPartnerPDFRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		responseCustomErr(c, -1, err)
-		return
-	}
-
-	car, err := s.store.CarStore.GetByID(req.CarID)
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
-	now := car.CreatedAt.Add(-time.Hour)
-	if err := s.internalRenderPartnerContractPDF(car.Account, car, now); err != nil {
-		responseCustomErr(c, -1, err)
-		return
-	}
-	responseSuccess(c, gin.H{"status": "seed partner contract OK"})
-}
-
-type seedCustomerPDFRequest struct {
-	CustomerContractID int `json:"customer_contract_id"`
-}
-
-func (s *Server) HandleSeedCustomerPDF(c *gin.Context) {
-	req := seedCustomerPDFRequest{}
-	if err := c.BindJSON(&req); err != nil {
-		responseCustomErr(c, -1, err)
-		return
-	}
-
-	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
-	if err != nil {
-		responseGormErr(c, err)
-		return
-	}
-
-	now := contract.StartDate.Add(-time.Hour)
-	if err := s.internalRenderCustomerContractPDF(contract.Customer, &contract.Car, contract, now); err != nil {
-		responseCustomErr(c, -1, err)
-		return
-	}
-
-	responseSuccess(c, gin.H{"status": "seed customer contract OK"})
 }
 
 func (s *Server) getExpoToken(phone string) string {

@@ -33,7 +33,7 @@ type Server struct {
 	hashVerifier            *misc.HashVerifier
 	otpService              *service.OTPService
 	pdfService              service.IPDFService
-	paymentService          IPaymentService
+	PaymentService          IPaymentService
 	notificationPushService service.INotificationPushService
 
 	redisClient *redis.Client

@@ -29,6 +29,14 @@ func (s *CarStore) Create(car *model.Car) error {
 	return nil
 }
 
+func (s *CarStore) CreateBatch(cars []*model.Car) error {
+	if err := s.db.Create(cars).Error; err != nil {
+		fmt.Printf("CarStore: CreateBatch %v\n", err)
+		return err
+	}
+	return nil
+}
+
 func (s *CarStore) SearchCars(offset, limit int, status model.CarStatus, searchParam string) ([]*model.Car, error) {
 	if limit == 0 {
 		limit = 1000

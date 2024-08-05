@@ -23,6 +23,14 @@ func (s *CustomerPaymentStore) Create(m *model.CustomerPayment) error {
 	return nil
 }
 
+func (s *CustomerPaymentStore) CreateBatch(m []*model.CustomerPayment) error {
+	if err := s.db.Create(m).Error; err != nil {
+		fmt.Printf("CustomerPaymentStore: CreateBatch %v\n", err)
+		return err
+	}
+	return nil
+}
+
 func (s *CustomerPaymentStore) Update(id int, values map[string]interface{}) error {
 	if err := s.db.Model(model.CustomerPayment{}).Where("id = ?", id).Updates(values).Error; err != nil {
 		fmt.Printf("CustomerPaymentStore: Update %v\n", err)

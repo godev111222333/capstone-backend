@@ -177,7 +177,7 @@ func (s *NotificationPushService) NewReceivingPaymentMsg(amount int, expoToken, 
 		Title: "Nhận tiền từ MinhHungCar",
 		Body:  fmt.Sprintf("MinhHungCar thanh toán tiền tháng này là %d VNĐ", amount),
 		Data: map[string]interface{}{
-			"screen":       fmt.Sprintf("%s/index", s.FrontendURL),
+			"screen":       fmt.Sprintf("%s/", s.FrontendURL),
 			"phone_number": toPhone,
 		},
 	}

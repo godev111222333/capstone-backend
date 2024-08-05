@@ -90,7 +90,7 @@ func (s *PartnerPaymentHistoryStore) GetInTimeRange(
 			return nil, err
 		}
 	} else {
-		if err := s.db.Where("start_date >= ? and end_date < ? and status = ?", fromDate, toDate, string(status)).
+		if err := s.db.Where("start_date >= ? and end_date <= ? and status = ?", fromDate, toDate, string(status)).
 			Preload("Partner").
 			Order("id desc").
 			Offset(offset).

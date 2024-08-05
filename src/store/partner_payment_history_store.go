@@ -80,7 +80,8 @@ func (s *PartnerPaymentHistoryStore) GetInTimeRange(
 
 	var res []*model.PartnerPaymentHistory
 	if status == model.PartnerPaymentHistoryStatusNoFilter {
-		if err := s.db.Where("created_at >= ? and created_at < ?", fromDate, toDate).Preload("Partner").
+		if err := s.db.Where("start_date >= ? and end_date <= ?", fromDate, toDate).
+			Preload("Partner").
 			Order("id desc").
 			Offset(offset).
 			Limit(limit).
@@ -89,7 +90,8 @@ func (s *PartnerPaymentHistoryStore) GetInTimeRange(
 			return nil, err
 		}
 	} else {
-		if err := s.db.Where("created_at >= ? and created_at < ? and status = ?", fromDate, toDate, string(status)).Preload("Partner").
+		if err := s.db.Where("start_date >= ? and end_date < ? and status = ?", fromDate, toDate, string(status)).
+			Preload("Partner").
 			Order("id desc").
 			Offset(offset).
 			Limit(limit).

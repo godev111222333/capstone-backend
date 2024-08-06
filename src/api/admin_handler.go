@@ -582,7 +582,7 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 		phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
 		msg := s.notificationPushService.NewApproveRentingCarRequestMsg(contract.ID, expoToken, phone)
 		if req.Action == CustomerContractActionReject {
-			msg = s.notificationPushService.NewRejectRentingCarRequestMsg(expoToken, phone)
+			msg = s.notificationPushService.NewRejectRentingCarRequestMsg(contract.ID, expoToken, phone)
 		}
 
 		_ = s.notificationPushService.Push(contract.CustomerID, msg)

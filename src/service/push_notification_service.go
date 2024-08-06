@@ -26,7 +26,7 @@ type INotificationPushService interface {
 	NewRentingContract(carID, cusContractID int, expoToken, toPhone string) *PushMessage
 	NewReplaceByOtherCar(carID int, expoToken, toPhone string) *PushMessage
 	NewReplaceByCar(carID, cusContractID int, expoToken, toPhone string) *PushMessage
-	NewRejectRentingCarRequestMsg(expoToken, toPhone string) *PushMessage
+	NewRejectRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewApproveRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewCustomerAdditionalPaymentMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewReturnCollateralAssetMsg(contractID int, expoToken, toPhone string) *PushMessage
@@ -230,13 +230,13 @@ func (s *NotificationPushService) NewReplaceByCar(carID, cusContractID int, expo
 	}
 }
 
-func (s *NotificationPushService) NewRejectRentingCarRequestMsg(expoToken, toPhone string) *PushMessage {
+func (s *NotificationPushService) NewRejectRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
 		To:    []string{expoToken},
 		Title: "Yêu cầu thuê xe bị từ chối",
 		Body:  "MinhHungCar đã từ chối yêu cầu thuê xe của bạn",
 		Data: map[string]interface{}{
-			"screen":       fmt.Sprintf("%s/trip", s.FrontendURL),
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
 			"phone_number": toPhone,
 		},
 	}

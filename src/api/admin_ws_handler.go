@@ -62,7 +62,7 @@ func (s *Server) NewCustomerContractNotificationMsg(adminID, cusContractID int, 
 		Title:          "Thông báo của khách hàng",
 		Body:           fmt.Sprintf("Bạn có đơn đặt xe có biển số %s", licensePlate),
 		Data: map[string]interface{}{
-			"redirect_url": fmt.Sprintf("%scontracts/%d", s.feCfg.AdminBaseURL, cusContractID),
+			"redirect_url": fmt.Sprintf("%scontracts/%d?fromNoti=true", s.feCfg.AdminBaseURL, cusContractID),
 		},
 	}
 }

@@ -125,7 +125,7 @@ func (s *AccountStore) Get(status model.AccountStatus, role string, searchParam 
 
 func (s *AccountStore) CountActiveByRole(roleID model.RoleID, backoff time.Duration) (int, error) {
 	var count int64
-	err := s.db.Debug().Model(model.Account{}).
+	err := s.db.Model(model.Account{}).
 		Where("role_id = ? and status = ? and created_at >= ?", roleID, string(model.AccountStatusActive), time.Now().Add(-backoff)).
 		Count(&count).Error
 	if err != nil {

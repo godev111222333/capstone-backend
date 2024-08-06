@@ -63,3 +63,11 @@ id,customer_contract_id,payment_type,payment_url,return_url,amount,note,status,c
 62,18,collateral_cash,,https://minh-hung-car-payment-result-fe.vercel.app,15000000,,paid,2024-08-05 11:00:00,2024-08-05 11:00:00
 63,18,return_collateral_cash,,https://minhhungcar-admin.vercel.app/contracts/payments/18,15000000,,pending,2024-08-05 11:00:00,2024-08-05 11:00:00
 64,18,remaining_pay,,https://minh-hung-car-payment-result-fe.vercel.app,1219680,,pending,2024-08-05 11:00:00,2024-08-05 11:00:00
+65,19,pre_pay,,https://minh-hung-car-payment-result-fe.vercel.app,522720,,paid,2024-06-28 12:33:00,2024-06-28 12:33:00
+66,19,remaining_pay,,https://minh-hung-car-payment-result-fe.vercel.app,1219680,,paid,2024-06-29 12:33:00,2024-06-29 12:33:00
+67,19,return_collateral_cash,,https://minhhungcar-admin.vercel.app/contracts/payments/18,15000000,,paid,2024-06-29 12:33:00,2024-06-29 12:33:00
+68,19,collateral_cash,,https://minh-hung-car-payment-result-fe.vercel.app,15000000,,paid,2024-06-29 12:33:00,2024-06-29 12:33:00
+69,20,pre_pay,,https://minh-hung-car-payment-result-fe.vercel.app,336141,,paid,2024-07-04 12:33:00,2024-07-04 12:33:00
+70,20,collateral_cash,,https://minh-hung-car-payment-result-fe.vercel.app,10000000,,paid,2024-07-05 12:33:00,2024-07-05 12:33:00
+71,20,remaining_pay,,https://minh-hung-car-payment-result-fe.vercel.app,784329,,paid,2024-07-06 12:33:00,2024-07-06 12:33:00
+72,20,return_collateral_cash,,https://minhhungcar-admin.vercel.app/contracts/payments/4,10000000,,paid,2024-07-07 12:33:00,2024-07-07 12:33:00

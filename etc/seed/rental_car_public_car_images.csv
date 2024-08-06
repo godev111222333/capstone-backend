@@ -13,8 +13,8 @@ id,car_id,url,status,category,created_at,updated_at
 12,2,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/52172c44-2660-4eb4-a6c4-b31c86afc877.jpg,active,CAR_IMAGES,2024-07-23 23:10:00,2024-07-23 23:10:00
 13,2,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/4d58c5c3-3b9c-4996-95f1-c0dcdcbf677e.jpg,active,CAR_CAVEAT,2024-07-23 23:10:00,2024-07-23 23:10:00
 14,2,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/bac231d8-c7d6-4fce-96f3-40eefd463c72.jpg,active,CAR_CAVEAT,2024-07-23 23:10:00,2024-07-23 23:10:00
-15,4,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/1ff8b22c-80ab-44bc-96f8-3a67f8632fad.jpg,active,CAR_IMAGES,2024-07-23 23:22:00,2024-07-23 23:22:00
-16,4,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/12dccf27-4469-4a2c-9f4b-b52ce0dfed0e.jpg,active,CAR_IMAGES,2024-07-23 23:22:00,2024-07-23 23:22:00
+15,4,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/46299fb7-4def-46cb-8379-76bd1f4b7d46.jpg,active,CAR_IMAGES,2024-07-23 23:22:00,2024-07-23 23:22:00
+16,4,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/46299fb7-4def-46cb-8379-76bd1f4b7d46.jpg,active,CAR_IMAGES,2024-07-23 23:22:00,2024-07-23 23:22:00
 17,4,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/fd8f95c3-ce7e-4e48-8e9c-ea53cc597188.jpg,active,CAR_IMAGES,2024-07-23 23:22:00,2024-07-23 23:22:00
 18,4,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/195244e3-b89d-46aa-9fca-8ea8fa943cca.jpg,active,CAR_IMAGES,2024-07-23 23:22:00,2024-07-23 23:22:00
 19,4,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/46299fb7-4def-46cb-8379-76bd1f4b7d46.jpg,active,CAR_IMAGES,2024-07-23 23:22:00,2024-07-23 23:22:00

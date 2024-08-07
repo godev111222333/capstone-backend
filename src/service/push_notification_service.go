@@ -31,6 +31,9 @@ type INotificationPushService interface {
 	NewCustomerAdditionalPaymentMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewReturnCollateralAssetMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewCompletedCustomerContract(contractID int, expoToken, toPhone string) *PushMessage
+	NewPartnerApproveCustomerContractMsg(contractID int, expoToken, toPhone string) *PushMessage
+	NewPartnerRejectCustomerContractMsg(contractID int, expoToken, toPhone string) *PushMessage
+	NewPartnerReceiveNewRentingRequest(carID int, expoToken, toPhone string) *PushMessage
 }
 
 type PushMessage struct {
@@ -285,6 +288,42 @@ func (s *NotificationPushService) NewCompletedCustomerContract(contractID int, e
 		Body:  "Chuyến xe của bạn đã hoàn thành cùng với các chi phí đã hoàn tất thanh toán!",
 		Data: map[string]interface{}{
 			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewPartnerApproveCustomerContractMsg(contractID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Đối tác chấp nhận chuyến xe",
+		Body:  "Chuyến xe của bạn đã được chủ xe chấp thuận",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewPartnerRejectCustomerContractMsg(contractID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Đối tác từ chối chuyến xe",
+		Body:  "Chủ xe đã từ chối chuyến xe của bạn. Hãy tìm kiếm chiếc xe khác hợp với nhu cầu của bạn.",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewPartnerReceiveNewRentingRequest(contractID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Bạn có một yêu cầu thuê xe cần duyệt",
+		Body:  "Xe của bạn được khách hàng chọn để thuê. Hãy đồng ý nếu bạn có thể giao xe hoặc từ chối nếu gặp vấn đề không thể giao xe trong thời gian yêu cầu",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/rentRequest?contractID=%d", s.FrontendURL, contractID),
 			"phone_number": toPhone,
 		},
 	}

@@ -10,6 +10,7 @@ type (
 
 const (
 	CustomerContractStatusWaitingContractAgreement CustomerContractStatus = "waiting_for_agreement"
+	CustomerContractStatusWaitingPartnerApproval   CustomerContractStatus = "waiting_partner_approval"
 	CustomerContractStatusWaitingContractPayment   CustomerContractStatus = "waiting_contract_payment"
 	CustomerContractStatusOrdered                  CustomerContractStatus = "ordered"
 	CustomerContractStatusRenting                  CustomerContractStatus = "renting"

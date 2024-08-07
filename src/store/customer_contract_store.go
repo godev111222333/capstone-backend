@@ -413,3 +413,34 @@ func (s *CustomerContractStore) GetIncomingRentingCustomerContracts(
 
 	return res, nil
 }
+
+func (s *CustomerContractStore) GetByPartnerID(
+	partnerID int,
+	status model.CustomerContractStatus,
+	offset,
+	limit int) ([]*model.CustomerContract, error) {
+	if limit == 0 {
+		limit = 10000
+	}
+	rawSql := `
+select customer_contracts.*, cars.* from customer_contracts join cars on cars.id = customer_contracts.car_id join accounts on accounts.id = cars.partner_id
+where customer_contracts.status = ? and cars.partner_id = ? order by customer_contracts.id desc offset ? limit ?`
+
+	joinModel := []struct {
+		CustomerContract *model.CustomerContract `gorm:"embedded"`
+		Car              *model.Car              `gorm:"embedded"`
+	}{}
+
+	if err := s.db.Raw(rawSql, string(status), partnerID, offset, limit).Scan(&joinModel).Error; err != nil {
+		fmt.Printf("CustomerContractStore: GetByPartnerID %v\n", err)
+		return nil, err
+	}
+
+	contracts := make([]*model.CustomerContract, len(joinModel))
+	for i, join := range joinModel {
+		contracts[i] = join.CustomerContract
+		contracts[i].Car = *join.Car
+	}
+
+	return contracts, nil
+}

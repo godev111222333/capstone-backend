@@ -66,6 +66,8 @@ const (
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
 	RouteGetPartnerRevenue                           = "partner_get_revenue"
+	RoutePartnerGetPendingCustomerContracts          = "partner_get_pending_application"
+	RoutePartnerApproveCustomerContract              = "partner_approve_customer_contract"
 	RouteCustomerFindCars                            = "customer_find_cars"
 	RouteCustomerRentCar                             = "customer_rent_car"
 	RouteCustomerUploadDrivingLicenseImages          = "customer_upload_driving_license_images"
@@ -423,6 +425,20 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRolePartner,
 		},
+		RoutePartnerGetPendingCustomerContracts: {
+			Path:        "/partner/customer_contracts",
+			Method:      http.MethodGet,
+			Handler:     s.HandlePartnerGetPendingCustomerContracts,
+			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
+		},
+		RoutePartnerApproveCustomerContract: {
+			Path:        "/partner/customer_contract/approve_reject",
+			Method:      http.MethodPut,
+			Handler:     s.HandlePartnerApproveCustomerContract,
+			RequireAuth: true,
+			AuthRoles:   AuthRolePartner,
+		},
 		RouteGetPartnerContractDetail: {
 			Path:        "/partner/contract",
 			Method:      http.MethodGet,
@@ -481,9 +497,9 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 		RouteCustomerAdminGetContractDetail: {
 			Path:        "/contract/:customer_contract_id",
 			Method:      http.MethodGet,
-			Handler:     s.HandleCustomerAdminGetCustomerContractDetails,
+			Handler:     s.HandleGetCustomerContractDetails,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleCustomerAdmin,
+			AuthRoles:   AuthRoleAll,
 		},
 		RouteCustomerCalculateRentingPrice: {
 			Path:        "/customer/calculate_rent_pricing",

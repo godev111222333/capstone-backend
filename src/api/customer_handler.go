@@ -222,7 +222,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		RentPrice:               pricing.TotalRentPriceAmount,
 		StartDate:               req.StartDate,
 		EndDate:                 req.EndDate,
-		Status:                  model.CustomerContractStatusWaitingContractAgreement,
+		Status:                  model.CustomerContractStatusWaitingPartnerApproval,
 		InsuranceAmount:         pricing.TotalInsuranceAmount,
 		CollateralType:          req.CollateralType,
 		CustomerContractRuleID:  rule.ID,
@@ -242,9 +242,9 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	go func() {
-		_ = s.RenderCustomerContractPDF(customer, car, contract)
-	}()
+	partnerPhone := contract.Car.Account.PhoneNumber
+	_ = s.notificationPushService.Push(contract.Car.PartnerID, s.notificationPushService.NewPartnerReceiveNewRentingRequest(
+		contract.ID, s.getExpoToken(partnerPhone), partnerPhone))
 
 	responseSuccess(c, contract)
 }
@@ -392,7 +392,7 @@ func (s *Server) HandleCustomerGetContracts(c *gin.Context) {
 	responseSuccess(c, contracts)
 }
 
-func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
+func (s *Server) HandleGetCustomerContractDetails(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
@@ -414,6 +414,9 @@ func (s *Server) HandleCustomerAdminGetCustomerContractDetails(c *gin.Context) {
 	}
 
 	if authPayload.Role == model.RoleNameCustomer && contract.CustomerID != acct.ID {
+		responseCustomErr(c, ErrCodeInvalidOwnership, err)
+		return
+	} else if authPayload.Role == model.RoleNamePartner && contract.Car.PartnerID != acct.ID {
 		responseCustomErr(c, ErrCodeInvalidOwnership, err)
 		return
 	}

@@ -242,6 +242,10 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
+	go func() {
+		_ = s.RenderCustomerContractPDF(customer, car, contract)
+	}()
+
 	partnerPhone := contract.Car.Account.PhoneNumber
 	_ = s.notificationPushService.Push(contract.Car.PartnerID, s.notificationPushService.NewPartnerReceiveNewRentingRequest(
 		contract.ID, s.getExpoToken(partnerPhone), partnerPhone))

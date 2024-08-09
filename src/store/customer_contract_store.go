@@ -76,7 +76,7 @@ func (s *CustomerContractStore) FindBatchByID(ids []int) ([]*model.CustomerContr
 		Preload("Car").
 		Preload("Car.Account").
 		Preload("Car.CarModel").
-		Preload("CustomerContractRule").Scan(&res).Error; err != nil {
+		Preload("CustomerContractRule").Find(&res).Error; err != nil {
 		fmt.Printf("CustomerContractStore: FindBatchByID %v\n", err)
 		return nil, err
 	}

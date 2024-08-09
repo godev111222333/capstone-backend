@@ -33,7 +33,7 @@ type INotificationPushService interface {
 	NewCompletedCustomerContract(contractID int, expoToken, toPhone string) *PushMessage
 	NewPartnerApproveCustomerContractMsg(contractID int, expoToken, toPhone string) *PushMessage
 	NewPartnerRejectCustomerContractMsg(contractID int, expoToken, toPhone string) *PushMessage
-	NewPartnerReceiveNewRentingRequest(carID int, expoToken, toPhone string) *PushMessage
+	NewPartnerReceiveNewRentingRequest(carID, contractID int, expoToken, toPhone string) *PushMessage
 }
 
 type PushMessage struct {
@@ -317,13 +317,13 @@ func (s *NotificationPushService) NewPartnerRejectCustomerContractMsg(contractID
 	}
 }
 
-func (s *NotificationPushService) NewPartnerReceiveNewRentingRequest(contractID int, expoToken, toPhone string) *PushMessage {
+func (s *NotificationPushService) NewPartnerReceiveNewRentingRequest(carID, contractID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
 		To:    []string{expoToken},
 		Title: "Bạn có một yêu cầu thuê xe cần duyệt",
 		Body:  "Xe của bạn được khách hàng chọn để thuê. Hãy đồng ý nếu bạn có thể giao xe hoặc từ chối nếu gặp vấn đề không thể giao xe trong thời gian yêu cầu",
 		Data: map[string]interface{}{
-			"screen":       fmt.Sprintf("%s/rentRequest?contractID=%d", s.FrontendURL, contractID),
+			"screen":       fmt.Sprintf("%s/activityDetail?carID=%d&customer_contract_ID=%d", s.FrontendURL, carID, contractID),
 			"phone_number": toPhone,
 		},
 	}

@@ -247,8 +247,9 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	}()
 
 	partnerPhone := contract.Car.Account.PhoneNumber
-	_ = s.notificationPushService.Push(contract.Car.PartnerID, s.notificationPushService.NewPartnerReceiveNewRentingRequest(
-		contract.ID, s.getExpoToken(partnerPhone), partnerPhone))
+	_ = s.notificationPushService.Push(contract.Car.PartnerID,
+		s.notificationPushService.NewPartnerReceiveNewRentingRequest(
+			car.ID, contract.ID, s.getExpoToken(partnerPhone), partnerPhone))
 
 	responseSuccess(c, contract)
 }

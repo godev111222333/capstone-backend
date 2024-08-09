@@ -9,12 +9,14 @@ const (
 	RoleIDCustomer RoleID = 2
 	RoleIDPartner  RoleID = 3
 
-	RoleCodeAdmin    = "AD"
-	RoleCodeCustomer = "CS"
-	RoleCodePartner  = "PN"
-	RoleNameAdmin    = "admin"
-	RoleNamePartner  = "partner"
-	RoleNameCustomer = "customer"
+	RoleCodeAdmin      = "AD"
+	RoleCodeCustomer   = "CS"
+	RoleCodePartner    = "PN"
+	RoleCodeTechnician = "TN"
+	RoleNameAdmin      = "admin"
+	RoleNamePartner    = "partner"
+	RoleNameCustomer   = "customer"
+	RoleNameTechnician = "technician"
 )
 
 type Role struct {

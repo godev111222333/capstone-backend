@@ -2,12 +2,14 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/godev111222333/capstone-backend/src/token"
 )
 
@@ -490,6 +492,103 @@ func (s *Server) HandlePartnerGetRevenue(c *gin.Context) {
 	}
 
 	responseSuccess(c, gin.H{"total_revenue": revenue, "payments:": payments})
+}
+
+type partnerGetPendingCustomerContractsRequest struct {
+	Status model.CustomerContractStatus `form:"status"`
+	Pagination
+}
+
+func (s *Server) HandlePartnerGetPendingCustomerContracts(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := partnerGetPendingCustomerContractsRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidPartnerGetPendingApprovalRequest, err)
+		return
+	}
+
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	contracts, err := s.store.CustomerContractStore.GetByPartnerID(
+		acct.ID,
+		model.CustomerContractStatusWaitingPartnerApproval,
+		req.Offset,
+		req.Limit,
+	)
+
+	responseSuccess(c, contracts)
+}
+
+type PartnerAction string
+
+const (
+	PartnerActionApprove PartnerAction = "approve"
+	PartnerActionReject  PartnerAction = "reject"
+)
+
+type partnerApproveRejectCustomerContractRequest struct {
+	CustomerContractID int           `json:"customer_contract_id"`
+	Action             PartnerAction `json:"action"`
+}
+
+func (s *Server) HandlePartnerApproveCustomerContract(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	req := partnerApproveRejectCustomerContractRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidPartnerApproveCustomerContractRequest, err)
+		return
+	}
+
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if contract.Car.PartnerID != acct.ID {
+		responseCustomErr(c, ErrCodeInvalidOwnership, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusWaitingPartnerApproval {
+		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus,
+			fmt.Errorf("require %s, found %s", string(model.CustomerContractStatusWaitingPartnerApproval), string(contract.Status)))
+		return
+	}
+
+	nextStatus := model.CustomerContractStatusWaitingContractAgreement
+	if req.Action == PartnerActionReject {
+		nextStatus = model.CustomerContractStatusCancel
+	}
+
+	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, map[string]interface{}{
+		"status": string(nextStatus),
+	}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	msg := &service.PushMessage{}
+	phone := contract.Customer.PhoneNumber
+	expoToken := s.getExpoToken(phone)
+	if req.Action == PartnerActionApprove {
+		msg = s.notificationPushService.NewPartnerApproveCustomerContractMsg(contract.ID, expoToken, phone)
+	} else {
+		msg = s.notificationPushService.NewPartnerRejectCustomerContractMsg(contract.ID, expoToken, phone)
+	}
+	_ = s.notificationPushService.Push(contract.CustomerID, msg)
+
+	responseSuccess(c, gin.H{"status": "partner approved/rejected successfully"})
 }
 
 func (s *Server) fromUUIDToURL(uuid, extension string) string {

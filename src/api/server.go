@@ -117,6 +117,7 @@ func (s *Server) registerHandlers() {
 	adminGroup := s.route.Group("/admin").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware(), s.authRole(model.RoleNameAdmin))
 	partnerGroup := s.route.Group("/partner").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware(), s.authRole(model.RoleNamePartner))
 	customerGroup := s.route.Group("/customer").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware(), s.authRole(model.RoleNameCustomer))
+	technicianGroup := s.route.Group("/technician").Use(authMiddleware(s.tokenMaker), s.activeAccountMiddleware(), s.authRole(model.RoleNameTechnician))
 	for _, r := range s.AllRoutes() {
 		if !r.RequireAuth {
 			s.route.Handle(r.Method, r.Path, r.Handler)
@@ -134,6 +135,8 @@ func (s *Server) registerHandlers() {
 					partnerGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/partner/"), r.Handler)
 				case model.RoleNameCustomer:
 					customerGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/customer/"), r.Handler)
+				case model.RoleNameTechnician:
+					technicianGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/technician"), r.Handler)
 				}
 			}
 		}

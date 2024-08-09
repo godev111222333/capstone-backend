@@ -241,6 +241,11 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
+	// if it needs partner approval, push to job queue
+	if car.ParkingLot == model.ParkingLotHome {
+		s.partnerApprovalQueue <- contract.ID
+	}
+
 	contract, err = s.store.CustomerContractStore.FindByID(contract.ID)
 	if err != nil {
 		responseGormErr(c, err)

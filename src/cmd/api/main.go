@@ -42,6 +42,14 @@ func main() {
 	pdfService := service.NewPDFService(cfg.PDFService)
 	paymentService := api.NewVnPayService(cfg.VNPay)
 	notificationPushService := service.NewNotificationPushService("", dbStore)
+	newPartnerApprovalQueue := make(chan int, api.ChanBufferSize)
+	backgroundJob := service.NewBackgroundService(cfg.BackgroundJob, dbStore, redisClient, newPartnerApprovalQueue)
+
+	go func() {
+		if err := backgroundJob.RunPartnerApprovalChecker(); err != nil {
+			panic(err)
+		}
+	}()
 
 	server := api.NewServer(
 		cfg.ApiServer,
@@ -54,6 +62,7 @@ func main() {
 		paymentService,
 		notificationPushService,
 		redisClient,
+		newPartnerApprovalQueue,
 	)
 	go func() {
 		if err := server.Run(); err != nil {

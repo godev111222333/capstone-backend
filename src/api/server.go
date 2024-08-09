@@ -2,8 +2,6 @@ package api
 
 import (
 	"fmt"
-	"github.com/godev111222333/capstone-backend/src/service"
-	"github.com/redis/go-redis/v9"
 	"strings"
 	"sync"
 
@@ -11,8 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
+
 	"github.com/godev111222333/capstone-backend/src/misc"
 	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/godev111222333/capstone-backend/src/store"
 	"github.com/godev111222333/capstone-backend/src/token"
 )
@@ -45,6 +46,7 @@ type Server struct {
 
 	adminNotificationQueue    chan NotificationMsg
 	adminNewConversationQueue chan ConversationMsg
+	partnerApprovalQueue      chan int
 }
 
 func NewServer(
@@ -58,6 +60,7 @@ func NewServer(
 	paymentService IPaymentService,
 	notificationPushService service.INotificationPushService,
 	redisClient *redis.Client,
+	partnerApprovalQueue chan int,
 ) *Server {
 	route := gin.New()
 	tokenMaker, err := token.NewJWTMaker("12345678901234567890123456789012")
@@ -91,6 +94,7 @@ func NewServer(
 		sync.Map{},
 		make(chan NotificationMsg, ChanBufferSize),
 		make(chan ConversationMsg, ChanBufferSize),
+		partnerApprovalQueue,
 	}
 	server.setUp()
 	return server

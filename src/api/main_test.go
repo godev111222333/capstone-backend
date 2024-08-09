@@ -78,7 +78,7 @@ func initTestServer(cfg *misc.GlobalConfig) {
 		TestS3Store,
 		service.NewOTPService(cfg.OTP, nil),
 		bankMetadata,
-		nil, nil, nil, redisClient,
+		nil, nil, nil, redisClient, nil,
 	)
 }
 

@@ -48,7 +48,8 @@ type PDFServiceConfig struct {
 }
 
 type BackgroundJobConfig struct {
-	RentingBackoff time.Duration `yaml:"renting_backoff"`
+	MaxPartnerWaitingApprovalTime       time.Duration `yaml:"max_partner_waiting_approval_time"`
+	CheckWaitingPartnerApprovalInterval time.Duration `yaml:"check_waiting_partner_approval_interval"`
 }
 
 type VNPayConfig struct {

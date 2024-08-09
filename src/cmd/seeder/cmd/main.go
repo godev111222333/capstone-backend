@@ -55,6 +55,7 @@ func main() {
 		paymentService,
 		notificationPushService,
 		redisClient,
+		nil,
 	)
 
 	if err := seeder.SeedAccounts(dbStore); err != nil {

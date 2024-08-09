@@ -69,6 +69,21 @@ func (s *CustomerContractStore) FindByID(id int) (*model.CustomerContract, error
 	return res, nil
 }
 
+func (s *CustomerContractStore) FindBatchByID(ids []int) ([]*model.CustomerContract, error) {
+	res := make([]*model.CustomerContract, 0)
+	if err := s.db.Where("id in ?", ids).
+		Preload("Customer").
+		Preload("Car").
+		Preload("Car.Account").
+		Preload("Car.CarModel").
+		Preload("CustomerContractRule").Scan(&res).Error; err != nil {
+		fmt.Printf("CustomerContractStore: FindBatchByID %v\n", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (s *CustomerContractStore) FindByCarID(
 	carID int,
 	status model.CustomerContractStatus,
@@ -107,6 +122,14 @@ func (s *CustomerContractStore) FindByCarID(
 
 func (s *CustomerContractStore) Update(id int, values map[string]interface{}) error {
 	if err := s.db.Model(&model.CustomerContract{}).Where("id = ?", id).Updates(values).Error; err != nil {
+		fmt.Printf("CustomerContractStore: Update %v\n", err)
+		return err
+	}
+	return nil
+}
+
+func (s *CustomerContractStore) UpdateBatch(ids []int, values map[string]interface{}) error {
+	if err := s.db.Model(&model.CustomerContract{}).Where("id in ?", ids).Updates(values).Error; err != nil {
 		fmt.Printf("CustomerContractStore: Update %v\n", err)
 		return err
 	}

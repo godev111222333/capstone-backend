@@ -323,7 +323,7 @@ func (s *NotificationPushService) NewPartnerReceiveNewRentingRequest(carID, cont
 		Title: "Bạn có một yêu cầu thuê xe cần duyệt",
 		Body:  "Xe của bạn được khách hàng chọn để thuê. Hãy đồng ý nếu bạn có thể giao xe hoặc từ chối nếu gặp vấn đề không thể giao xe trong thời gian yêu cầu",
 		Data: map[string]interface{}{
-			"screen":       fmt.Sprintf("%s/activityDetail?carID=%d&customer_contract_ID=%d", s.FrontendURL, carID, contractID),
+			"screen":       fmt.Sprintf("%s/activityDetail?carID=%d&activityID=%d", s.FrontendURL, carID, contractID),
 			"phone_number": toPhone,
 		},
 	}

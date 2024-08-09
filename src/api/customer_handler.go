@@ -215,6 +215,11 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
+	nextStatus := model.CustomerContractStatusWaitingContractAgreement
+	if car.ParkingLot == model.ParkingLotHome {
+		nextStatus = model.CustomerContractStatusWaitingPartnerApproval
+	}
+
 	pricing := calculateRentPrice(car, rule, req.StartDate, req.EndDate)
 	contract := &model.CustomerContract{
 		CustomerID:              customer.ID,
@@ -222,7 +227,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		RentPrice:               pricing.TotalRentPriceAmount,
 		StartDate:               req.StartDate,
 		EndDate:                 req.EndDate,
-		Status:                  model.CustomerContractStatusWaitingPartnerApproval,
+		Status:                  nextStatus,
 		InsuranceAmount:         pricing.TotalInsuranceAmount,
 		CollateralType:          req.CollateralType,
 		CustomerContractRuleID:  rule.ID,

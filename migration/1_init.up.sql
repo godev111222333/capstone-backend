@@ -228,6 +228,8 @@ insert into roles(role_name, role_code)
 values ('customer', 'CS');
 insert into roles(role_name, role_code)
 values ('partner', 'PN');
+insert into roles(role_name, role_code)
+values ('technician', 'TN');
 --
 -- insert into accounts(role_id, phone_number, password, status)
 -- values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');

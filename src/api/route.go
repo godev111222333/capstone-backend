@@ -52,6 +52,7 @@ const (
 	RouteAdminUpdateIsReturnCollateralAsset          = "admin_update_collateral_asset"
 	RouteAdminSubscribeNotification                  = "admin_subscribe_notification"
 	RouteAdminSubscribeNewConversation               = "admin_subscribe_new_conversation"
+	RouteTechSubscribeNotification                   = "tech_subscribe_notification"
 	RouteAdminGetStatistic                           = "admin_get_statistic"
 	RouteAdminMakeMonthlyPartnerPayments             = "admin_make_monthly_partner_payments"
 	RouteAdminGetMonthlyPartnerPayments              = "admin_get_monthly_partner_payments"
@@ -94,7 +95,8 @@ var (
 	AuthRoleCustomer        = []string{model.RoleNameCustomer}
 	AuthRoleCustomerAdmin   = []string{model.RoleNameCustomer, model.RoleNameAdmin}
 	AuthRoleCustomerPartner = []string{model.RoleNameCustomer, model.RoleNamePartner}
-	AuthRoleAll             = []string{model.RoleNameCustomer, model.RoleNamePartner, model.RoleNameAdmin}
+	AuthRoleAdminTechnician = []string{model.RoleNameAdmin, model.RoleNameTechnician}
+	AuthRoleAll             = []string{model.RoleNameCustomer, model.RoleNamePartner, model.RoleNameAdmin, model.RoleNameTechnician}
 )
 
 type RouteInfo = struct {
@@ -260,11 +262,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminGetCustomerContracts: {
-			Path:        "/admin/contracts",
+			Path:        "/contracts",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetCustomerContracts,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleAdminTechnician,
 		},
 		RouteAdminApproveRejectCustomerContract: {
 			Path:        "/admin/contract",
@@ -281,11 +283,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminGetAccountDetail: {
-			Path:        "/admin/account/:account_id",
+			Path:        "/account/:account_id",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetAccountDetail,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleAdminTechnician,
 		},
 		RouteAdminUploadCustomerContractDocument: {
 			Path:        "/admin/contract/document",
@@ -409,6 +411,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/subscribe_conversation",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminSubscribeNewConversation,
+			RequireAuth: false,
+		},
+		RouteTechSubscribeNotification: {
+			Path:        "/tech/subscribe_notification",
+			Method:      http.MethodGet,
+			Handler:     s.HandleTechnicianSubscribeNotification,
 			RequireAuth: false,
 		},
 		RoutePartnerAgreeContract: {

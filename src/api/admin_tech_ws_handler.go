@@ -12,22 +12,23 @@ import (
 )
 
 const (
-	AdminNotificationSubsKey = -1
-	AdminConversationSubsKey = -2
+	AdminNotificationSubsKey      = -1
+	AdminConversationSubsKey      = -2
+	TechnicianNotificationSubsKey = -3
 )
 
 type NotificationMsg struct {
-	AdminAccountID int         `json:"-"`
-	Title          string      `json:"title,omitempty"`
-	Body           string      `json:"body,omitempty"`
-	Data           interface{} `json:"data,omitempty"`
+	AccountID int         `json:"-"`
+	Title     string      `json:"title,omitempty"`
+	Body      string      `json:"body,omitempty"`
+	Data      interface{} `json:"data,omitempty"`
 }
 
 func (s *Server) NewCarRegisterNotificationMsg(adminID, carID int) NotificationMsg {
 	return NotificationMsg{
-		AdminAccountID: adminID,
-		Title:          "Thông báo của đối tác",
-		Body:           "Bạn có đơn đăng ký xe cần duyệt",
+		AccountID: adminID,
+		Title:     "Thông báo của đối tác",
+		Body:      "Bạn có đơn đăng ký xe cần duyệt",
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
 		},
@@ -36,9 +37,9 @@ func (s *Server) NewCarRegisterNotificationMsg(adminID, carID int) NotificationM
 
 func (s *Server) NewCarDeliveryNotificationMsg(adminID, carID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		AdminAccountID: adminID,
-		Title:          "Thông báo của đối tác",
-		Body:           fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái chờ giao", licensePlate),
+		AccountID: adminID,
+		Title:     "Thông báo của đối tác",
+		Body:      fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái chờ giao", licensePlate),
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
 		},
@@ -47,9 +48,9 @@ func (s *Server) NewCarDeliveryNotificationMsg(adminID, carID int, licensePlate 
 
 func (s *Server) NewCarActiveNotificationMsg(adminID, carID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		AdminAccountID: adminID,
-		Title:          "Thông báo của đối tác",
-		Body:           fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái đang hoạt động", licensePlate),
+		AccountID: adminID,
+		Title:     "Thông báo của đối tác",
+		Body:      fmt.Sprintf("Xe có biển số %s đã chuyển sang trạng thái đang hoạt động", licensePlate),
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scars/%d", s.feCfg.AdminBaseURL, carID),
 		},
@@ -58,9 +59,9 @@ func (s *Server) NewCarActiveNotificationMsg(adminID, carID int, licensePlate st
 
 func (s *Server) NewCustomerContractNotificationMsg(adminID, cusContractID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		AdminAccountID: adminID,
-		Title:          "Thông báo của khách hàng",
-		Body:           fmt.Sprintf("Bạn có đơn đặt xe có biển số %s", licensePlate),
+		AccountID: adminID,
+		Title:     "Thông báo của khách hàng",
+		Body:      fmt.Sprintf("Bạn có đơn đặt xe có biển số %s", licensePlate),
 		Data: map[string]interface{}{
 			"redirect_url": fmt.Sprintf("%scontracts/%d?fromNoti=true", s.feCfg.AdminBaseURL, cusContractID),
 		},
@@ -69,8 +70,8 @@ func (s *Server) NewCustomerContractNotificationMsg(adminID, cusContractID int, 
 
 func (s *Server) NewCustomerContractPaymentNotificationMsg(adminID, cusContractID int, licensePlate string) NotificationMsg {
 	return NotificationMsg{
-		AdminAccountID: adminID,
-		Title:          "Thông báo của khách hàng",
+		AccountID: adminID,
+		Title:     "Thông báo của khách hàng",
 		Body: fmt.Sprintf(
 			"Một khoản thanh toán của hợp đồng xe biến số %s đã được thanh toán",
 			licensePlate,
@@ -91,24 +92,28 @@ type AuthMsg struct {
 }
 
 func (s *Server) HandleAdminSubscribeNotification(c *gin.Context) {
-	s.processWsWithKey(c, AdminNotificationSubsKey)
+	s.processWsWithKey(c, AdminNotificationSubsKey, model.RoleNameAdmin)
 }
 
 func (s *Server) HandleAdminSubscribeNewConversation(c *gin.Context) {
-	s.processWsWithKey(c, AdminConversationSubsKey)
+	s.processWsWithKey(c, AdminConversationSubsKey, model.RoleNameAdmin)
 }
 
-func (s *Server) processWsWithKey(c *gin.Context, key int) {
-	conn, err := s.initAdminWsConnection(c)
+func (s *Server) HandleTechnicianSubscribeNotification(c *gin.Context) {
+	s.processWsWithKey(c, TechnicianNotificationSubsKey, model.RoleNameTechnician)
+}
+
+func (s *Server) processWsWithKey(c *gin.Context, key int, role string) {
+	conn, err := s.initWsConnectionWithRole(c, role)
 	if err != nil {
 		return
 	}
 
-	s.adminSubscribeTo(conn, key)
-	go s.checkAdminConnection(conn, key)
+	s.subscribeTo(conn, key)
+	go s.checkWsConnection(conn, key)
 }
 
-func (s *Server) initAdminWsConnection(c *gin.Context) (*websocket.Conn, error) {
+func (s *Server) initWsConnectionWithRole(c *gin.Context, role string) (*websocket.Conn, error) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		responseCustomErr(c, ErrCodeUnableUpgradeWebsocket, err)
@@ -127,7 +132,7 @@ func (s *Server) initAdminWsConnection(c *gin.Context) (*websocket.Conn, error) 
 		return nil, err
 	}
 
-	if authPayload.Role != model.RoleNameAdmin {
+	if authPayload.Role != role {
 		err := errors.New("invalid role")
 		_ = sendError(conn, err)
 		return nil, err
@@ -136,31 +141,62 @@ func (s *Server) initAdminWsConnection(c *gin.Context) (*websocket.Conn, error) 
 	return conn, nil
 }
 
-func (s *Server) startAdminSub() {
+func (s *Server) startAdminAndTechSub() {
 	go func() {
 		for {
 			select {
 			case msg := <-s.adminNotificationQueue:
 				_ = s.store.NotificationStore.Create(&model.Notification{
-					AccountID: msg.AdminAccountID,
+					AccountID: msg.AccountID,
 					Title:     msg.Title,
 					Content:   msg.Body,
 					URL:       misc.MapGetString(msg.Data, "redirect_url"),
 					Status:    model.NotificationStatusActive,
 				})
 
-				s.sendMsgToAdmin(msg, AdminNotificationSubsKey)
+				s.sendMsgToClient(msg, AdminNotificationSubsKey)
 				break
+			case msg := <-s.technicianNotificationQueue:
+				_ = s.store.NotificationStore.Create(&model.Notification{
+					AccountID: msg.AccountID,
+					Title:     msg.Title,
+					Content:   msg.Body,
+					URL:       misc.MapGetString(msg.Data, "redirect_url"),
+					Status:    model.NotificationStatusActive,
+				})
+
+				s.sendMsgToClient(msg, TechnicianNotificationSubsKey)
+				break
+
 			case msg := <-s.adminNewConversationQueue:
-				s.sendMsgToAdmin(msg, AdminConversationSubsKey)
+				s.sendMsgToClient(msg, AdminConversationSubsKey)
 				break
 			}
 		}
 	}()
+
+	go s.mockTest()
 }
 
-func (s *Server) sendMsgToAdmin(msg interface{}, key int) {
-	subs, ok := s.adminSubs.Load(key)
+func (s *Server) mockTest() {
+	ticker := time.NewTicker(time.Second * 3)
+	for {
+		select {
+		case <-ticker.C:
+			s.technicianNotificationQueue <- NotificationMsg{
+				AccountID: 4,
+				Title:     "Test title",
+				Body:      "Test body",
+				Data: map[string]interface{}{
+					"redirect_url": "ok",
+				},
+			}
+		}
+	}
+}
+
+func (s *Server) sendMsgToClient(msg interface{}, key int) {
+	subs, ok := s.wsConnections.Load(key)
 	if !ok {
 		return
 	}
@@ -168,12 +204,12 @@ func (s *Server) sendMsgToAdmin(msg interface{}, key int) {
 	toSubs, _ := subs.([]*websocket.Conn)
 	for _, sub := range toSubs {
 		if err := sub.WriteJSON(msg); err != nil {
-			s.removeAdminSub(sub, key)
+			s.removeSub(sub, key)
 		}
 	}
 }
 
-func (s *Server) checkAdminConnection(conn *websocket.Conn, key int) {
+func (s *Server) checkWsConnection(conn *websocket.Conn, key int) {
 	pingTicker := time.NewTicker(5 * time.Second)
 	defer pingTicker.Stop()
 loop:
@@ -181,15 +217,15 @@ loop:
 		select {
 		case <-pingTicker.C:
 			if err := conn.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
-				s.removeAdminSub(conn, key)
+				s.removeSub(conn, key)
 				break loop
 			}
 		}
 	}
 }
 
-func (s *Server) removeAdminSub(conn *websocket.Conn, key int) {
-	subs, ok := s.adminSubs.Load(key)
+func (s *Server) removeSub(conn *websocket.Conn, key int) {
+	subs, ok := s.wsConnections.Load(key)
 	if ok {
 		curSubs, _ := subs.([]*websocket.Conn)
 		newSubs := make([]*websocket.Conn, 0)
@@ -199,19 +235,19 @@ func (s *Server) removeAdminSub(conn *websocket.Conn, key int) {
 			}
 		}
 
-		s.adminSubs.Store(key, newSubs)
+		s.wsConnections.Store(key, newSubs)
 	}
 }
 
-func (s *Server) adminSubscribeTo(conn *websocket.Conn, key int) {
-	curSubscribers, isLoaded := s.adminSubs.LoadOrStore(key, []*websocket.Conn{conn})
+func (s *Server) subscribeTo(conn *websocket.Conn, key int) {
+	curSubscribers, isLoaded := s.wsConnections.LoadOrStore(key, []*websocket.Conn{conn})
 	if curSubs, ok := curSubscribers.([]*websocket.Conn); ok && isLoaded {
 		curSubscribers = append(curSubs, conn)
-		s.adminSubs.Store(key, curSubscribers)
+		s.wsConnections.Store(key, curSubscribers)
 	}
 
 	conn.SetCloseHandler(func(code int, text string) error {
-		s.removeAdminSub(conn, key)
+		s.removeSub(conn, key)
 		return nil
 	})
 }

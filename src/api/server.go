@@ -42,11 +42,12 @@ type Server struct {
 	bankMetadata []string
 	chatRooms    sync.Map
 
-	adminSubs sync.Map
+	wsConnections sync.Map
 
-	adminNotificationQueue    chan NotificationMsg
-	adminNewConversationQueue chan ConversationMsg
-	partnerApprovalQueue      chan int
+	adminNotificationQueue      chan NotificationMsg
+	technicianNotificationQueue chan NotificationMsg
+	adminNewConversationQueue   chan ConversationMsg
+	partnerApprovalQueue        chan int
 }
 
 func NewServer(
@@ -93,6 +94,7 @@ func NewServer(
 		sync.Map{},
 		sync.Map{},
 		make(chan NotificationMsg, ChanBufferSize),
+		make(chan NotificationMsg, ChanBufferSize),
 		make(chan ConversationMsg, ChanBufferSize),
 		partnerApprovalQueue,
 	}
@@ -102,7 +104,7 @@ func NewServer(
 
 func (s *Server) Run() error {
 	fmt.Printf("API server running at port: %s\n", s.cfg.ApiPort)
-	s.startAdminSub()
+	s.startAdminAndTechSub()
 
 	return s.route.Run(fmt.Sprintf("%s:%s", DefaultHost, s.cfg.ApiPort))
 }

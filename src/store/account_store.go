@@ -137,12 +137,16 @@ func (s *AccountStore) CountActiveByRole(roleID model.RoleID, backoff time.Durat
 }
 
 func (s *AccountStore) GetAllAdminIDs() ([]int, error) {
+	return s.GetAllIdsByRole(model.RoleIDAdmin)
+}
+
+func (s *AccountStore) GetAllIdsByRole(roleID model.RoleID) ([]int, error) {
 	var res []struct {
 		ID int `json:"id"`
 	}
 	if err := s.db.Model(model.Account{}).
 		Select("id").
-		Where("role_id = ?", model.RoleIDAdmin).
+		Where("role_id = ?", roleID).
 		Scan(&res).Error; err != nil {
 		fmt.Printf("AccountStore: GetAllAdminIDs %v\n", err)
 		return nil, err

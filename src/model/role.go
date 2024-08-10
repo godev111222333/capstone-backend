@@ -5,9 +5,10 @@ import "time"
 type RoleID int
 
 const (
-	RoleIDAdmin    RoleID = 1
-	RoleIDCustomer RoleID = 2
-	RoleIDPartner  RoleID = 3
+	RoleIDAdmin      RoleID = 1
+	RoleIDCustomer   RoleID = 2
+	RoleIDPartner    RoleID = 3
+	RoleIDTechnician RoleID = 4
 
 	RoleCodeAdmin      = "AD"
 	RoleCodeCustomer   = "CS"

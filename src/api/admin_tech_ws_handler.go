@@ -82,6 +82,17 @@ func (s *Server) NewCustomerContractPaymentNotificationMsg(adminID, cusContractI
 	}
 }
 
+func (s *Server) NewPartnerDeliveryCarNotificationMsg(techID, carID int) NotificationMsg {
+	return NotificationMsg{
+		AccountID: techID,
+		Title:     "Bạn có xe cần kiểm tra kỹ thuật",
+		Body:      "Xe của đối tác đang chờ giao đến garage. Hãy chuẩn bị để kiểm tra xe",
+		Data: map[string]interface{}{
+			"redirect_url": "",
+		},
+	}
+}
+
 type ConversationMsg struct {
 	ConversationID int    `json:"conversation_id"`
 	Sender         string `json:"sender"`

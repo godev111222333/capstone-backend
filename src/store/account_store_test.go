@@ -22,7 +22,7 @@ func TestAccountStore_Get(t *testing.T) {
 	t.Run("list all active accounts", func(t *testing.T) {
 		accts, err := TestDb.AccountStore.Get(model.AccountStatusActive, "", "", 0, 10)
 		require.NoError(t, err)
-		require.Len(t, accts, 3)
+		require.Len(t, accts, 4)
 	})
 
 	t.Run("list all partners", func(t *testing.T) {

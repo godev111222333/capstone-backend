@@ -365,6 +365,17 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 		status = string(model.CarStatusActive)
 	}
 
+	if car.ParkingLot == model.ParkingLotGarage {
+		techIds, err := s.store.AccountStore.GetAllIdsByRole(model.RoleIDTechnician)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+		for _, id := range techIds {
+			s.technicianNotificationQueue <- s.NewPartnerDeliveryCarNotificationMsg(id, car.ID)
+		}
+	}
+
 	if err := s.store.CarStore.Update(car.ID, map[string]interface{}{
 		"status": status,
 	}); err != nil {

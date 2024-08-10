@@ -235,7 +235,7 @@ values ('technician', 'TN');
 -- values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
 --
 -- insert into accounts(role_id, phone_number, password, status)
--- values (2, 'tech', 'JDJhJDA0JEVOY211WnhIbnVWeHIua3l2YzVkNy53eUI1LnVHdm9uaWFGVERWbWJFUjlQVWNGb2FDdFBl', 'active');
+-- values (4, 'tech', 'JDJhJDA0JEVOY211WnhIbnVWeHIua3l2YzVkNy53eUI1LnVHdm9uaWFGVERWbWJFUjlQVWNGb2FDdFBl', 'active');
 --
 -- insert into customer_contract_rules(insurance_percent, prepay_percent, collateral_cash_amount)
 -- values (10.0, 30.0, 15000000);

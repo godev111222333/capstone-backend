@@ -174,25 +174,6 @@ func (s *Server) startAdminAndTechSub() {
 			}
 		}
 	}()
-
-	go s.mockTest()
-}
-
-func (s *Server) mockTest() {
-	ticker := time.NewTicker(time.Second * 3)
-	for {
-		select {
-		case <-ticker.C:
-			s.technicianNotificationQueue <- NotificationMsg{
-				AccountID: 4,
-				Title:     "Test title",
-				Body:      "Test body",
-				Data: map[string]interface{}{
-					"redirect_url": "ok",
-				},
-			}
-		}
-	}
 }
 
 func (s *Server) sendMsgToClient(msg interface{}, key int) {

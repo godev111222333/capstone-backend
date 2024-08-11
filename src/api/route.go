@@ -649,7 +649,7 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteTechAppraisingCarOfCustomerContract: {
-			Path:        "/tech/customer_contract/appraising_car",
+			Path:        "/customer_contract/appraising_car",
 			Method:      http.MethodPut,
 			Handler:     s.HandleTechnicianAppraisingCarOfCusContract,
 			RequireAuth: true,

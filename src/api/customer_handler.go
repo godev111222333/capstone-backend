@@ -436,7 +436,7 @@ func (s *Server) HandleGetCustomerContractDetails(c *gin.Context) {
 		return
 	}
 
-	if acct.Role.RoleName == model.RoleNameAdmin {
+	if acct.Role.RoleName == model.RoleNameAdmin || acct.Role.RoleName == model.RoleNameTechnician {
 		responseSuccess(c, s.newCustomerContractResponse(contract))
 		return
 	}

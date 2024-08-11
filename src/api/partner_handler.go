@@ -372,7 +372,7 @@ func (s *Server) HandlePartnerAgreeContract(c *gin.Context) {
 			return
 		}
 		for _, id := range techIds {
-			s.technicianNotificationQueue <- s.NewPartnerDeliveryCarNotificationMsg(id, car.ID)
+			s.technicianNotificationQueue <- s.NewAppraisingCarNotificationMsg(id, car.ID)
 		}
 	}
 

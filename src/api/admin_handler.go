@@ -179,9 +179,9 @@ func (s *Server) HandleUpdateGarageConfigs(c *gin.Context) {
 type ApplicationAction string
 
 const (
-	ApplicationActionApproveRegister ApplicationAction = "approve_register"
-	ApplicationActionApproveDelivery ApplicationAction = "approve_delivery"
-	ApplicationActionReject          ApplicationAction = "reject"
+	ApplicationActionApproveRegister      ApplicationAction = "approve_register"
+	ApplicationActionApproveAppraisingCar ApplicationAction = "approve_appraising_car"
+	ApplicationActionReject               ApplicationAction = "reject"
 )
 
 type adminApproveOrRejectRequest struct {
@@ -202,7 +202,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		return
 	}
 
-	if car.ParkingLot == model.ParkingLotGarage && (req.Action == ApplicationActionApproveRegister || req.Action == ApplicationActionApproveDelivery) {
+	if car.ParkingLot == model.ParkingLotGarage && (req.Action == ApplicationActionApproveRegister || req.Action == ApplicationActionApproveAppraisingCar) {
 		validSeat, err := s.checkIfInsertableNewSeat(car.CarModel.NumberOfSeats)
 		if err != nil {
 			responseGormErr(c, err)
@@ -242,7 +242,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 		}()
 	}
 
-	if req.Action == ApplicationActionApproveDelivery {
+	if req.Action == ApplicationActionApproveAppraisingCar {
 		if car.Status != model.CarStatusWaitingDelivery {
 			responseCustomErr(c, ErrCodeInvalidCarStatus,
 				fmt.Errorf(
@@ -290,7 +290,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 				msg = s.notificationPushService.NewRejectPartnerContractMsg(carID, expoToken, phone)
 			}
 			break
-		case ApplicationActionApproveDelivery:
+		case ApplicationActionApproveAppraisingCar:
 			msg = s.notificationPushService.NewApproveCarDeliveryMsg(car.ID, expoToken, phone)
 			break
 		case ApplicationActionApproveRegister:
@@ -571,6 +571,18 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 		}
 
 		newStatus = string(model.CustomerContractStatusAppraisingCar)
+	}
+
+	if newStatus == string(model.CustomerContractStatusAppraisingCar) {
+		techIds, err := s.store.AccountStore.GetAllIdsByRole(model.RoleIDTechnician)
+		if err != nil {
+			responseGormErr(c, err)
+			return
+		}
+
+		for _, id := range techIds {
+			s.technicianNotificationQueue <- s.NewAppraisingCarNotificationMsg(id, contract.CarID)
+		}
 	}
 
 	if err := s.store.CustomerContractStore.Update(contract.ID, map[string]interface{}{"status": newStatus}); err != nil {

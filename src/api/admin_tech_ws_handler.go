@@ -82,13 +82,24 @@ func (s *Server) NewCustomerContractPaymentNotificationMsg(adminID, cusContractI
 	}
 }
 
-func (s *Server) NewPartnerDeliveryCarNotificationMsg(techID, carID int) NotificationMsg {
+func (s *Server) NewAppraisingCarNotificationMsg(techID, carID int) NotificationMsg {
 	return NotificationMsg{
 		AccountID: techID,
-		Title:     "Bạn có xe cần kiểm tra kỹ thuật",
-		Body:      "Xe của đối tác đang chờ giao đến garage. Hãy chuẩn bị để kiểm tra xe",
+		Title:     "Thông báo có xe đối tác đang giao tới",
+		Body:      "Xe đối tác đang giao tới",
 		Data: map[string]interface{}{
-			"redirect_url": "",
+			"redirect_url": fmt.Sprintf("%s/cars/%d", s.feCfg.TechBaseURL, carID),
+		},
+	}
+}
+
+func (s *Server) NewAppraisingCarOfCusContract(techID, cusContractID int) NotificationMsg {
+	return NotificationMsg{
+		AccountID: techID,
+		Title:     "Thông báo có xe cần kiểm tra kĩ thuật",
+		Body:      "Bạn có xe cần kiểm tra trước khi bàn giao cho khách hàng",
+		Data: map[string]interface{}{
+			"redirect_url": fmt.Sprintf("%s/contracts/%d", s.feCfg.TechBaseURL, cusContractID),
 		},
 	}
 }

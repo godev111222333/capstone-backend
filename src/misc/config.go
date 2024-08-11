@@ -78,6 +78,7 @@ type FEConfig struct {
 	Path           string `yaml:"path"`
 	AdminReturnURL string `yaml:"admin_return_url"`
 	AdminBaseURL   string `yaml:"admin_base_url"`
+	TechBaseURL    string `yaml:"tech_base_url"`
 }
 
 func LoadConfig(path string) (*GlobalConfig, error) {

@@ -142,7 +142,7 @@ func (s *Server) registerHandlers() {
 				case model.RoleNameCustomer:
 					customerGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/customer/"), r.Handler)
 				case model.RoleNameTechnician:
-					technicianGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/technician"), r.Handler)
+					technicianGroup.Handle(r.Method, strings.TrimPrefix(r.Path, "/technician/"), r.Handler)
 				}
 			}
 		}

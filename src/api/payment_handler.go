@@ -183,6 +183,13 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 					s.adminNotificationQueue <- s.NewCustomerContractNotificationMsg(id, commCustomerContractID, licensePlate)
 				}
 			}
+
+			techIds, err := s.store.AccountStore.GetAllIdsByRole(model.RoleIDTechnician)
+			if err == nil {
+				for _, id := range techIds {
+					s.technicianNotificationQueue <- s.NewAppraisingCarOfCusContract(id, commCustomerContractID)
+				}
+			}
 		} else if payment.PaymentType == model.PaymentTypeCollateralCash {
 			contract, err := s.store.CustomerContractStore.FindByID(payment.CustomerContractID)
 			if err != nil {

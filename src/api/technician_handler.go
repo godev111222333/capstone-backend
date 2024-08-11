@@ -32,25 +32,17 @@ func (s *Server) HandleTechnicianAppraisingCarOfCusContract(c *gin.Context) {
 		return
 	}
 
-	if contract.Status != model.CustomerContractStatusAppraisingCar {
+	if contract.Status != model.CustomerContractStatusOrdered {
 		responseCustomErr(c,
 			ErrCodeInvalidCustomerContractStatus,
-			fmt.Errorf("customer contract status require %s, found %s", model.CustomerContractStatusAppraisingCar, contract.Status))
+			fmt.Errorf("customer contract status require %s, found %s", model.CustomerContractStatusOrdered, contract.Status))
 		return
 	}
 
-	nextStatus := model.CustomerContractStatusRenting
+	nextStatus := model.CustomerContractStatusAppraisingCarApproved
 	if req.Action == AppraisingCarActionReject {
-		nextStatus = model.CustomerContractStatusAppraisingCarFailed
+		nextStatus = model.CustomerContractStatusAppraisingCarRejected
 	}
-
-	go func() {
-		if nextStatus == model.CustomerContractStatusRenting {
-			phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
-			msg := s.notificationPushService.NewApproveRentingCarRequestMsg(contract.ID, expoToken, phone)
-			_ = s.notificationPushService.Push(contract.CustomerID, msg)
-		}
-	}()
 
 	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, map[string]interface{}{
 		"status": string(nextStatus),

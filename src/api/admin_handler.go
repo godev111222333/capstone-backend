@@ -552,10 +552,10 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 
 	newStatus := string(model.CustomerContractStatusCancel)
 	if req.Action == CustomerContractActionApprove {
-		if contract.Status != model.CustomerContractStatusOrdered {
+		if contract.Status != model.CustomerContractStatusAppraisingCarApproved {
 			responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, errors.New(
 				fmt.Sprintf("invalid customer contract status. expect %s, found %s",
-					string(model.CustomerContractStatusOrdered), string(contract.Status))))
+					string(model.CustomerContractStatusAppraisingCarApproved), string(contract.Status))))
 			return
 		}
 
@@ -570,20 +570,18 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 			return
 		}
 
-		newStatus = string(model.CustomerContractStatusAppraisingCar)
+		newStatus = string(model.CustomerContractStatusRenting)
 	}
 
-	if newStatus == string(model.CustomerContractStatusAppraisingCar) {
-		techIds, err := s.store.AccountStore.GetAllIdsByRole(model.RoleIDTechnician)
-		if err != nil {
-			responseGormErr(c, err)
-			return
+	go func() {
+		if newStatus == string(model.CustomerContractStatusRenting) {
+			expoToken, phone := s.getExpoToken(contract.Customer.PhoneNumber), contract.Customer.PhoneNumber
+			_ = s.notificationPushService.Push(
+				contract.CustomerID,
+				s.notificationPushService.NewApproveRentingCarRequestMsg(contract.ID, expoToken, phone),
+			)
 		}
-
-		for _, id := range techIds {
-			s.technicianNotificationQueue <- s.NewAppraisingCarNotificationMsg(id, contract.CarID)
-		}
-	}
+	}()
 
 	if err := s.store.CustomerContractStore.Update(contract.ID, map[string]interface{}{"status": newStatus}); err != nil {
 		responseGormErr(c, err)

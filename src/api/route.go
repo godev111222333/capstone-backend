@@ -290,11 +290,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdminTechnician,
 		},
 		RouteAdminUploadCustomerContractDocument: {
-			Path:        "/admin/contract/document",
+			Path:        "/contract/document",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminUploadCustomerContractDocument,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleAdminTechnician,
 		},
 		RouteAdminGetPartnerContractDetail: {
 			Path:        "/admin/partner_contract",

@@ -1,4 +1,4 @@
 path: fe-config.yaml
-admin_return_url: http://localhost:3000/contracts/payments/
+admin_return_url: https://minhhungcar-admin.vercel.app/contracts/payments/
 admin_base_url:  https://minhhungcar-admin.vercel.app/
 tech_base_url: https://minhhungcar-technician.vercel.app/

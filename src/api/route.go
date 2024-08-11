@@ -94,7 +94,7 @@ var (
 	AuthRolePartner         = []string{model.RoleNamePartner}
 	AuthRoleAdmin           = []string{model.RoleNameAdmin}
 	AuthRoleCustomer        = []string{model.RoleNameCustomer}
-	AuthRoleTechnician      = []string{model.RoleCodeTechnician}
+	AuthRoleTechnician      = []string{model.RoleNameTechnician}
 	AuthRoleCustomerAdmin   = []string{model.RoleNameCustomer, model.RoleNameAdmin}
 	AuthRoleCustomerPartner = []string{model.RoleNameCustomer, model.RoleNamePartner}
 	AuthRoleAdminTechnician = []string{model.RoleNameAdmin, model.RoleNameTechnician}

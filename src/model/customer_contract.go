@@ -13,6 +13,8 @@ const (
 	CustomerContractStatusWaitingPartnerApproval   CustomerContractStatus = "waiting_partner_approval"
 	CustomerContractStatusWaitingContractPayment   CustomerContractStatus = "waiting_contract_payment"
 	CustomerContractStatusOrdered                  CustomerContractStatus = "ordered"
+	CustomerContractStatusAppraisingCar            CustomerContractStatus = "appraising_car"
+	CustomerContractStatusAppraisingCarFailed      CustomerContractStatus = "appraising_car_failed"
 	CustomerContractStatusRenting                  CustomerContractStatus = "renting"
 	CustomerContractStatusCompleted                CustomerContractStatus = "completed"
 	CustomerContractStatusCancel                   CustomerContractStatus = "canceled"

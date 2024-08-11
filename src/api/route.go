@@ -82,6 +82,7 @@ const (
 	RouteCustomerGiveFeedback                        = "customer_give_feedback"
 	RouteCustomerGetSuggestedCars                    = "customer_get_suggested_cars"
 	RouteCustomerPartnerGetFeedbacksByCar            = "customer_partner_get_feedbacks_by_car"
+	RouteTechAppraisingCarOfCustomerContract         = "tech_appraising_car_of_cus_contract"
 	RouteChat                                        = "chat"
 	RouteVNPayIPNURL                                 = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                              = "vn_pay_return_url"
@@ -93,6 +94,7 @@ var (
 	AuthRolePartner         = []string{model.RoleNamePartner}
 	AuthRoleAdmin           = []string{model.RoleNameAdmin}
 	AuthRoleCustomer        = []string{model.RoleNameCustomer}
+	AuthRoleTechnician      = []string{model.RoleCodeTechnician}
 	AuthRoleCustomerAdmin   = []string{model.RoleNameCustomer, model.RoleNameAdmin}
 	AuthRoleCustomerPartner = []string{model.RoleNameCustomer, model.RoleNamePartner}
 	AuthRoleAdminTechnician = []string{model.RoleNameAdmin, model.RoleNameTechnician}
@@ -645,6 +647,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleAdminCreatePartnerContractRule,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteTechAppraisingCarOfCustomerContract: {
+			Path:        "/tech/customer_contract/appraising_car",
+			Method:      http.MethodPut,
+			Handler:     s.HandleTechnicianAppraisingCarOfCusContract,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleTechnician,
 		},
 
 		// Temporary API

@@ -570,7 +570,7 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 			return
 		}
 
-		newStatus = string(model.CustomerContractStatusRenting)
+		newStatus = string(model.CustomerContractStatusAppraisingCar)
 	}
 
 	if err := s.store.CustomerContractStore.Update(contract.ID, map[string]interface{}{"status": newStatus}); err != nil {
@@ -579,13 +579,12 @@ func (s *Server) HandleAdminApproveOrRejectCustomerContract(c *gin.Context) {
 	}
 
 	go func() {
-		phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
-		msg := s.notificationPushService.NewApproveRentingCarRequestMsg(contract.ID, expoToken, phone)
 		if req.Action == CustomerContractActionReject {
-			msg = s.notificationPushService.NewRejectRentingCarRequestMsg(contract.ID, expoToken, phone)
+			phone, expoToken := contract.Customer.PhoneNumber, s.getExpoToken(contract.Customer.PhoneNumber)
+			msg := s.notificationPushService.NewRejectRentingCarRequestMsg(contract.ID, expoToken, phone)
+			_ = s.notificationPushService.Push(contract.CustomerID, msg)
 		}
 
-		_ = s.notificationPushService.Push(contract.CustomerID, msg)
 	}()
 
 	responseSuccess(c, contract)

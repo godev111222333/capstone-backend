@@ -348,11 +348,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteAdminUpdateCustomerContractImageStatus: {
-			Path:        "/admin/contract/image",
+			Path:        "/contract/image",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminUpdateCustomerContractImageStatus,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleAdminTechnician,
 		},
 		RouteAdminGetFeedbacks: {
 			Path:        "/admin/feedbacks",

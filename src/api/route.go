@@ -257,11 +257,11 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: false,
 		},
 		RouteAdminApproveCar: {
-			Path:        "/admin/car_application",
+			Path:        "/car_application",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminApproveOrRejectCar,
 			RequireAuth: true,
-			AuthRoles:   AuthRoleAdmin,
+			AuthRoles:   AuthRoleAdminTechnician,
 		},
 		RouteAdminGetCustomerContracts: {
 			Path:        "/contracts",

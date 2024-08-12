@@ -107,6 +107,7 @@ func setSequenceValues(dbStore *store.DbStore) error {
 		`select setval('partner_contract_rules_id_seq', (select MAX(id) from partner_contract_rules))`,
 		`select setval('customer_payments_id_seq', (select MAX(id) from customer_payments))`,
 		`select setval('customer_contract_images_id_seq', (select MAX(id) from customer_contract_images))`,
+		`update accounts set phone_number = concat('0', phone_number) where phone_number != 'admin'  and phone_number != 'tech'`,
 	}
 	for _, sql := range sqls {
 		if err := dbStore.DB.Exec(sql).Error; err != nil {

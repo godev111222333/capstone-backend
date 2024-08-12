@@ -105,8 +105,8 @@ func (s *BackgroundService) processWaitingPartnerApproval() error {
 		}
 	}
 
-	if err := s.db.CustomerContractStore.UpdateBatch(
-		delIds, map[string]interface{}{"status": model.CustomerContractStatusCancel}); err != nil {
+	if err := s.db.CustomerContractStore.UpdateBatchWhenCurStatus(
+		delIds, map[string]interface{}{"status": model.CustomerContractStatusCancel}, model.CustomerContractStatusWaitingPartnerApproval); err != nil {
 		return err
 	}
 

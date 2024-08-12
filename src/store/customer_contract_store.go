@@ -128,8 +128,8 @@ func (s *CustomerContractStore) Update(id int, values map[string]interface{}) er
 	return nil
 }
 
-func (s *CustomerContractStore) UpdateBatch(ids []int, values map[string]interface{}) error {
-	if err := s.db.Model(&model.CustomerContract{}).Where("id in ?", ids).Updates(values).Error; err != nil {
+func (s *CustomerContractStore) UpdateBatchWhenCurStatus(ids []int, values map[string]interface{}, status model.CustomerContractStatus) error {
+	if err := s.db.Model(&model.CustomerContract{}).Where("id in ? and status = ?", ids, string(status)).Updates(values).Error; err != nil {
 		fmt.Printf("CustomerContractStore: Update %v\n", err)
 		return err
 	}

@@ -261,10 +261,10 @@ func (s *Server) HandleAdminUploadCustomerContractDocument(c *gin.Context) {
 		return
 	}
 
-	if contract.Status != model.CustomerContractStatusOrdered {
+	if contract.Status != model.CustomerContractStatusOrdered &&
+		contract.Status != model.CustomerContractStatusAppraisingCarApproved {
 		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, errors.New(
-			fmt.Sprintf("invalid customer contract status, required %s, found %s",
-				string(model.CustomerContractStatusOrdered), string(contract.Status))),
+			fmt.Sprintf("invalid customer contract status, found %s", string(contract.Status))),
 		)
 		return
 	}

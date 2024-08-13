@@ -35,7 +35,7 @@ func (s *CarModelStore) GetAll() ([]*model.CarModel, error) {
 
 func (s *CarModelStore) GetPagination(offset, limit int) ([]*model.CarModel, error) {
 	var models []*model.CarModel
-	if err := s.db.Order("id desc").Offset(offset).Limit(limit).Scan(&models).Error; err != nil {
+	if err := s.db.Order("id desc").Offset(offset).Limit(limit).Find(&models).Error; err != nil {
 		fmt.Printf("CarModelStore: GetPagination %v\n", err)
 		return nil, err
 	}

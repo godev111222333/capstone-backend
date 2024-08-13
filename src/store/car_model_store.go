@@ -25,10 +25,29 @@ func (s *CarModelStore) Create(models []*model.CarModel) error {
 
 func (s *CarModelStore) GetAll() ([]*model.CarModel, error) {
 	var models []*model.CarModel
-	if err := s.db.Find(&models).Error; err != nil {
-		fmt.Printf("CarModelStore: SearchCars %v\n", err)
+	if err := s.db.Order("id asc").Find(&models).Error; err != nil {
+		fmt.Printf("CarModelStore: GetAll %v\n", err)
 		return nil, err
 	}
 
 	return models, nil
+}
+
+func (s *CarModelStore) GetPagination(offset, limit int) ([]*model.CarModel, error) {
+	var models []*model.CarModel
+	if err := s.db.Order("id desc").Offset(offset).Limit(limit).Scan(&models).Error; err != nil {
+		fmt.Printf("CarModelStore: GetPagination %v\n", err)
+		return nil, err
+	}
+
+	return models, nil
+}
+
+func (s *CarModelStore) Update(id int, values map[string]interface{}) error {
+	if err := s.db.Model(model.CarModel{}).Where("id = ?", id).Updates(values).Error; err != nil {
+		fmt.Printf("CarModelStore: Update %v\n", err)
+		return err
+	}
+
+	return nil
 }

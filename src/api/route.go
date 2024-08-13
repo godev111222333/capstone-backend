@@ -53,6 +53,9 @@ const (
 	RouteAdminUpdateIsReturnCollateralAsset          = "admin_update_collateral_asset"
 	RouteAdminSubscribeNotification                  = "admin_subscribe_notification"
 	RouteAdminSubscribeNewConversation               = "admin_subscribe_new_conversation"
+	RouteAdminGetCarModel                            = "admin_get_car_models"
+	RouteAdminCreateCarModel                         = "admin_create_car_model"
+	RouteAdminUpdateCarModel                         = "admin_update_car_model"
 	RouteTechSubscribeNotification                   = "tech_subscribe_notification"
 	RouteAdminGetStatistic                           = "admin_get_statistic"
 	RouteAdminMakeMonthlyPartnerPayments             = "admin_make_monthly_partner_payments"
@@ -423,6 +426,27 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminSubscribeNewConversation,
 			RequireAuth: false,
+		},
+		RouteAdminGetCarModel: {
+			Path:        "/admin/car_models",
+			Method:      http.MethodGet,
+			Handler:     s.HandleAdminGetCarModels,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminCreateCarModel: {
+			Path:        "/admin/car_model",
+			Method:      http.MethodPost,
+			Handler:     s.HandleAdminCreateCarModel,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminUpdateCarModel: {
+			Path:        "/admin/car_model",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminUpdateCarModels,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
 		},
 		RouteTechSubscribeNotification: {
 			Path:        "/tech/subscribe_notification",

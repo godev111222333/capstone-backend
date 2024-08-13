@@ -107,6 +107,9 @@ const (
 	ErrCodeInvalidAppraisingCarRequest                        ErrorCode = 10094
 	ErrCodeInvalidReturnCarCustomerContractRequest            ErrorCode = 10095
 	ErrCodeInvalidTechAppraisingReturnCarRequest              ErrorCode = 10096
+	ErrCodeInvalidGetCarModelsRequest                         ErrorCode = 10097
+	ErrCodeInvalidCreateCarModelsRequest                      ErrorCode = 10098
+	ErrCodeInvalidUpdateCarModelsRequest                      ErrorCode = 10099
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

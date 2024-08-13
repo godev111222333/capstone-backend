@@ -1396,6 +1396,71 @@ func (s *Server) HandleAdminUpdateWarningCount(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "update warning count successfully"})
 }
 
+func (s *Server) HandleAdminGetCarModels(c *gin.Context) {
+	req := Pagination{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidGetCarModelsRequest, err)
+		return
+	}
+
+	models, err := s.store.CarModelStore.GetPagination(req.Offset, req.Limit)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, models)
+}
+
+type adminCreateCarModelRequest struct {
+	Brand         string `json:"brand" binding:"required"`
+	Model         string `json:"model" binding:"required"`
+	Year          int    `json:"year" binding:"required"`
+	NumberOfSeats int    `json:"number_of_seats" binding:"required"`
+	BasedPrice    int    `json:"based_price" binding:"required"`
+}
+
+func (s *Server) HandleAdminCreateCarModel(c *gin.Context) {
+	req := adminCreateCarModelRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidCreateCarModelsRequest, err)
+		return
+	}
+
+	if err := s.store.CarModelStore.Create([]*model.CarModel{{
+		Brand:         req.Brand,
+		Model:         req.Model,
+		Year:          req.Year,
+		NumberOfSeats: req.NumberOfSeats,
+		BasedPrice:    req.BasedPrice,
+	}}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "create car model successfully"})
+}
+
+type adminUpdateCarModelRequest struct {
+	CarModelID int `json:"car_model_id"`
+	BasedPrice int `json:"based_price"`
+}
+
+func (s *Server) HandleAdminUpdateCarModels(c *gin.Context) {
+	req := adminUpdateCarModelRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidUpdateCarModelsRequest, err)
+		return
+	}
+
+	if err := s.store.CarModelStore.Update(req.CarModelID, map[string]interface{}{"based_price": req.BasedPrice}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "update car model successfully"})
+}
+
 func (s *Server) getExpoToken(phone string) string {
 	expoToken, err := s.redisClient.Get(
 		context.Background(),

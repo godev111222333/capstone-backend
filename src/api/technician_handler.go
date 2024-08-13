@@ -79,6 +79,7 @@ func (s *Server) HandleTechnicianAppraisingReturnCar(c *gin.Context) {
 
 	if err := s.store.CustomerContractStore.Update(contract.ID, map[string]interface{}{
 		"technician_appraising_note": req.Note,
+		"status":                     string(model.CustomerContractStatusAppraisedReturnCar),
 	}); err != nil {
 		responseGormErr(c, err)
 		return

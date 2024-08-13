@@ -43,6 +43,7 @@ const (
 	RouteAdminGenerateMultipleCustomerPaymentsQRCode = "admin_generate_multiple_customer_payments_qr_code"
 	RouteAdminGenerateMultiplePartnerPaymentsQRCode  = "admin_generate_multiple_partner_payments_qr_code"
 	RouteAdminCompleteCustomerContract               = "admin_complete_customer_contract"
+	RouteAdminReturnCarCustomerContract              = "admin_return_car_customer_contract"
 	RouteAdminUpdateCustomerContractImageStatus      = "admin_update_customer_contract_image_status"
 	RouteAdminGetFeedbacks                           = "admin_get_feedbacks"
 	RouteAdminUpdateFeedbackStatus                   = "admin_update_feedback_status"
@@ -338,6 +339,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/monthly_partner_payments",
 			Method:      http.MethodGet,
 			Handler:     s.HandleAdminGetMonthlyPartnerPayments,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminReturnCarCustomerContract: {
+			Path:        "/admin/contract/return_car",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminReturnCarCustomerContract,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

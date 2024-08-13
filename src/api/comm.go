@@ -105,6 +105,8 @@ const (
 	ErrCodeInvalidPartnerGetPendingApprovalRequest            ErrorCode = 10092
 	ErrCodeInvalidPartnerApproveCustomerContractRequest       ErrorCode = 10093
 	ErrCodeInvalidAppraisingCarRequest                        ErrorCode = 10094
+	ErrCodeInvalidReturnCarCustomerContractRequest            ErrorCode = 10095
+	ErrCodeInvalidTechAppraisingReturnCarRequest              ErrorCode = 10096
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

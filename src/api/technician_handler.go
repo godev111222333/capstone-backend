@@ -53,3 +53,36 @@ func (s *Server) HandleTechnicianAppraisingCarOfCusContract(c *gin.Context) {
 
 	responseSuccess(c, gin.H{"status": "appraising car successfully"})
 }
+
+type techAppraisingReturnCar struct {
+	CustomerContractID int    `json:"customer_contract_id"`
+	Note               string `json:"note"`
+}
+
+func (s *Server) HandleTechnicianAppraisingReturnCar(c *gin.Context) {
+	req := techAppraisingReturnCar{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidTechAppraisingReturnCarRequest, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusReturnedCar {
+		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, fmt.Errorf("customer contract status required %s, found %s", model.CustomerContractStatusReturnedCar, contract.Status))
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(contract.ID, map[string]interface{}{
+		"technician_appraising_note": req.Note,
+	}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "appraise return car successfully"})
+}

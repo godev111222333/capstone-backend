@@ -3,8 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/godev111222333/capstone-backend/src/service"
-	"go.uber.org/mock/gomock"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -13,8 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/godev111222333/capstone-backend/src/model"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
+
+	"github.com/godev111222333/capstone-backend/src/model"
+	"github.com/godev111222333/capstone-backend/src/service"
 )
 
 func TestAdminHandler_GarageConfigs(t *testing.T) {
@@ -119,7 +121,7 @@ func TestHandleApproveCar(t *testing.T) {
 		route := TestServer.AllRoutes()[RouteAdminApproveCar]
 		req, err := http.NewRequest(
 			route.Method,
-			route.Path,
+			routeWithRole(model.RoleNameAdmin, route.Path),
 			bytes.NewReader(reqBz),
 		)
 		require.NoError(t, err)
@@ -158,7 +160,7 @@ func TestHandleApproveCar(t *testing.T) {
 		route := TestServer.AllRoutes()[RouteAdminApproveCar]
 		req, err := http.NewRequest(
 			route.Method,
-			route.Path,
+			routeWithRole(model.RoleNameAdmin, route.Path),
 			bytes.NewReader(reqBz),
 		)
 		require.NoError(t, err)
@@ -172,7 +174,7 @@ func TestHandleApproveCar(t *testing.T) {
 		time.Sleep(2 * time.Second)
 	})
 
-	t.Run("approve delivery car", func(t *testing.T) {
+	t.Run("approve_appraising_car car", func(t *testing.T) {
 		carModel := &model.CarModel{Brand: "toyota"}
 		require.NoError(t, TestDb.CarModelStore.Create([]*model.CarModel{carModel}))
 		partner, _ := seedAccountAndLogin("partner_vip3", "aaa", model.RoleIDPartner)
@@ -189,13 +191,13 @@ func TestHandleApproveCar(t *testing.T) {
 		require.NoError(t, TestDb.CarStore.Create(car))
 		accessToken := loginAdmin()
 
-		reqB := adminApproveOrRejectRequest{CarID: car.ID, Action: "approve_delivery"}
+		reqB := adminApproveOrRejectRequest{CarID: car.ID, Action: "approve_appraising_car"}
 		reqBz, err := json.Marshal(reqB)
 		require.NoError(t, err)
 		route := TestServer.AllRoutes()[RouteAdminApproveCar]
 		req, err := http.NewRequest(
 			route.Method,
-			route.Path,
+			routeWithRole(model.RoleNameAdmin, route.Path),
 			bytes.NewReader(reqBz),
 		)
 		require.NoError(t, err)
@@ -207,4 +209,8 @@ func TestHandleApproveCar(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, model.CarStatusActive, updatedCar.Status)
 	})
+}
+
+func routeWithRole(role, path string) string {
+	return fmt.Sprintf("/%s%s", role, path)
 }

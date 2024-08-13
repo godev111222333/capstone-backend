@@ -812,6 +812,39 @@ func (s *Server) HandleAdminGenerateMultiplePartnerPayments(c *gin.Context) {
 	responseSuccess(c, gin.H{"payment_url": url})
 }
 
+type returnCarCustomerContractRequest struct {
+	CustomerContractID int `json:"customer_contract_id" binding:"required"`
+}
+
+func (s *Server) HandleAdminReturnCarCustomerContract(c *gin.Context) {
+	req := returnCarCustomerContractRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidReturnCarCustomerContractRequest, err)
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if contract.Status != model.CustomerContractStatusRenting {
+		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus,
+			fmt.Errorf("customer contract status required %s, found %s", model.CustomerContractStatusRenting, contract.Status))
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, map[string]interface{}{
+		"status": string(model.CustomerContractStatusReturnedCar),
+	}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "return car successfully"})
+}
+
 type completeCustomerContractRequest struct {
 	CustomerContractID int `json:"customer_contract_id" binding:"required"`
 }
@@ -829,11 +862,11 @@ func (s *Server) HandleAdminCompleteCustomerContract(c *gin.Context) {
 		return
 	}
 
-	if contract.Status != model.CustomerContractStatusRenting {
+	if contract.Status != model.CustomerContractStatusAppraisedReturnCar {
 		responseCustomErr(
 			c,
 			ErrCodeInvalidCustomerContractStatus,
-			errors.New(fmt.Sprintf("invalid customer contract status, require %s, found %s", string(model.CustomerContractStatusRenting), string(contract.Status))),
+			errors.New(fmt.Sprintf("invalid customer contract status, require %s, found %s", string(model.CustomerContractStatusAppraisedReturnCar), string(contract.Status))),
 		)
 		return
 	}

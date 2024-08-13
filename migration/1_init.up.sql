@@ -147,6 +147,7 @@ create table "customer_contracts"
     "feedback_content"           varchar(1023) not null default '',
     "feedback_rating"            bigint        not null default 0,
     "feedback_status"            varchar(255)  not null default '',
+    "technician_appraising_note" varchar(1024) not null default '',
     "created_at"                 timestamptz            DEFAULT (now()),
     "updated_at"                 timestamptz            DEFAULT (now())
 );
@@ -231,17 +232,17 @@ values ('partner', 'PN');
 insert into roles(role_name, role_code)
 values ('technician', 'TN');
 
--- insert into accounts(role_id, phone_number, password, status)
--- values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
---
--- insert into accounts(role_id, phone_number, password, status)
--- values (4, 'tech', 'JDJhJDA0JEVOY211WnhIbnVWeHIua3l2YzVkNy53eUI1LnVHdm9uaWFGVERWbWJFUjlQVWNGb2FDdFBl', 'active');
---
--- insert into customer_contract_rules(insurance_percent, prepay_percent, collateral_cash_amount)
--- values (10.0, 30.0, 15000000);
---
--- insert into partner_contract_rules(revenue_sharing_percent, max_warning_count)
--- values (5, 3);
+insert into accounts(role_id, phone_number, password, status)
+values (1, 'admin', 'JDJhJDA0JHNrSmNTRmdpQmVGaXp0SVE1SnVUcHU5ZC5UQ0VkeWRQRmx2VHFPUkF5NzRTRnVrcFVXeWd1', 'active');
+
+insert into accounts(role_id, phone_number, password, status)
+values (4, 'tech', 'JDJhJDA0JEVOY211WnhIbnVWeHIua3l2YzVkNy53eUI1LnVHdm9uaWFGVERWbWJFUjlQVWNGb2FDdFBl', 'active');
+
+insert into customer_contract_rules(insurance_percent, prepay_percent, collateral_cash_amount)
+values (10.0, 30.0, 15000000);
+
+insert into partner_contract_rules(revenue_sharing_percent, max_warning_count)
+values (5, 3);
 
 insert into garage_configs(type, maximum)
 values ('MAX_4_SEATS', 10);

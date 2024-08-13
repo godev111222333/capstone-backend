@@ -87,6 +87,7 @@ const (
 	RouteCustomerGetSuggestedCars                    = "customer_get_suggested_cars"
 	RouteCustomerPartnerGetFeedbacksByCar            = "customer_partner_get_feedbacks_by_car"
 	RouteTechAppraisingCarOfCustomerContract         = "tech_appraising_car_of_cus_contract"
+	RouteTechAppraisingReturnedCar                   = "tech_appraising_returned_car"
 	RouteChat                                        = "chat"
 	RouteVNPayIPNURL                                 = "vn_pay_ipn_url"
 	RouteVNPayReturnURL                              = "vn_pay_return_url"
@@ -685,6 +686,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/customer_contract/appraising_car",
 			Method:      http.MethodPut,
 			Handler:     s.HandleTechnicianAppraisingCarOfCusContract,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleTechnician,
+		},
+		RouteTechAppraisingReturnedCar: {
+			Path:        "/customer_contract/appraising_returned_car",
+			Method:      http.MethodPut,
+			Handler:     s.HandleTechnicianAppraisingReturnCar,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleTechnician,
 		},

@@ -1220,7 +1220,8 @@ func (s *Server) HandleAdminChangeCar(c *gin.Context) {
 		return
 	}
 
-	if contract.Status != model.CustomerContractStatusOrdered {
+	if contract.Status != model.CustomerContractStatusOrdered &&
+		contract.Status != model.CustomerContractStatusAppraisingCarRejected {
 		responseCustomErr(c, ErrCodeInvalidCustomerContractStatus, err)
 		return
 	}
@@ -1236,7 +1237,10 @@ func (s *Server) HandleAdminChangeCar(c *gin.Context) {
 		return
 	}
 
-	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, map[string]interface{}{"car_id": req.NewCarID}); err != nil {
+	if err := s.store.CustomerContractStore.Update(req.CustomerContractID, map[string]interface{}{
+		"car_id": req.NewCarID,
+		"status": model.CustomerContractStatusOrdered,
+	}); err != nil {
 		responseGormErr(c, err)
 		return
 	}
@@ -1409,7 +1413,16 @@ func (s *Server) HandleAdminGetCarModels(c *gin.Context) {
 		return
 	}
 
-	responseSuccess(c, models)
+	total, err := s.store.CarModelStore.CountTotal()
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{
+		"models": models,
+		"total":  total,
+	})
 }
 
 type adminCreateCarModelRequest struct {

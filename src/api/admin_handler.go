@@ -1498,8 +1498,13 @@ func (s *Server) HandleAdminSetCustomerContractResolveStatus(c *gin.Context) {
 	}
 
 	requiredPrevStatus := model.CustomerContractStatusRenting
+	requiredPrevCarStatus := model.CarStatusActive
+	nextCarStatus := model.CarStatusTemporaryInactive
+
 	if req.NewStatus == model.CustomerContractStatusResolved {
 		requiredPrevStatus = model.CustomerContractStatusPendingResolve
+		requiredPrevCarStatus = model.CarStatusTemporaryInactive
+		nextCarStatus = model.CarStatusActive
 	}
 
 	if contract.Status != requiredPrevStatus {
@@ -1508,8 +1513,20 @@ func (s *Server) HandleAdminSetCustomerContractResolveStatus(c *gin.Context) {
 		return
 	}
 
+	if contract.Car.Status != requiredPrevCarStatus {
+		responseCustomErr(c, ErrCodeInvalidSetCustomerContractResolveStatusRequest,
+			fmt.Errorf("car status required %s, found %s", requiredPrevCarStatus, contract.Car.Status))
+		return
+	}
+
 	if err := s.store.CustomerContractStore.Update(
 		req.CustomerContractID, map[string]interface{}{"status": string(req.NewStatus)}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	if err := s.store.CarStore.Update(
+		contract.CarID, map[string]interface{}{"status": string(nextCarStatus)}); err != nil {
 		responseGormErr(c, err)
 		return
 	}

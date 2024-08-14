@@ -155,6 +155,13 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		licensePlate = payment.CustomerContract.Car.LicensePlate
 
 		if payment.PaymentType == model.PaymentTypePrePay {
+			// check if this car is still available
+			good, err := s.checkIfContractStillAvailable(commCustomerContractID)
+			if err != nil || !good {
+				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error or not available car for contract"})
+				return
+			}
+
 			if err := s.store.CustomerContractStore.Update(
 				payment.CustomerContractID,
 				map[string]interface{}{"status": string(model.CustomerContractStatusOrdered)},
@@ -303,4 +310,30 @@ func decodeOrderInfo(s string) []int {
 	}
 
 	return res
+}
+
+func (s *Server) checkIfContractStillAvailable(contractID int) (bool, error) {
+	contract, err := s.store.CustomerContractStore.FindByID(contractID)
+	if err != nil {
+		return false, err
+	}
+
+	car := contract.Car
+	foundCars, err := s.store.CarStore.FindCars(contract.StartDate, contract.EndDate, map[string]interface{}{
+		"brands":          []string{car.CarModel.Brand},
+		"fuels":           []string{string(car.Fuel)},
+		"motions":         []string{string(car.Motion)},
+		"number_of_seats": []int{car.CarModel.NumberOfSeats},
+	})
+	if err != nil {
+		return false, err
+	}
+
+	for _, fCar := range foundCars {
+		if fCar.ID == car.ID {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

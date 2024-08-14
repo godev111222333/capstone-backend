@@ -1474,6 +1474,49 @@ func (s *Server) HandleAdminUpdateCarModels(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "update car model successfully"})
 }
 
+type adminSetCustomerContractResolveStatus struct {
+	CustomerContractID int                          `json:"customer_contract_id" binding:"required"`
+	NewStatus          model.CustomerContractStatus `json:"new_status" binding:"required"`
+}
+
+func (s *Server) HandleAdminSetCustomerContractResolveStatus(c *gin.Context) {
+	req := adminSetCustomerContractResolveStatus{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidSetCustomerContractResolveStatusRequest, err)
+		return
+	}
+
+	if req.NewStatus != model.CustomerContractStatusPendingResolve && req.NewStatus != model.CustomerContractStatusResolved {
+		responseCustomErr(c, ErrCodeInvalidSetCustomerContractResolveStatusRequest, errors.New("new status is invalid"))
+		return
+	}
+
+	contract, err := s.store.CustomerContractStore.FindByID(req.CustomerContractID)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	requiredPrevStatus := model.CustomerContractStatusRenting
+	if req.NewStatus == model.CustomerContractStatusResolved {
+		requiredPrevStatus = model.CustomerContractStatusPendingResolve
+	}
+
+	if contract.Status != requiredPrevStatus {
+		responseCustomErr(c, ErrCodeInvalidSetCustomerContractResolveStatusRequest,
+			fmt.Errorf("customer contract status required %s, found %s", requiredPrevStatus, contract.Status))
+		return
+	}
+
+	if err := s.store.CustomerContractStore.Update(
+		req.CustomerContractID, map[string]interface{}{"status": string(req.NewStatus)}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "set resolve status successfully"})
+}
+
 func (s *Server) getExpoToken(phone string) string {
 	expoToken, err := s.redisClient.Get(
 		context.Background(),

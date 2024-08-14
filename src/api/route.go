@@ -56,6 +56,7 @@ const (
 	RouteAdminGetCarModel                            = "admin_get_car_models"
 	RouteAdminCreateCarModel                         = "admin_create_car_model"
 	RouteAdminUpdateCarModel                         = "admin_update_car_model"
+	RouteAdminSetResolveStatus                       = "admin_set_resolve_status"
 	RouteTechSubscribeNotification                   = "tech_subscribe_notification"
 	RouteAdminGetStatistic                           = "admin_get_statistic"
 	RouteAdminMakeMonthlyPartnerPayments             = "admin_make_monthly_partner_payments"
@@ -446,6 +447,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/admin/car_model",
 			Method:      http.MethodPut,
 			Handler:     s.HandleAdminUpdateCarModels,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
+		RouteAdminSetResolveStatus: {
+			Path:        "/admin/contract/resolve",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminSetCustomerContractResolveStatus,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},

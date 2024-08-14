@@ -13,6 +13,16 @@ import (
 const BufferAtHomeTime = 2 * time.Hour
 const BufferAtGarage = time.Hour
 
+var NotAvailableForRentStatuses = []string{
+	string(model.CustomerContractStatusOrdered),
+	string(model.CustomerContractStatusAppraisingCarApproved),
+	string(model.CustomerContractStatusAppraisingCarRejected),
+	string(model.CustomerContractStatusRenting),
+	string(model.CustomerContractStatusReturnedCar),
+	string(model.CustomerContractStatusAppraisedReturnCar),
+	string(model.CustomerContractStatusPendingResolve),
+}
+
 type CarStore struct {
 	db *gorm.DB
 }
@@ -222,8 +232,8 @@ func (s *CarStore) FindCars(
 		cars := make([]*model.CarJoinCarModel, 0)
 		rawSql := `select cars.*, cars.id as car_id, cm.*
 				from cars inner join car_models cm on cars.car_model_id = cm.id 
-				where ` + opt + ` cars.parking_lot = ? and cars.status = ? and cars.id not in (select car_id from customer_contracts where (customer_contracts.start_date >= ? and ? >= customer_contracts.start_date and (customer_contracts.status = 'ordered' or customer_contracts.status = 'renting' or customer_contracts.status = 'completed')) or cars.end_date < ?)`
-		if err := s.db.Raw(rawSql, string(parkingLot), string(model.CarStatusActive), startDate, endDate, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
+				where ` + opt + ` cars.parking_lot = ? and cars.status = ? and cars.id not in (select car_id from customer_contracts where (customer_contracts.start_date >= ? and ? >= customer_contracts.start_date and (customer_contracts.status in ?)) or cars.end_date < ?)`
+		if err := s.db.Raw(rawSql, string(parkingLot), string(model.CarStatusActive), startDate, endDate, NotAvailableForRentStatuses, endDate).Preload("CarModel").Find(&cars).Error; err != nil {
 			fmt.Printf("CarStore: FindCars %v\n", err)
 			return nil, err
 		}
@@ -231,8 +241,8 @@ func (s *CarStore) FindCars(
 		cars2 := make([]*model.CarJoinCarModel, 0)
 		rawSql = `select cars.*, cars.id as car_id, cm.*
 				from cars inner join car_models cm on cars.car_model_id = cm.id
-				where ` + opt + ` cars.parking_lot = ? and cars.status = ? and cars.id not in (select car_id from customer_contracts where (? >= customer_contracts.start_date and customer_contracts.end_date >= ? and (customer_contracts.status = 'ordered' or customer_contracts.status = 'renting' or customer_contracts.status = 'completed')) or cars.end_date < ?)`
-		if err := s.db.Raw(rawSql, string(parkingLot), string(model.CarStatusActive), startDate, startDate, endDate).Preload("CarModel").Find(&cars2).Error; err != nil {
+				where ` + opt + ` cars.parking_lot = ? and cars.status = ? and cars.id not in (select car_id from customer_contracts where (? >= customer_contracts.start_date and customer_contracts.end_date >= ? and (customer_contracts.status in ?)) or cars.end_date < ?)`
+		if err := s.db.Raw(rawSql, string(parkingLot), string(model.CarStatusActive), startDate, startDate, NotAvailableForRentStatuses, endDate).Preload("CarModel").Find(&cars2).Error; err != nil {
 			fmt.Printf("CarStore: FindCars %v\n", err)
 			return nil, err
 		}

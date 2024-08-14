@@ -20,6 +20,8 @@ const (
 	CustomerContractStatusAppraisedReturnCar       CustomerContractStatus = "appraised_return_car"
 	CustomerContractStatusCompleted                CustomerContractStatus = "completed"
 	CustomerContractStatusCancel                   CustomerContractStatus = "canceled"
+	CustomerContractStatusPendingResolve           CustomerContractStatus = "pending_resolve"
+	CustomerContractStatusResolved                 CustomerContractStatus = "resolved"
 	CustomerContractStatusNoFilter                 CustomerContractStatus = "no_filter"
 
 	FeedbackStatusActive   FeedBackStatus = "active"

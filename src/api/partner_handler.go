@@ -506,7 +506,6 @@ func (s *Server) HandlePartnerGetRevenue(c *gin.Context) {
 }
 
 type partnerGetPendingCustomerContractsRequest struct {
-	Status model.CustomerContractStatus `form:"status"`
 	Pagination
 }
 

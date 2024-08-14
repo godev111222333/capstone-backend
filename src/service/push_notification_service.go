@@ -248,7 +248,7 @@ func (s *NotificationPushService) NewRejectRentingCarRequestMsg(contractID int, 
 func (s *NotificationPushService) NewApproveRentingCarRequestMsg(contractID int, expoToken, toPhone string) *PushMessage {
 	return &PushMessage{
 		To:    []string{expoToken},
-		Title: "Yêu cầu thuê xe đã được chấp nhận",
+		Title: "Đã bàn giao xe cho khách hàng",
 		Body:  "MinhHungCar đã chấp nhận yêu cầu thuê xe của bạn",
 		Data: map[string]interface{}{
 			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),

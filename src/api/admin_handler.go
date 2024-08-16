@@ -185,8 +185,9 @@ const (
 )
 
 type adminApproveOrRejectRequest struct {
-	CarID  int               `json:"car_id"`
-	Action ApplicationAction `json:"action"`
+	CarID  int               `json:"car_id" binding:"required"`
+	Action ApplicationAction `json:"action" binding:"required"`
+	Reason string            `json:"reason"`
 }
 
 func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
@@ -271,6 +272,10 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	updateValues := map[string]interface{}{
 		"status": newStatus,
 	}
+	if len(req.Reason) > 0 {
+		updateValues["reason"] = req.Reason
+	}
+
 	if req.Action == ApplicationActionApproveRegister {
 		updateValues["partner_contract_status"] = string(model.PartnerContractStatusWaitingForAgreement)
 	}

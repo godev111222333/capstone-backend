@@ -272,7 +272,7 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	updateValues := map[string]interface{}{
 		"status": newStatus,
 	}
-	if len(req.Reason) > 0 {
+	if len(req.Reason) > 0 && newStatus == string(model.CustomerContractStatusCancel) {
 		updateValues["reason"] = req.Reason
 	}
 

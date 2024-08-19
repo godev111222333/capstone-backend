@@ -36,6 +36,8 @@ type INotificationPushService interface {
 	NewPartnerReceiveNewRentingRequest(carID, contractID int, expoToken, toPhone string) *PushMessage
 	NewCarPendingResolve(carID, contractID int, expoToken, toPhone string) *PushMessage
 	NewCarResolved(carID, contractID int, expoToken, toPhone string) *PushMessage
+	NewCustomerCarPendingResolve(contractID int, expoToken, toPhone string) *PushMessage
+	NewCustomerCarResolved(contractID int, expoToken, toPhone string) *PushMessage
 }
 
 type PushMessage struct {
@@ -350,6 +352,30 @@ func (s *NotificationPushService) NewCarResolved(carID, contractID int, expoToke
 		Body:  "MinhHungCar đã xử lí sự cố cho xe của bạn",
 		Data: map[string]interface{}{
 			"screen":       fmt.Sprintf("%s/activityDetail?carID=%d&activityID=%d", s.FrontendURL, carID, contractID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewCustomerCarPendingResolve(contractID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Xe bạn thuê gặp sự cố",
+		Body:  "Xe bạn thuê gặp sự cố và đang trong quá trình xử lí sự cố!",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
+			"phone_number": toPhone,
+		},
+	}
+}
+
+func (s *NotificationPushService) NewCustomerCarResolved(contractID int, expoToken, toPhone string) *PushMessage {
+	return &PushMessage{
+		To:    []string{expoToken},
+		Title: "Đã xử lí sự cố",
+		Body:  "MinhHungCar đã xử lí sự cố cho chiếc xe bạn đang thuê",
+		Data: map[string]interface{}{
+			"screen":       fmt.Sprintf("%s/detailTrip?contractID=%d", s.FrontendURL, contractID),
 			"phone_number": toPhone,
 		},
 	}

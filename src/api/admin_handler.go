@@ -1538,6 +1538,18 @@ func (s *Server) HandleAdminSetCustomerContractResolveStatus(c *gin.Context) {
 		return
 	}
 
+	msg := &service.PushMessage{}
+	expoToken, phone := s.getExpoToken(contract.Car.Account.PhoneNumber), contract.Car.Account.PhoneNumber
+	switch req.NewStatus {
+	case model.CustomerContractStatusPendingResolve:
+		msg = s.notificationPushService.NewCarPendingResolve(contract.CarID, contract.ID, expoToken, phone)
+		break
+	case model.CustomerContractStatusResolved:
+		msg = s.notificationPushService.NewCarResolved(contract.CarID, contract.ID, expoToken, phone)
+		break
+	}
+	_ = s.notificationPushService.Push(contract.Car.PartnerID, msg)
+
 	responseSuccess(c, gin.H{"status": "set resolve status successfully"})
 }
 

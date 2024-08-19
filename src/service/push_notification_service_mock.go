@@ -80,6 +80,34 @@ func (mr *MockINotificationPushServiceMockRecorder) NewApproveRentingCarRequestM
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewApproveRentingCarRequestMsg", reflect.TypeOf((*MockINotificationPushService)(nil).NewApproveRentingCarRequestMsg), contractID, expoToken, toPhone)
 }
 
+// NewCarPendingResolve mocks base method.
+func (m *MockINotificationPushService) NewCarPendingResolve(carID, contractID int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewCarPendingResolve", carID, contractID, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewCarPendingResolve indicates an expected call of NewCarPendingResolve.
+func (mr *MockINotificationPushServiceMockRecorder) NewCarPendingResolve(carID, contractID, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCarPendingResolve", reflect.TypeOf((*MockINotificationPushService)(nil).NewCarPendingResolve), carID, contractID, expoToken, toPhone)
+}
+
+// NewCarResolved mocks base method.
+func (m *MockINotificationPushService) NewCarResolved(carID, contractID int, expoToken, toPhone string) *PushMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewCarResolved", carID, contractID, expoToken, toPhone)
+	ret0, _ := ret[0].(*PushMessage)
+	return ret0
+}
+
+// NewCarResolved indicates an expected call of NewCarResolved.
+func (mr *MockINotificationPushServiceMockRecorder) NewCarResolved(carID, contractID, expoToken, toPhone any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewCarResolved", reflect.TypeOf((*MockINotificationPushService)(nil).NewCarResolved), carID, contractID, expoToken, toPhone)
+}
+
 // NewChatMsg mocks base method.
 func (m *MockINotificationPushService) NewChatMsg(expoToken, toPhone string) *PushMessage {
 	m.ctrl.T.Helper()

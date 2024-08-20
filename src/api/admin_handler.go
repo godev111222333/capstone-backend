@@ -1562,13 +1562,13 @@ func (s *Server) HandleAdminSetCustomerContractResolveStatus(c *gin.Context) {
 }
 
 type checkPaymentStatusRequest struct {
-	OrderInfo string `json:"vnp_OrderInfo"`
-	TxnRef    string `json:"vnp_TxnRef"`
+	OrderInfo string `form:"vnp_OrderInfo"`
+	TxnRef    string `form:"vnp_TxnRef"`
 }
 
 func (s *Server) HandleCheckPaymentStatus(c *gin.Context) {
 	req := checkPaymentStatusRequest{}
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.Bind(&req); err != nil {
 		responseCustomErr(c, -1, errors.New("invalid check payment status request"))
 		return
 	}

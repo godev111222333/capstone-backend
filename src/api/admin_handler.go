@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -1558,6 +1559,51 @@ func (s *Server) HandleAdminSetCustomerContractResolveStatus(c *gin.Context) {
 	_ = s.notificationPushService.Push(contract.Car.PartnerID, msg)
 
 	responseSuccess(c, gin.H{"status": "set resolve status successfully"})
+}
+
+type checkPaymentStatusRequest struct {
+	OrderInfo string `json:"vnp_OrderInfo"`
+	TxnRef    string `json:"vnp_TxnRef"`
+}
+
+func (s *Server) HandleCheckPaymentStatus(c *gin.Context) {
+	req := checkPaymentStatusRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, -1, errors.New("invalid check payment status request"))
+		return
+	}
+
+	ids := decodeOrderInfo(req.OrderInfo)
+	status := "paid"
+	if strings.HasPrefix(req.TxnRef, PrefixPartnerPayment) {
+		for _, id := range ids {
+			p, err := s.store.PartnerPaymentHistoryStore.GetByID(id)
+			if err != nil {
+				responseGormErr(c, err)
+				return
+			}
+
+			if p.Status == model.PartnerPaymentHistoryStatusPending {
+				status = string(model.PartnerPaymentHistoryStatusPending)
+				break
+			}
+		}
+	} else {
+		for _, id := range ids {
+			p, err := s.store.CustomerPaymentStore.GetByID(id)
+			if err != nil {
+				responseGormErr(c, err)
+				return
+			}
+
+			if p.Status == model.PaymentStatusPending {
+				status = string(model.PaymentStatusPending)
+				break
+			}
+		}
+	}
+
+	responseSuccess(c, gin.H{"status": status})
 }
 
 func (s *Server) getExpoToken(phone string) string {

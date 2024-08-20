@@ -94,6 +94,7 @@ const (
 	RouteVNPayReturnURL                              = "vn_pay_return_url"
 	RouteRegisterExpoPushToken                       = "register_expo_push_token"
 	RouteGetNotificationHistory                      = "get_notification_history"
+	RouteCheckPaymentStatus                          = "check_payment_status"
 )
 
 var (
@@ -703,6 +704,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.HandleTechnicianAppraisingReturnCar,
 			RequireAuth: true,
 			AuthRoles:   AuthRoleTechnician,
+		},
+		RouteCheckPaymentStatus: {
+			Path:        "/payment_status",
+			Method:      http.MethodGet,
+			Handler:     s.HandleCheckPaymentStatus,
+			RequireAuth: false,
 		},
 
 		// Temporary API

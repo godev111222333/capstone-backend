@@ -150,6 +150,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		if payment.PaymentType == model.PaymentTypePrePay {
 			// check if this car is still available
 			good, err := s.checkIfContractStillAvailable(commCustomerContractID)
+			fmt.Println("good = ", good)
 			if err != nil || !good {
 				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error or not available car for contract"})
 				return

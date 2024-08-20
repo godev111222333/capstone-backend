@@ -130,13 +130,6 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 	}
 
 	paymentIDs := decodeOrderInfo(req.OrderInfo)
-	if err := s.store.CustomerPaymentStore.UpdateMulti(
-		paymentIDs,
-		map[string]interface{}{"status": string(model.PaymentStatusPaid)},
-	); err != nil {
-		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
-		return
-	}
 
 	var (
 		commCustomerContractID int
@@ -239,6 +232,14 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				return
 			}
 		}
+	}
+
+	if err := s.store.CustomerPaymentStore.UpdateMulti(
+		paymentIDs,
+		map[string]interface{}{"status": string(model.PaymentStatusPaid)},
+	); err != nil {
+		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+		return
 	}
 
 	go func() {

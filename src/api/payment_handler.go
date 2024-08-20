@@ -140,7 +140,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		// Update contract status to Ordered
 		payment, err := s.store.CustomerPaymentStore.GetByID(paymentID)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+			c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 			return
 		}
 
@@ -152,7 +152,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 			good, err := s.checkIfContractStillAvailable(commCustomerContractID)
 			fmt.Println("good = ", good)
 			if err != nil || !good {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error or not available car for contract"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error or not available car for contract"})
 				return
 			}
 
@@ -160,13 +160,13 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				payment.CustomerContractID,
 				map[string]interface{}{"status": string(model.CustomerContractStatusOrdered)},
 			); err != nil {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 				return
 			}
 
 			partner, err := s.store.AccountStore.GetByID(payment.CustomerContract.Car.PartnerID)
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 				return
 			}
 
@@ -194,7 +194,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		} else if payment.PaymentType == model.PaymentTypeCollateralCash {
 			contract, err := s.store.CustomerContractStore.FindByID(payment.CustomerContractID)
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 				return
 			}
 
@@ -205,19 +205,19 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 				s.feCfg.AdminReturnURL+strconv.Itoa(contract.ID), "",
 			)
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 				return
 			}
 		} else if payment.PaymentType == model.PaymentTypeReturnCollateralCash {
 			contract, err := s.store.CustomerContractStore.FindByID(payment.CustomerContractID)
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 				return
 			}
 
 			acct, err := s.store.AccountStore.GetByID(contract.CustomerID)
 			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 				return
 			}
 
@@ -229,7 +229,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 			if err := s.store.CustomerContractStore.Update(payment.CustomerContractID, map[string]interface{}{
 				"is_return_collateral_asset": true,
 			}); err != nil {
-				c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+				c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 				return
 			}
 		}
@@ -239,7 +239,7 @@ func (s *Server) HandleVnPayIPN(c *gin.Context) {
 		paymentIDs,
 		map[string]interface{}{"status": string(model.PaymentStatusPaid)},
 	); err != nil {
-		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+		c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 		return
 	}
 
@@ -261,20 +261,20 @@ func (s *Server) handlePartnerPayments(c *gin.Context, req VnPayIPNRequest) {
 		paymentIDs,
 		map[string]interface{}{"status": string(model.PartnerPaymentHistoryStatusPaid)},
 	); err != nil {
-		c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+		c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 		return
 	}
 
 	for _, paymentID := range paymentIDs {
 		payment, err := s.store.PartnerPaymentHistoryStore.GetByID(paymentID)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+			c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 			return
 		}
 
 		acct, err := s.store.AccountStore.GetByID(payment.PartnerID)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"RspCode": "97", "Message": "internal server error"})
+			c.JSON(http.StatusOK, gin.H{"RspCode": "02", "Message": "internal server error"})
 			return
 		}
 

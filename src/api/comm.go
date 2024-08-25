@@ -111,6 +111,7 @@ const (
 	ErrCodeInvalidCreateCarModelsRequest                      ErrorCode = 10098
 	ErrCodeInvalidUpdateCarModelsRequest                      ErrorCode = 10099
 	ErrCodeInvalidSetCustomerContractResolveStatusRequest     ErrorCode = 10100
+	ErrCodeInvalidInactiveCarRequest                          ErrorCode = 100101
 )
 
 var customErrMapping = map[ErrorCode]CommResponse{

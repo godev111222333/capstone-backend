@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+	"mime/multipart"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -35,4 +37,36 @@ func (s *Server) updateAdminReturnURL(c *gin.Context) {
 	}
 
 	responseSuccess(c, gin.H{"status": "update admin return url successfully"})
+}
+
+func (s *Server) seedImage(c *gin.Context) {
+	req := struct {
+		File *multipart.FileHeader `form:"file"`
+	}{}
+
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidUploadDocumentRequest, err)
+		return
+	}
+
+	header := req.File
+	if header.Size > MaxUploadFileSize {
+		responseCustomErr(c, ErrCodeInvalidFileSize, fmt.Errorf("exceed maximum file size, max %d, has %d", MaxUploadFileSize, header.Size))
+		return
+	}
+
+	body, err := header.Open()
+	if err != nil {
+		responseCustomErr(c, ErrCodeReadingDocumentRequest, err)
+		return
+	}
+	defer body.Close()
+
+	url, err := s.uploadDocument(body, header.Filename)
+	if err != nil {
+		responseInternalServerError(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"url": url})
 }

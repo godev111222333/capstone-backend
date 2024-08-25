@@ -68,6 +68,7 @@ const (
 	RouteAdminGetPartnerContractRule                 = "admin_get_partner_contract_rule"
 	RouteAdminCreateCustomerContractRule             = "admin_create_customer_contract_rule"
 	RouteAdminCreatePartnerContractRule              = "admin_create_partner_contract_rule"
+	RouteAdminInactiveCar                            = "inactive_car"
 	RoutePartnerAgreeContract                        = "partner_agree_contract"
 	RouteGetPartnerContractDetail                    = "get_partner_contract_detail"
 	RoutePartnerGetActivityDetail                    = "partner_get_activity_detail"
@@ -691,6 +692,13 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			RequireAuth: true,
 			AuthRoles:   AuthRoleAdmin,
 		},
+		RouteAdminInactiveCar: {
+			Path:        "/admin/car/inactive",
+			Method:      http.MethodPut,
+			Handler:     s.HandleAdminInactiveCar,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleAdmin,
+		},
 		RouteTechAppraisingCarOfCustomerContract: {
 			Path:        "/customer_contract/appraising_car",
 			Method:      http.MethodPut,
@@ -717,6 +725,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Path:        "/set_admin_return_url",
 			Method:      http.MethodPost,
 			Handler:     s.updateAdminReturnURL,
+			RequireAuth: false,
+		},
+		"seed_image": {
+			Path:        "/seed_image",
+			Method:      http.MethodPost,
+			Handler:     s.seedImage,
 			RequireAuth: false,
 		},
 	}

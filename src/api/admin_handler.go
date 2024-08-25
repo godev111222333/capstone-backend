@@ -308,6 +308,39 @@ func (s *Server) HandleAdminApproveOrRejectCar(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": fmt.Sprintf("%s car successfully", req.Action)})
 }
 
+type adminInactiveCarRequest struct {
+	CarID int `json:"car_id" binding:"required"`
+}
+
+func (s *Server) HandleAdminInactiveCar(c *gin.Context) {
+	req := adminInactiveCarRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidInactiveCarRequest, err)
+		return
+	}
+
+	contracts, err := s.store.CustomerContractStore.FindByCarID(req.CarID, model.CustomerContractStatusNoFilter, 0, 1000)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	now := time.Now()
+	for _, ct := range contracts {
+		if ct.StartDate.After(now) && ct.Status != model.CustomerContractStatusCancel {
+			responseCustomErr(c, ErrCodeInvalidInactiveCarRequest, errors.New("exist incoming renting requests for this car"))
+			return
+		}
+	}
+
+	if err := s.store.CarStore.Update(req.CarID, map[string]interface{}{"status": string(model.CarStatusInactive)}); err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "set car status to inactive successfully"})
+}
+
 func seatNumberToGarageConfigType(seatNumber int) model.GarageConfigType {
 	seatCode := model.GarageConfigTypeMax4Seats
 	if seatNumber == 7 {

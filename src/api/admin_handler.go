@@ -1161,6 +1161,57 @@ func (s *Server) HandleAdminMakeMonthlyPartnerPayments(c *gin.Context) {
 	responseSuccess(c, gin.H{"status": "generate monthly partner payment successfully"})
 }
 
+func (s *Server) InternalMakeMonthlyPayment(
+	startDate, endDate time.Time,
+	returnURL string,
+) error {
+	completedContracts, err := s.store.CustomerContractStore.
+		GetByStatusEndTimeInRange(startDate, endDate, model.CustomerContractStatusCompleted)
+	if err != nil {
+		return err
+	}
+
+	// partnerID -> list of customer contract IDs
+	partnerPayments := make(map[int][]int, 0)
+
+	// partnerID -> needed pay amount
+	amounts := make(map[int]int, 0)
+
+	for _, contract := range completedContracts {
+		partnerID := contract.Car.PartnerID
+		_, existed := partnerPayments[partnerID]
+		if !existed {
+			partnerPayments[partnerID] = []int{}
+		}
+		partnerPayments[partnerID] = append(partnerPayments[partnerID], contract.ID)
+
+		_, existed = amounts[partnerID]
+		if !existed {
+			amounts[partnerID] = 0
+		}
+		amounts[partnerID] += contract.RentPrice * int(100-contract.Car.PartnerContractRule.RevenueSharingPercent) / 100
+	}
+
+	for partnerID, cusContractIds := range partnerPayments {
+		history := &model.PartnerPaymentHistory{
+			PartnerID: partnerID,
+			StartDate: startDate,
+			EndDate:   endDate,
+			Amount:    amounts[partnerID],
+			Status:    model.PartnerPaymentHistoryStatusPending,
+		}
+		if err := s.store.PartnerPaymentHistoryStore.Create(history, cusContractIds); err != nil {
+			return err
+		}
+
+		if err := s.generatePartnerPaymentQRCode(history.ID, history.Amount, returnURL); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 const PrefixPartnerPayment = "partner_payment"
 
 func (s *Server) generatePartnerPaymentQRCode(partnerPaymentID, amount int, returnURL string) error {

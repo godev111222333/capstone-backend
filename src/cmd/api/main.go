@@ -2,13 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/godev111222333/capstone-backend/src/service"
-	"github.com/redis/go-redis/v9"
 	"os"
 	"os/signal"
+	"time"
+
+	"github.com/redis/go-redis/v9"
+	"github.com/robfig/cron/v3"
 
 	"github.com/godev111222333/capstone-backend/src/api"
 	"github.com/godev111222333/capstone-backend/src/misc"
+	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/godev111222333/capstone-backend/src/store"
 )
 
@@ -70,8 +73,27 @@ func main() {
 		}
 	}()
 
+	go func() {
+		runCronJob(feCfg, server)
+	}()
+
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	fmt.Println("Press Ctrl+C to exit API server")
 	<-stop
+}
+
+func runCronJob(feCfg *misc.FEConfig, server *api.Server) {
+	fmt.Println("Cron job running ...")
+	c := cron.New()
+	if _, err := c.AddFunc("0 0 1 * *", func() {
+		now := time.Now()
+		lastMonth := now.AddDate(0, -1, 0)
+		firstDay := time.Date(lastMonth.Year(), lastMonth.Month(), 1, 0, 0, 0, 0, lastMonth.Location())
+		lastDay := firstDay.AddDate(0, 1, -1)
+
+		_ = server.InternalMakeMonthlyPayment(firstDay, lastDay, feCfg.AdminReturnURL)
+	}); err != nil {
+		panic(err)
+	}
 }

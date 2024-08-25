@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"os"
 	"os/signal"
 	"time"
-
-	"github.com/redis/go-redis/v9"
-	"github.com/robfig/cron/v3"
 
 	"github.com/godev111222333/capstone-backend/src/api"
 	"github.com/godev111222333/capstone-backend/src/misc"
 	"github.com/godev111222333/capstone-backend/src/service"
 	"github.com/godev111222333/capstone-backend/src/store"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -90,7 +89,7 @@ func runCronJob(feCfg *misc.FEConfig, server *api.Server) {
 		now := time.Now()
 		lastMonth := now.AddDate(0, -1, 0)
 		firstDay := time.Date(lastMonth.Year(), lastMonth.Month(), 1, 0, 0, 0, 0, lastMonth.Location())
-		lastDay := firstDay.AddDate(0, 1, -1)
+		lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Second)
 
 		_ = server.InternalMakeMonthlyPayment(firstDay, lastDay, feCfg.AdminReturnURL)
 	}); err != nil {

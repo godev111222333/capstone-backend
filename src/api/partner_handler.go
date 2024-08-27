@@ -483,7 +483,18 @@ func (s *Server) HandlePartnerGetActivityDetail(c *gin.Context) {
 	responseSuccess(c, resp)
 }
 
+type PartnerGetRevenueRequest struct {
+	StartDate time.Time `form:"start_date"`
+	EndDate   time.Time `form:"end_date"`
+}
+
 func (s *Server) HandlePartnerGetRevenue(c *gin.Context) {
+	req := PartnerGetRevenueRequest{}
+	if err := c.Bind(&req); err != nil {
+		responseCustomErr(c, ErrCodeInvalidPartnerGetRevenueRequest, err)
+		return
+	}
+
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
 	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
 	if err != nil {
@@ -491,7 +502,7 @@ func (s *Server) HandlePartnerGetRevenue(c *gin.Context) {
 		return
 	}
 
-	payments, err := s.store.PartnerPaymentHistoryStore.GetRevenue(acct.ID)
+	payments, err := s.store.PartnerPaymentHistoryStore.GetRevenue(acct.ID, req.StartDate, req.EndDate)
 	if err != nil {
 		responseGormErr(c, err)
 		return

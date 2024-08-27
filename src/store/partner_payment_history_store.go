@@ -116,9 +116,13 @@ func (s *PartnerPaymentHistoryStore) GetPendingBatch(ids []int) ([]*model.Partne
 	return res, nil
 }
 
-func (s *PartnerPaymentHistoryStore) GetRevenue(partnerID int) ([]*model.PartnerPaymentHistory, error) {
+func (s *PartnerPaymentHistoryStore) GetRevenue(
+	partnerID int,
+	startDate time.Time,
+	endDate time.Time,
+) ([]*model.PartnerPaymentHistory, error) {
 	var res []*model.PartnerPaymentHistory
-	if err := s.db.Where("partner_id = ?", partnerID).Order("id desc").Find(&res).Error; err != nil {
+	if err := s.db.Where("partner_id = ? and start_date >= ? and end_date < ?", partnerID, startDate, endDate).Order("id desc").Find(&res).Error; err != nil {
 		fmt.Printf("PartnerPaymentHistoryStore: GetRevenue %v\n", err)
 		return nil, err
 	}

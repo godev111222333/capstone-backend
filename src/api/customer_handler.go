@@ -186,7 +186,7 @@ func isOverlapTimeRange(startTime1, endTime1, startTime2, endTime2 time.Time) bo
 		startTime2, endTime2 = tmpStartTime, tmpEndTime
 	}
 
-	return endTime1.After(startTime2)
+	return endTime1.Compare(startTime2) >= 0
 }
 
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {

@@ -2,6 +2,8 @@ package api
 
 import (
 	"errors"
+	"github.com/godev111222333/capstone-backend/src/store"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -68,6 +70,13 @@ type customerFindCarsRequest struct {
 }
 
 func (s *Server) HandleCustomerFindCars(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
 	req := customerFindCarsRequest{}
 	if err := c.Bind(&req); err != nil {
 		responseCustomErr(c, ErrCodeInvalidFindCarsRequest, err)
@@ -75,6 +84,11 @@ func (s *Server) HandleCustomerFindCars(c *gin.Context) {
 	}
 
 	if !validateStartEndDate(c, req.StartDate, req.EndDate) {
+		return
+	}
+
+	if ok, err := s.validateNotOverlapRentTime(acct.ID, req.StartDate, req.EndDate); !ok || err != nil {
+		responseCustomErr(c, ErrCodeOverWithOtherContractRequest, errors.New("overlap other contract"))
 		return
 	}
 
@@ -149,22 +163,48 @@ func validateStartEndDate(c *gin.Context, startDate, endDate time.Time) bool {
 	return true
 }
 
-//func (s *Server) validateNotOverlapRentTime(customerID int, startTime, endTime time.Time) (bool, error) {
-//	contracts, err := s.store.CustomerContractStore.GetByCustomerID(customerID, model.CustomerContractStatusNoFilter, 0, 1000)
-//	if err != nil {
-//		return false, err
-//	}
-//
-//	for _, c := range contracts {
-//
-//	}
-//}
+func (s *Server) validateNotOverlapRentTime(customerID int, startTime, endTime time.Time) (bool, error) {
+	contracts, err := s.store.CustomerContractStore.GetByCustomerID(customerID, model.CustomerContractStatusNoFilter, 0, 1000)
+	if err != nil {
+		return false, err
+	}
+
+	for _, c := range contracts {
+		if slices.Contains(store.NotAvailableForRentStatuses, string(c.Status)) &&
+			isOverlapTimeRange(startTime, endTime, c.StartDate, c.EndDate) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func isOverlapTimeRange(startTime1, endTime1, startTime2, endTime2 time.Time) bool {
+	if startTime2.After(startTime1) {
+		tmpStartTime, tmpEndTime := startTime1, endTime1
+		startTime1, endTime1 = startTime2, endTime2
+		startTime2, endTime2 = tmpStartTime, tmpEndTime
+	}
+
+	return endTime1.After(startTime2)
+}
 
 func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	acct, err := s.store.AccountStore.GetByPhoneNumber(authPayload.PhoneNumber)
+	if err != nil {
+		responseGormErr(c, err)
+		return
+	}
+
 	req := customerRentCarRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		responseCustomErr(c, ErrCodeInvalidRentCarRequest, err)
+		return
+	}
+
+	if ok, err := s.validateNotOverlapRentTime(acct.ID, req.StartDate, req.EndDate); !ok || err != nil {
+		responseCustomErr(c, ErrCodeOverlapOtherContract, errors.New("overlap other contract"))
 		return
 	}
 

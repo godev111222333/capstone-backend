@@ -87,7 +87,7 @@ func (s *Server) HandleCustomerFindCars(c *gin.Context) {
 		return
 	}
 
-	if ok, err := s.validateNotOverlapRentTime(acct.ID, req.StartDate, req.EndDate); !ok || err != nil {
+	if isOverlap, err := s.isOverlapOtherContract(acct.ID, req.StartDate, req.EndDate); isOverlap || err != nil {
 		responseCustomErr(c, ErrCodeOverWithOtherContractRequest, errors.New("overlap other contract"))
 		return
 	}
@@ -163,10 +163,10 @@ func validateStartEndDate(c *gin.Context, startDate, endDate time.Time) bool {
 	return true
 }
 
-func (s *Server) validateNotOverlapRentTime(customerID int, startTime, endTime time.Time) (bool, error) {
+func (s *Server) isOverlapOtherContract(customerID int, startTime, endTime time.Time) (bool, error) {
 	contracts, err := s.store.CustomerContractStore.GetByCustomerID(customerID, model.CustomerContractStatusNoFilter, 0, 1000)
 	if err != nil {
-		return false, err
+		return true, err
 	}
 
 	for _, c := range contracts {
@@ -203,7 +203,7 @@ func (s *Server) HandleCustomerRentCar(c *gin.Context) {
 		return
 	}
 
-	if ok, err := s.validateNotOverlapRentTime(acct.ID, req.StartDate, req.EndDate); !ok || err != nil {
+	if isOverlap, err := s.isOverlapOtherContract(acct.ID, req.StartDate, req.EndDate); isOverlap || err != nil {
 		responseCustomErr(c, ErrCodeOverlapOtherContract, errors.New("overlap other contract"))
 		return
 	}

@@ -342,3 +342,15 @@ func (s *Server) HandleRegisterExpoPushToken(c *gin.Context) {
 
 	responseSuccess(c, gin.H{"status": "register expo push token successfully"})
 }
+
+func (s *Server) HandleRemoveExpoToken(c *gin.Context) {
+	authPayload := c.MustGet(authorizationPayloadKey).(*token.Payload)
+	if statusCmd := s.redisClient.Del(
+		context.Background(),
+		fmt.Sprintf("%s__%s", ExpoPushTokenCacheKey, authPayload.PhoneNumber)); statusCmd.Err() != nil {
+		responseInternalServerError(c, statusCmd.Err())
+		return
+	}
+
+	responseSuccess(c, gin.H{"status": "removed expo push token successfully"})
+}

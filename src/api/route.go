@@ -733,5 +733,12 @@ func (s *Server) AllRoutes() map[string]RouteInfo {
 			Handler:     s.seedImage,
 			RequireAuth: false,
 		},
+		"remove_expo_token": {
+			Path:        "/expo_push_token/remove",
+			Method:      http.MethodPut,
+			Handler:     s.HandleRemoveExpoToken,
+			RequireAuth: true,
+			AuthRoles:   AuthRoleCustomerPartner,
+		},
 	}
 }

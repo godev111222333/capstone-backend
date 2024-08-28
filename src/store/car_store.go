@@ -21,6 +21,7 @@ var NotAvailableForRentStatuses = []string{
 	string(model.CustomerContractStatusReturnedCar),
 	string(model.CustomerContractStatusAppraisedReturnCar),
 	string(model.CustomerContractStatusPendingResolve),
+	string(model.CustomerContractStatusCompleted),
 }
 
 type CarStore struct {

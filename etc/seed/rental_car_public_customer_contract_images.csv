@@ -55,3 +55,5 @@ id,customer_contract_id,url,category,status,created_at,updated_at
 54,20,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/e9340f60-8c36-485c-87e1-47a8c3f7b3b7.jpg,RECEIVING_CAR_IMAGES,active,2024-08-04 12:33:00,2024-08-04 12:33:00
 55,20,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/e9340f60-8c36-485c-87e1-47a8c3f7b3b7.jpg,RECEIVING_CAR_IMAGES,active,2024-08-04 12:33:00,2024-08-04 12:33:00
 56,20,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/e9340f60-8c36-485c-87e1-47a8c3f7b3b7.jpg,RECEIVING_CAR_IMAGES,active,2024-08-04 12:33:00,2024-08-04 12:33:00
+57,22,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/e9340f60-8c36-485c-87e1-47a8c3f7b3b7.jpg,RECEIVING_CAR_IMAGES,active,2024-08-04 12:33:00,2024-08-04 12:33:00
+58,22,https://rentalcar-capstone.s3.ap-southeast-2.amazonaws.com/e9340f60-8c36-485c-87e1-47a8c3f7b3b7.jpg,RECEIVING_CAR_IMAGES,active,2024-08-04 12:33:00,2024-08-04 12:33:00

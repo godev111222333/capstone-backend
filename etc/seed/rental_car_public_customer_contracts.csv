@@ -20,3 +20,4 @@ id,customer_id,car_id,rent_price,start_date,end_date,status,reason,insurance_amo
 19,2,3,1584000,2024-07-25 12:33:00,2024-07-26 12:33:00,completed,,158400,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Long Hoang,3,,0,,2024-07-25 12:33:00,2024-07-25 12:33:00
 20,2,3,1014000,2024-08-28 12:33:00,2024-08-29 12:33:00,completed,,106470,cash,TRUE,,Ngân hàng Nam Á - Nam A Bank,150688688,Long Hoang,4,,0,,2024-07-28 12:33:00,2024-07-28 12:33:00
 21,2,10,518000,2024-08-31 12:33:00,2024-09-01 12:33:00,ordered,,51800,cash,FALSE,,Ngân hàng Nam Á - Nam A Bank,150688688,Long Hoang,3,,0,,2024-07-22 12:33:00,2024-07-22 12:33:00
+22,8,9,1014000,2024-08-28 19:33:00,2024-08-29 19:33:00,renting,,101400,cash,FALSE,,Ngân hàng Nam Á - Nam A Bank,150688688,Hong Hanh,3,,0,,2024-08-28 19:33:00,2024-08-28 19:33:00

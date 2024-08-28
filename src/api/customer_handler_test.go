@@ -161,3 +161,11 @@ func TestServer_HandleCustomerGiveFeedback(t *testing.T) {
 	require.Equal(t, 5, updateContract.FeedbackRating)
 	require.Equal(t, model.FeedbackStatusActive, updateContract.FeedbackStatus)
 }
+
+func TestOverlapTimeRange(t *testing.T) {
+	now := time.Now()
+
+	require.True(t, isOverlapTimeRange(now, now.Add(2*time.Hour), now.Add(time.Hour), now.Add(3*time.Hour)))
+	require.False(t, isOverlapTimeRange(now, now.Add(2*time.Hour), now.Add(3*time.Hour), now.Add(4*time.Hour)))
+	require.True(t, isOverlapTimeRange(now, now.Add(2*time.Hour), now.Add(2*time.Hour), now.Add(3*time.Hour)))
+}

@@ -180,7 +180,7 @@ func (s *Server) isOverlapOtherContract(customerID int, startTime, endTime time.
 }
 
 func isOverlapTimeRange(startTime1, endTime1, startTime2, endTime2 time.Time) bool {
-	if startTime2.After(startTime1) {
+	if startTime1.After(startTime2) {
 		tmpStartTime, tmpEndTime := startTime1, endTime1
 		startTime1, endTime1 = startTime2, endTime2
 		startTime2, endTime2 = tmpStartTime, tmpEndTime

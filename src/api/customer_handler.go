@@ -671,7 +671,7 @@ type RentPricing struct {
 
 func calculateRentPrice(car *model.Car, rule *model.CustomerContractRule, startDate, endDate time.Time) *RentPricing {
 	totalRentPriceAmount := car.Price * int(((endDate.Sub(startDate)).Hours())/24.0)
-	if endDate.Sub(startDate).Seconds() > 0 {
+	if int(endDate.Sub(startDate).Seconds())%(24*60*60) != 0 {
 		totalRentPriceAmount += car.Price
 	}
 
